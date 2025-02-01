@@ -1,0 +1,28 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env"],
+  "globalEnv": [
+    "VITE_APP_E2E",
+    "VITE_APP_DEFAULT_NETWORK",
+    "VITE_APP_STARKNET_SEPOLIA_URL",
+    "VITE_APP_STARKNET_MAINNET_URL"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "lint": {},
+    "start": {},
+    "test:unit": {},
+    "test:e2e": {
+      "cache": false
+    },
+    "story:build": {},
+    "cleanup": {},
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
