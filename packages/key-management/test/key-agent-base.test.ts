@@ -208,7 +208,7 @@ describe("KeyAgentBase (Starknet Functionality)", () => {
       )
       expect(result1).toBe(true)
     })
-    it("should derive stealth address", async () => {
+    it("should derive stealth address for itself and then confirm the stealth address is owned by itself", async () => {
       const args: StarknetDerivationArgs = {
         accountIndex: 0,
         addressIndex: 0,
