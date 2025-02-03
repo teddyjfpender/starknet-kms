@@ -100,6 +100,44 @@ export class PoseidonMerkleAccumulator {
   }
 
   /**
+   * Bulk update: update multiple leaves, then rebuild the entire tree in one pass.
+   * @param updates Array of updates with leaf index and new value.
+   */
+  public updateLeaves(updates: { index: number; value: bigint }[]): void {
+    // Validate and update leaves in one go.
+    for (const upd of updates) {
+      if (upd.index < 0 || upd.index >= this.size) {
+        throw new Error(
+          `Leaf index ${upd.index} out of range (0..${this.size - 1})`,
+        )
+      }
+      this.tree[upd.index + this.size] = upd.value
+    }
+    // Rebuild the tree from the leaves upward in one pass.
+    for (let i = this.size - 1; i >= 1; i--) {
+      this.tree[i] = poseidonHash(this.tree[i << 1], this.tree[(i << 1) + 1])
+    }
+  }
+
+  /**
+   * Validate that every internal node of the tree is consistent with its children.
+   * @returns true if the tree is valid; false otherwise.
+   */
+  public validateTree(): boolean {
+    // Check internal nodes: for each node i (1 <= i < this.size),
+    // recompute the hash from its two children and compare.
+    for (let i = 1; i < this.size; i++) {
+      const left = this.tree[i << 1]
+      const right = this.tree[(i << 1) + 1]
+      const expected = poseidonHash(left, right)
+      if (this.tree[i] !== expected) {
+        return false
+      }
+    }
+    return true
+  }
+
+  /**
    * @returns The current Merkle root (BigInt).
    */
   public getRoot(): bigint {
