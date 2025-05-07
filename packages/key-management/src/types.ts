@@ -1,10 +1,8 @@
-import type { Network } from "@starkms/starkms-core"
 import {
   type SignablePayload,
   type SignatureResult,
   type StarknetDerivationArgs,
   type StarknetGroupedCredentials,
-  deriveStarknetKeyPairs,
 } from "./chains/starknet"
 
 export type PayloadTypes = "transaction" | "message" | "fields"
@@ -45,7 +43,7 @@ export type SerializableSessionKeyAgentData = {
   issuanceDate: string
   credentialSubject: {
     id: string
-    contents: SessionGroupedCredentials[]
+    contents: GroupedCredentials[]
   }
 }
 export type GroupedCredentials = StarknetGroupedCredentials
@@ -141,7 +139,7 @@ export type ChainOperationArgs = {
     | "sign_declare"
     | "sign_raw"
   /**
-   * The StarkNet account address used by `signMessage()`.
+   * The Starknet account address used by `signMessage()`.
    * Not always needed for other operations, so it's optional.
    */
   accountAddress?: string
@@ -154,7 +152,7 @@ export type ChainOperationArgs = {
 }
 
 export interface ChainSpecificPayload {
-  network: Network
+  network: any
   derivePublicKey(
     privateKey: ChainPrivateKey,
     args: ChainDerivationArgs,

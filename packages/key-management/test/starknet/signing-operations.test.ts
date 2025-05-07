@@ -77,7 +77,7 @@ describe("Derive Keys From Mnemonic", () => {
         version: "0.0.3",
       },
       types: {
-        StarkNetDomain: [
+        StarknetDomain: [
           { name: "name", type: "string" },
           { name: "chainId", type: "felt" },
           { name: "version", type: "string" },

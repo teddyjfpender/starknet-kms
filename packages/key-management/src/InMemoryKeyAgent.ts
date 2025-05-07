@@ -18,6 +18,7 @@ import {
 export interface InMemoryKeyAgentProps
   extends Omit<SerializableInMemoryKeyAgentData, "__typename"> {
   getPassphrase: GetPassphrase
+  mnemonic: string
 }
 
 export interface FromBip39MnemonicWordsProps {
@@ -54,13 +55,15 @@ export class InMemoryKeyAgent extends KeyAgentBase implements KeyAgent {
         contents: [],
       },
       getPassphrase,
+      mnemonic,
     })
   }
 
-  constructor({ getPassphrase, ...serializableData }: InMemoryKeyAgentProps) {
+  constructor({ getPassphrase, mnemonic, ...serializableData }: InMemoryKeyAgentProps) {
     super(
       { ...serializableData, __typename: KeyAgentType.InMemory },
       getPassphrase,
+      mnemonic,
     )
   }
 

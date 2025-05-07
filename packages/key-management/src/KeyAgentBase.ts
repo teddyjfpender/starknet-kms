@@ -31,18 +31,6 @@ import type {
   StealthAddress,
 } from "./types"
 
-// helper function
-// A helper to ensure a hex string has an even number of digits.
-function padToEvenHex(hex: string): string {
-  // Remove the "0x" prefix if present.
-  let hexBody = hex.startsWith("0x") ? hex.slice(2) : hex
-  // If the length is odd, add a "0" to the beginning.
-  if (hexBody.length % 2 !== 0) {
-    hexBody = `0${hexBody}`
-  }
-  return `0x${hexBody}`
-}
-
 export abstract class KeyAgentBase implements KeyAgent {
   readonly serializableData: SerializableKeyAgentData
   private keyDecryptor: KeyDecryptor

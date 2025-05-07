@@ -20,7 +20,6 @@ import {
 import {
   type StarknetDerivationArgs,
   StarknetKeyConst,
-  type StarknetSpecificArgs,
   deriveStarknetKeyPairs,
   deriveStarknetPrivateKey,
   deriveStarknetSpendKeyPair,
@@ -41,7 +40,7 @@ const params = {
 const getPassphrase = () => utf8ToBytes(params.passphrase)
 
 /**
- * Mock function: generate a random private key on the StarkNet curve.
+ * Mock function: generate a random private key on the Starknet curve.
  * For real usage, you'd call something like:
  *   const aliceSpendKey = deriveStarknetPrivateKey(...);
  */
@@ -153,8 +152,8 @@ describe("Starknet InMemoryKeyAgent", () => {
     })
     /**
      * This test sets up:
-     * - Alice’s spend key pair (x, X)
-     * - Alice’s view key pair  (y, Y)
+     * - Alice's spend key pair (x, X)
+     * - Alice's view key pair  (y, Y)
      * - Bob uses ephemeral scalar r to create stealth output
      * - Alice checks ownership
      */
@@ -192,7 +191,7 @@ describe("Starknet InMemoryKeyAgent", () => {
 
       expect(isOwnedByAlice).toBe(true)
 
-      // === 4) Negative test: does Bob’s view key claim ownership? Should fail ===
+      // === 4) Negative test: does Bob's view key claim ownership? Should fail ===
       const bobViewKey = generateRandomStarknetPrivKey()
       const bobViewPubKey = getFullUncompressedPubkey(bobViewKey)
 
@@ -214,6 +213,77 @@ describe("Starknet InMemoryKeyAgent", () => {
       console.log("Stealth address (P)      =", stealthAddress)
       console.log("Did Alice detect it?     =", isOwnedByAlice)
       console.log("Can Bob claim it?        =", isOwnedByBob)
+    })
+    it("should correctly create and verify stealth addresses using deterministically derived keys", () => {
+      // 1. Derive Alice's spend private key
+      const mnemonicPhrase = bip39.joinMnemonicWords(mnemonic) // mnemonic is from beforeEach
+      const derivationArgs: StarknetDerivationArgs = {
+        accountIndex: 0,
+        addressIndex: 0,
+      }
+      const aliceSpendPrivKey = deriveStarknetPrivateKey(
+        derivationArgs,
+        mnemonicPhrase,
+      )
+      const aliceSpendPubKey = getFullUncompressedPubkey(aliceSpendPrivKey)
+
+      // 2. Derive Alice's view key pair from her spend private key
+      const { privateViewKey: aliceViewPrivKey, publicViewKey: _aliceViewPubKeyRaw } =
+        deriveStarknetViewKeyPair(aliceSpendPrivKey)
+      // Ensure the public view key is uncompressed for createStealthOutput
+      const aliceViewPubKey = getFullUncompressedPubkey(aliceViewPrivKey)
+
+      // 3. Bob (or anyone) creates a stealth output for Alice
+      const { ephemeralPublicKey, stealthAddress } = createStealthOutput(
+        aliceSpendPubKey,
+        aliceViewPubKey,
+      )
+
+      expect(ephemeralPublicKey).toMatch(/^0x04[0-9a-fA-F]+$/)
+      expect(stealthAddress).toMatch(/^0x04[0-9a-fA-F]+$/)
+
+      // 4. Alice checks ownership using her derived keys
+      const isOwnedByAlice = checkStealthOwnership(
+        aliceViewPrivKey,
+        aliceSpendPubKey,
+        ephemeralPublicKey,
+        stealthAddress,
+      )
+      expect(isOwnedByAlice).toBe(true)
+
+      // 5. Negative test: A different derived view key should not claim ownership
+      const otherDerivationArgs: StarknetDerivationArgs = {
+        accountIndex: 1, // Different account
+        addressIndex: 0,
+      }
+      const otherSpendPrivKey = deriveStarknetPrivateKey(
+        otherDerivationArgs,
+        mnemonicPhrase,
+      )
+      const { privateViewKey: otherViewPrivKey } =
+        deriveStarknetViewKeyPair(otherSpendPrivKey)
+
+      const isOwnedByOther = checkStealthOwnership(
+        otherViewPrivKey, // Different view key
+        aliceSpendPubKey, // Alice's spend public key
+        ephemeralPublicKey,
+        stealthAddress,
+      )
+      expect(isOwnedByOther).toBe(false)
+
+      // 6. Negative test: A different public spend key should not lead to ownership
+      const anotherSpendPrivKey = deriveStarknetPrivateKey(
+        { accountIndex: 2, addressIndex: 0 },
+        mnemonicPhrase,
+      )
+      const anotherSpendPubKey = getFullUncompressedPubkey(anotherSpendPrivKey)
+      const isOwnedWithWrongSpendPub = checkStealthOwnership(
+        aliceViewPrivKey, // Alice's view key
+        anotherSpendPubKey, // But someone else's spend public key
+        ephemeralPublicKey,
+        stealthAddress,
+      )
+      expect(isOwnedWithWrongSpendPub).toBe(false)
     })
     it("should let Bob create a credential containing his encrypted spending & viewing keys", () => {})
     it("should replicate argent test", async () => {

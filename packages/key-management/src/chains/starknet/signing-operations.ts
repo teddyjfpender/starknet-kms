@@ -19,7 +19,7 @@ import type { SignablePayload, SignatureResult } from "./types"
  * - signRaw(msgHash)
  *
  * @param args        - Contains which operation to perform, plus any needed fields
- * @param privateKey  - The StarkNet private key (0x or hex string) used for signing
+ * @param privateKey  - The Starknet private key (0x or hex string) used for signing
  * @param payload     - The data you want to sign (could be typed data, calls, etc.)
  * @returns           A Promise that resolves to the resulting signature (string[])
  */

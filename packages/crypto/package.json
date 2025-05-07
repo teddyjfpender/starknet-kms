@@ -20,6 +20,7 @@
     "@starkms/util": "workspace:*",
     "bs58check": "4.0.0",
     "buffer": "6.0.3",
+    "fast-check": "^4.1.1",
     "micro-starknet": "^0.2.3",
     "starknet": "^6.11.0"
   },

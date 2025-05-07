@@ -1,6 +1,5 @@
 import { type Hex, bytesToHex } from "@noble/curves/abstract/utils"
 import { sha256 } from "@noble/hashes/sha256"
-import { HDKey } from "@scure/bip32"
 import { getStarkKey, grindKey as microGrindKey } from "@scure/starknet"
 import { ethers } from "ethers"
 import { ec, encode, hash } from "starknet"
@@ -16,14 +15,14 @@ import {
 const { addHexPrefix } = encode
 
 /**
- * Grinds a private key to a valid StarkNet private key.
+ * Grinds a private key to a valid Starknet private key.
  *
- * StarkNet requires private keys to be < curve order, so we "grind"
+ * Starknet requires private keys to be < curve order, so we "grind"
  * the raw 256-bit key space down to the valid range. The scure/starknet
  * library handles that with `grindKey`.
  *
  * @param privateKey - A 0x‐prefixed hex string (or hex without prefix).
- * @returns A 0x‐prefixed hex string suitable for StarkNet usage.
+ * @returns A 0x‐prefixed hex string suitable for Starknet usage.
  */
 export function grindKey(privateKey: Hex): string {
   return addHexPrefix(microGrindKey(privateKey))
@@ -45,7 +44,7 @@ export function pathHash(name: string): number {
 }
 
 /**
- * Derive a StarkNet "spend" private key from BIP-39 mnemonic, using
+ * Derive a Starknet "spend" private key from BIP-39 mnemonic, using
  * an HD derivation path.  This effectively gives you the primary
  * private key you can use for transactions/ownership (like `x`).
  *
@@ -70,7 +69,7 @@ export function deriveStarknetPrivateKey(
     path,
   )
 
-  // Now "grind" that private key for StarkNet usage:
+  // Now "grind" that private key for Starknet usage:
   const groundKey = grindKey(derivedWallet.privateKey)
 
   // getStarkKey(...) from scure returns a **public** key by default.
@@ -81,10 +80,10 @@ export function deriveStarknetPrivateKey(
 }
 
 /**
- * Derive a StarkNet public key from the private key.
+ * Derive a Starknet public key from the private key.
  *
- * @param privateKey - a valid, ground StarkNet private key (0x‐prefixed).
- * @returns A 0x‐prefixed hex public key on StarkNet (typically 251 bits).
+ * @param privateKey - a valid, ground Starknet private key (0x‐prefixed).
+ * @returns A 0x‐prefixed hex public key on Starknet (typically 251 bits).
  */
 export function getStarknetPublicKeyFromPrivate(
   privateKey: string,
@@ -138,7 +137,7 @@ export function deriveStarknetViewKeyPair(
   publicViewKey: string
 } {
   // 1. Compute a 256-bit hash of the spend key. Use starknetKeccak for consistency:
-  const spendKeyBN = BigInt(spendPrivateKey) // interpret as BigInt
+ //  const spendKeyBN = BigInt(spendPrivateKey) // interpret as BigInt
   // Convert to hex (without "0x" for the hashing step):
   const spendKeyHexNo0x = spendPrivateKey.replace(/^0x/, "").toLowerCase()
 

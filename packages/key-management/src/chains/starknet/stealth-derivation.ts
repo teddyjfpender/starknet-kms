@@ -5,17 +5,17 @@ import { ec, encode, hash, num } from "starknet"
 /**
  * Generate a fresh ephemeral private scalar using secure randomness.
  */
-function generateEphemeralScalar(): bigint {
+export function generateEphemeralScalar(): bigint {
   const raw = randomBytes(32) // 32 bytes
   // The curve's private keys must be in [1..curve_order-1]
   // but for simplicity, we interpret 32 random bytes as a BigInt
   // Then we mod it by curve order to get a valid scalar on StarkCurve
   const curveOrder = ec.starkCurve.CURVE.n
-  return BigInt(`0x${bytesToHex(raw)}`) % curveOrder
+  return BigInt(`0x${bytesToHex(Uint8Array.from(raw))}`) % curveOrder
 }
 
 /**
- * Convert a private key (bigint or hex) to a public key on StarkNet curve.
+ * Convert a private key (bigint or hex) to a public key on Starknet curve.
  */
 function starknetPublicKeyFromPrivateKey(privKeyHex: string): string {
   // ec.getPublicKey returns a Uint8Array. We'll encode it in hex
@@ -24,12 +24,12 @@ function starknetPublicKeyFromPrivateKey(privKeyHex: string): string {
 }
 
 /**
- * Create a stealth address given the recipient’s public spend/view keys (X, Y).
+ * Create a stealth address given the recipient's public spend/view keys (X, Y).
  *
- * @param recipientPubSpendKey The recipient’s public spend key (hex, 0x‐prefixed).
- * @param recipientPubViewKey  The recipient’s public view key (hex, 0x‐prefixed).
+ * @param recipientPubSpendKey The recipient's public spend key (hex, 0x‐prefixed).
+ * @param recipientPubViewKey  The recipient's public view key (hex, 0x‐prefixed).
  * @returns An object containing:
- *   - ephemeralPrivateScalar  The sender’s ephemeral private scalar `r` (for demonstration)
+ *   - ephemeralPrivateScalar  The sender's ephemeral private scalar `r` (for demonstration)
  *   - ephemeralPublicKey      R = r * G
  *   - stealthAddress          P = X + k*G where k = Hash(r * Y)
  */
@@ -50,7 +50,7 @@ export function createStealthOutput(
     recipientPubViewKey.replace(/^0x/, ""),
   )
   const rTimesY = Ypoint.multiply(r) // big point
-  // We do a StarkNet keccak, for instance:
+  // We do a Starknet keccak, for instance:
   const kBigInt = hash.starknetKeccak(encode.buf2hex(rTimesY.toRawBytes(true)))
 
   // 4. k is a scalar, so we might take mod n:
