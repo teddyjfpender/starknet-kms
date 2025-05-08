@@ -1,5 +1,9 @@
 import { hash, num } from "starknet";
-import { CURVE_ORDER, Point, Scalar } from "./curve-glue";
+import {
+  CURVE_ORDER,
+  Point,
+  Scalar,
+} from "../core/curve";
 
 /**
  * Serializes an elliptic curve point for the transcript.

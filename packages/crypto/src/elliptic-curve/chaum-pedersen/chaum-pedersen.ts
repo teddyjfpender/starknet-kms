@@ -3,8 +3,8 @@ import {
   Point,
   Scalar,
   randScalar,
-  toFr,
-} from "./curve-glue";
+  moduloOrder,
+} from "../core/curve";
 import { H } from "./generators";
 import { generateChallenge } from "./transcript";
 
@@ -54,7 +54,7 @@ export function commit(r: Scalar = randScalar()): { commit: InteractiveCommit; n
 export function respond(x: Scalar, r: Scalar, c: Scalar): Scalar {
   const cx = c * x; // c*x
   const r_plus_cx = r + cx; // r + c*x
-  return toFr(r_plus_cx); // (r + c*x) mod CURVE_ORDER
+  return moduloOrder(r_plus_cx); // Use new moduloOrder
 }
 
 /**

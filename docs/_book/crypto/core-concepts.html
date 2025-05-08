@@ -1,0 +1,377 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <title>Core ECC Concepts · HonKit</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 6.0.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/@honkit/honkit-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/@honkit/honkit-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="core-primitives.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Crypto Package</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="2.2" data-path="core-concepts.html">
+            
+                <a href="core-concepts.html">
+            
+                    
+                    Core ECC Concepts
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="core-primitives.html">
+            
+                <a href="core-primitives.html">
+            
+                    
+                    Core Primitives API
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="starknet-stealth.html">
+            
+                <a href="starknet-stealth.html">
+            
+                    
+                    Stealth Addresses
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5" data-path="chaum-pedersen.html">
+            
+                <a href="chaum-pedersen.html">
+            
+                    
+                    Chaum-Pedersen ZKP
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Core ECC Concepts</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="core-elliptic-curve-concepts">Core Elliptic Curve Concepts</h1>
+<p>This section explains the fundamental mathematical objects used in the elliptic curve cryptography implementations within this package.</p>
+<h2 id="elliptic-curve-cryptography-ecc">Elliptic Curve Cryptography (ECC)</h2>
+<p>At a high level, ECC is a type of public-key cryptography based on the algebraic structure of elliptic curves over finite fields. Instead of relying on the difficulty of factoring large numbers (like RSA), ECC relies on the difficulty of the Elliptic Curve Discrete Logarithm Problem (ECDLP).</p>
+<p>Key advantages include smaller key sizes for equivalent security levels compared to non-ECC methods.</p>
+<h2 id="the-starknet-curve-starkcurve">The Starknet Curve (<code>stark_curve</code>)</h2>
+<p>Starknet uses a specific elliptic curve, often referred to as <code>stark_curve</code>. This curve has specific parameters (like its equation, the prime field <code>p</code> it's defined over, and the order <code>n</code> of its main subgroup) that are crucial for security and compatibility within the Starknet ecosystem.</p>
+<p>Our <code>core/curve.ts</code> module encapsulates these parameters using the <code>starknet.js</code> library's representation.</p>
+<h2 id="key-mathematical-objects">Key Mathematical Objects</h2>
+<h3 id="scalars-scalar">Scalars (<code>Scalar</code>)</h3>
+<ul>
+<li><strong>What:</strong> A scalar is essentially a large integer (<code>bigint</code> in TypeScript). In ECC, scalars are typically used as <strong>private keys</strong> or intermediate values in calculations.</li>
+<li><strong>Range:</strong> For cryptographic operations on the Starknet curve, scalars must belong to the finite field defined by the curve's order, denoted <code>n</code>. This means they are integers in the range <code>[0, n-1]</code>. Private keys specifically should be in the range <code>[1, n-1]</code> (0 is invalid as a private key).</li>
+<li><strong>Operations:</strong> Standard arithmetic operations (addition, multiplication) are performed modulo <code>n</code>.</li>
+<li><strong>Representation:</strong> Handled as <code>bigint</code> in the <code>core</code> module.</li>
+</ul>
+<h3 id="points-point">Points (<code>Point</code>)</h3>
+<ul>
+<li><strong>What:</strong> A point represents a location <code>(x, y)</code> that satisfies the specific elliptic curve equation used by Starknet. They are the fundamental elements of the elliptic curve group.</li>
+<li><strong>Public Keys:</strong> Elliptic curve points are typically used as <strong>public keys</strong>.</li>
+<li><strong>Representation:</strong> Internally represented by <code>starknet.js</code>'s <code>ProjectivePoint</code> objects for efficient computation. These can be converted to/from affine coordinates <code>(x, y)</code>.</li>
+<li><strong>Special Points:</strong><ul>
+<li><strong>Generator Point (<code>G</code>):</strong> A standard, publicly known base point on the curve. Public keys are derived by multiplying <code>G</code> by a private key scalar <code>x</code> (i.e., <code>PublicKey = x * G</code>).</li>
+<li><strong>Point at Infinity (<code>O</code>):</strong> This is the identity element for the group operation (point addition). Adding <code>O</code> to any point <code>P</code> results in <code>P</code> (<code>P + O = P</code>). It doesn't have standard <code>(x, y)</code> coordinates.</li>
+</ul>
+</li>
+</ul>
+<h3 id="group-operation-point-addition">Group Operation: Point Addition</h3>
+<p>The primary operation on elliptic curve points is "point addition". Given two points <code>P1</code> and <code>P2</code> on the curve, there's a defined geometric rule to find a third point <code>P3 = P1 + P2</code> which is also on the curve. This operation gives the curve its useful cryptographic group structure.</p>
+<ul>
+<li><strong>Scalar Multiplication:</strong> This is defined as repeated point addition. Multiplying a point <code>P</code> by a scalar <code>k</code> (i.e., <code>k * P</code>) means adding <code>P</code> to itself <code>k</code> times (<code>P + P + ... + P</code>). This is how public keys are generated (<code>PublicKey = privateKey * G</code>). The hardness of ECC comes from the fact that given <code>PublicKey</code> and <code>G</code>, it's computationally infeasible to find <code>privateKey</code> (this is the ECDLP).</li>
+</ul>
+<p>Understanding these core concepts is crucial for understanding the primitives and protocols built upon them. </p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: Overview">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="core-primitives.html" class="navigation navigation-next " aria-label="Next page: Core Primitives API">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Core ECC Concepts","level":"2.2","depth":1,"next":{"title":"Core Primitives API","level":"2.3","depth":1,"path":"crypto/core-primitives.md","ref":"crypto/core-primitives.md","articles":[]},"previous":{"title":"Overview","level":"2.1","depth":1,"path":"crypto/README.md","ref":"crypto/README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"crypto/core-concepts.md","mtime":"2025-05-08T16:11:58.613Z","type":"markdown"},"gitbook":{"version":"6.0.3","time":"2025-05-08T16:24:24.627Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/@honkit/honkit-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
