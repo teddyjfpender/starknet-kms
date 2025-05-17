@@ -12,9 +12,9 @@
     }
   },
   "scripts": {
-    "build": "bunx --bun tsc --noEmit && bunx --bun tsup",
-    "dev": "bunx --bun tsup --watch",
-    "cleanup": "bunx --bun rimraf node_modules dist .turbo"
+    "build": "bun x --bun tsc --noEmit && bun x --bun tsup",
+    "dev": "bun x --bun tsup --watch",
+    "cleanup": "bun x --bun rimraf node_modules dist .turbo"
   },
   "dependencies": {
     "@starkms/util": "workspace:*",
