@@ -88,9 +88,8 @@ describe("Starknet InMemoryKeyAgent", () => {
   it("should create an agent with given properties", () => {
     expect(agent).toBeInstanceOf(InMemoryKeyAgent)
   })
-  it("should create an agent with given properties and return the getSeralizableData", () => {
-    expect(agent).toBeInstanceOf(InMemoryKeyAgent)
-    expect(agent.getSeralizableData()).not.toBe(undefined)
+  it("should expose serializable data", () => {
+    expect(agent.serializableData).not.toBe(undefined)
   })
   it("should export root private key", async () => {
     const result = await agent.exportRootPrivateKey()

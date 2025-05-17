@@ -117,6 +117,19 @@ export abstract class KeyAgentBase implements KeyAgent {
     }
   }
 
+  /**
+   * Restore credentials for the given derivation path and persist them.
+   *
+   * This is a convenience wrapper around {@link deriveCredentials} that
+   * stores the derived credentials on the agent before returning.
+   */
+  async restoreKeyAgent(
+    args: ChainDerivationArgs,
+    getPassphrase: GetPassphrase,
+  ): Promise<GroupedCredentials> {
+    return this.deriveCredentials(args, getPassphrase, false)
+  }
+
   async deriveKeyPair(
     args: ChainDerivationArgs,
     passphrase: Uint8Array,
