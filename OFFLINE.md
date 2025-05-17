@@ -29,6 +29,7 @@ The repository includes a unified setup script (`setup.sh`) that handles both on
 The setup script automatically detects:
 - Whether you have internet connectivity
 - Whether you're running in a Docker container
+- Which platform you're on (Linux, macOS, etc.)
 
 ### Offline Cache
 
@@ -49,6 +50,13 @@ The repository is configured to include build artifacts in version control:
 - `.turbo` cache is included
 
 This ensures that the project can be run without rebuilding from source.
+
+### Cross-Platform Compatibility
+
+The script handles platform differences by:
+- Detecting when platform-specific binaries are missing
+- Attempting to use globally installed tools as fallbacks
+- Using `npx` for Linux environments when appropriate
 
 ## Using Docker
 
@@ -89,6 +97,30 @@ Docker Compose offers several advantages:
 - Mounts source code for live editing
 - Separate services for development and testing
 
+## Troubleshooting Cross-Platform Issues
+
+If you encounter binary compatibility issues (typically when moving between macOS and Linux):
+
+1. **Container Initialization Script**:
+   ```bash
+   # Run this inside the container to properly initialize
+   ./container-init.sh
+   ```
+   This script will:
+   - Install Node.js and npm if needed
+   - Install critical tools globally (turbo, TypeScript, Biome)
+   - Perform a clean installation of dependencies for the current platform
+
+2. **Manual Steps**:
+   - Install tools globally: `npm install -g turbo typescript @biomejs/biome`
+   - Delete and reinstall dependencies: `rm -rf node_modules && bun install`
+   - Use npx to avoid binary issues: `npx turbo run build`
+
+3. **Avoiding Issues**:
+   - Never copy node_modules between different operating systems
+   - Always run `setup.sh` on each target platform
+   - Include build artifacts in git, but not platform-specific binaries
+
 ## Development Workflow
 
 1. Clone the repository with all build artifacts:
@@ -116,4 +148,5 @@ Docker Compose offers several advantages:
 - If you encounter missing dependencies in offline mode, ensure you've run the setup script with internet access first
 - Check that your `.gitignore` doesn't exclude build artifacts needed for offline development
 - Verify that the Bun version in your environment matches the required version (1.1.34)
-- If using Docker, ensure the offline-cache volume is properly created with `docker volume ls` 
+- If using Docker, ensure the offline-cache volume is properly created with `docker volume ls`
+- For platform-specific binary issues, try the container-init.sh script or manual steps in the troubleshooting section 
