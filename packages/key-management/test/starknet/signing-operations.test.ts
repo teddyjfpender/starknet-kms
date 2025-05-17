@@ -2,17 +2,13 @@ import { describe, expect, it } from "bun:test"
 import { mnemonic } from "@starkms/common"
 import {
   constants,
-  type ArraySignatureType,
   type BigNumberish,
-  type Signature,
   Signer,
   type TypedData,
   type WeierstrassSignatureType,
   ec,
   encode,
   hash,
-  num,
-  stark,
 } from "starknet"
 import {
   type StarknetDerivationArgs,

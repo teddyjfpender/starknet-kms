@@ -4,7 +4,6 @@ import {
   CURVE_ORDER,
   G,
   H,
-  Point,
   type Proof,
   type Scalar,
   type Statement,
@@ -13,7 +12,6 @@ import {
   respond as cpRespond,
   proveFS,
   randScalar,
-  toFr,
   verify,
 } from "../../src/elliptic-curve/chaum-pedersen"
 

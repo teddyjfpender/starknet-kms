@@ -17,7 +17,7 @@ export function generateEphemeralScalar(): bigint {
 /**
  * Convert a private key (bigint or hex) to a public key on Starknet curve.
  */
-function starknetPublicKeyFromPrivateKey(privKeyHex: string): string {
+export function starknetPublicKeyFromPrivateKey(privKeyHex: string): string {
   // ec.getPublicKey returns a Uint8Array. We'll encode it in hex
   const pubKeyBytes = ec.starkCurve.getPublicKey(privKeyHex, false)
   return encode.buf2hex(pubKeyBytes)
