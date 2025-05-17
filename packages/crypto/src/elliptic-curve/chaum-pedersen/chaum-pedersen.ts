@@ -1,10 +1,10 @@
 import {
   G,
   type Point,
+  ProjectivePoint,
   type Scalar,
   moduloOrder,
   randScalar,
-  ProjectivePoint,
 } from "../core/curve"
 import { H } from "./generators"
 import { generateChallenge } from "./transcript"
@@ -155,7 +155,10 @@ export function verify(stmt: Statement, proof: Proof): boolean {
  * Serialise a proof to a fixed width byte representation (6×32 bytes).
  */
 export function encodeProof({ P, Q, c, e }: Proof): Uint8Array {
-  const be = (n: bigint) => new Uint8Array(32).fill(0).map((_, i) => Number((n >> (8n * BigInt(31 - i))) & 0xffn))
+  const be = (n: bigint) =>
+    new Uint8Array(32)
+      .fill(0)
+      .map((_, i) => Number((n >> (8n * BigInt(31 - i))) & 0xffn))
   return new Uint8Array([
     ...be(P.x),
     ...be(P.y),
