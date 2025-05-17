@@ -11,15 +11,15 @@
     "build:features": "turbo run build --filter=@starkms/features...",
     "story:features": "turbo run story:build --filter=@starkms/features",
     "dev:extension": "turbowatch extension.turbowatch.ts",
-    "lint": "bunx biome check .",
+    "lint": "bun x biome check .",
     "lint:fix": "bun run lint --write",
     "test:unit": "turbo run test:unit",
     "test:e2e:extension": "turbo run test:e2e --filter=@starkms/extension",
-    "format": "bunx biome check --write --unsafe .",
+    "format": "bun x biome check --write --unsafe .",
     "f": "bun run format",
     "cleanup": "turbo run cleanup && rimraf node_modules .turbo",
     "prepare": "husky install",
-    "preinstall": "bunx only-allow bun"
+    "preinstall": "bun x only-allow bun"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
