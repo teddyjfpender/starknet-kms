@@ -59,7 +59,11 @@ export class InMemoryKeyAgent extends KeyAgentBase implements KeyAgent {
     })
   }
 
-  constructor({ getPassphrase, mnemonic, ...serializableData }: InMemoryKeyAgentProps) {
+  constructor({
+    getPassphrase,
+    mnemonic,
+    ...serializableData
+  }: InMemoryKeyAgentProps) {
     super(
       { ...serializableData, __typename: KeyAgentType.InMemory },
       getPassphrase,

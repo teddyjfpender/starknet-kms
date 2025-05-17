@@ -112,7 +112,7 @@ export async function SigningOperations<T extends SignablePayload>(
         if (typeof payload !== "string") {
           throw new Error("For 'sign_raw', payload must be a string msgHash.")
         }
-        signature = await signer["signRaw"](payload)
+        signature = await signer.signRaw(payload)
         // (signRaw is protected in source, but if you've exposed it or
         //  changed your local Signer to be public, you can call it.
         //  Otherwise you might replicate signRaw(...) logic manually.)

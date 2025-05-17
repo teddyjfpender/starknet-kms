@@ -1,1 +1,1 @@
-export * from './elliptic-curve';
+export * from "./elliptic-curve"

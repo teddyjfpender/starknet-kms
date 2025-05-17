@@ -1,8 +1,8 @@
-import {
-  type SignablePayload,
-  type SignatureResult,
-  type StarknetDerivationArgs,
-  type StarknetGroupedCredentials,
+import type {
+  SignablePayload,
+  SignatureResult,
+  StarknetDerivationArgs,
+  StarknetGroupedCredentials,
 } from "./chains/starknet"
 
 export type PayloadTypes = "transaction" | "message" | "fields"

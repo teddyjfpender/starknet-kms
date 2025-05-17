@@ -1,3 +1,9 @@
 export function getRealErrorMsg(err: unknown): string | undefined {
-  throw new Error(err as string)
+  if (err instanceof Error) {
+    return err.message
+  }
+  if (typeof err === "string") {
+    return err
+  }
+  return String(err)
 }

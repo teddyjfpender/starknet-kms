@@ -137,7 +137,7 @@ export function deriveStarknetViewKeyPair(
   publicViewKey: string
 } {
   // 1. Compute a 256-bit hash of the spend key. Use starknetKeccak for consistency:
- //  const spendKeyBN = BigInt(spendPrivateKey) // interpret as BigInt
+  //  const spendKeyBN = BigInt(spendPrivateKey) // interpret as BigInt
   // Convert to hex (without "0x" for the hashing step):
   const spendKeyHexNo0x = spendPrivateKey.replace(/^0x/, "").toLowerCase()
 

@@ -228,8 +228,10 @@ describe("Starknet InMemoryKeyAgent", () => {
       const aliceSpendPubKey = getFullUncompressedPubkey(aliceSpendPrivKey)
 
       // 2. Derive Alice's view key pair from her spend private key
-      const { privateViewKey: aliceViewPrivKey, publicViewKey: _aliceViewPubKeyRaw } =
-        deriveStarknetViewKeyPair(aliceSpendPrivKey)
+      const {
+        privateViewKey: aliceViewPrivKey,
+        publicViewKey: _aliceViewPubKeyRaw,
+      } = deriveStarknetViewKeyPair(aliceSpendPrivKey)
       // Ensure the public view key is uncompressed for createStealthOutput
       const aliceViewPubKey = getFullUncompressedPubkey(aliceViewPrivKey)
 

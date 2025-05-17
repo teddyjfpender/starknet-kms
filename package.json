@@ -17,6 +17,8 @@
     "test:e2e:extension": "turbo run test:e2e --filter=@starkms/extension",
     "format": "bun x biome check --write --unsafe .",
     "f": "bun run format",
+    "typecheck": "tsc --noEmit",
+    "ci": "bun run typecheck && bun run lint && bun run test:unit",
     "cleanup": "turbo run cleanup && rimraf node_modules .turbo",
     "prepare": "husky install",
     "preinstall": "bun x only-allow bun"
