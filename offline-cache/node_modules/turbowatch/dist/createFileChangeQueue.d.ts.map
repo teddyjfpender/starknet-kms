@@ -1,0 +1,1 @@
+{"version":3,"file":"createFileChangeQueue.d.ts","sourceRoot":"","sources":["../src/createFileChangeQueue.ts"],"names":[],"mappings":";AAGA,OAAO,EACL,KAAK,QAAQ,EACb,KAAK,eAAe,EACpB,KAAK,YAAY,EAClB,MAAM,SAAS,CAAC;AAIjB,eAAO,MAAM,qBAAqB;iBAMnB,WAAW;aACf,MAAM;mBACA,YAAY,EAAE;kBACf,QAAQ;;+BAoEO,eAAe;CAkB7C,CAAC"}

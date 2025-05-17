@@ -1,0 +1,3 @@
+{
+  "extends": "@starkms/common/tsconfig.json"
+}

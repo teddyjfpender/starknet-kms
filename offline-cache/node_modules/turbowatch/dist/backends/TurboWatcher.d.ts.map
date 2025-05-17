@@ -1,0 +1,1 @@
+{"version":3,"file":"TurboWatcher.d.ts","sourceRoot":"","sources":["../../src/backends/TurboWatcher.ts"],"names":[],"mappings":"AAKA,OAAO,EAAE,mBAAmB,EAAE,MAAM,uBAAuB,CAAC;AAO5D,qBAAa,YAAa,SAAQ,mBAAmB;IACnD,OAAO,CAAC,OAAO,CAAsB;gBAElB,OAAO,EAAE,MAAM;IAoB3B,KAAK;CAGb"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"ChokidarWatcher.d.ts","sourceRoot":"","sources":["../../src/backends/ChokidarWatcher.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,mBAAmB,EAAE,MAAM,uBAAuB,CAAC;AAM5D,qBAAa,eAAgB,SAAQ,mBAAmB;IACtD,OAAO,CAAC,QAAQ,CAAqB;IAErC,OAAO,CAAC,kBAAkB,CAAiB;gBAExB,OAAO,EAAE,MAAM;IA2C3B,KAAK;CAKb"}

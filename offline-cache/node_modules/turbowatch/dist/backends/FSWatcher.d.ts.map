@@ -1,0 +1,1 @@
+{"version":3,"file":"FSWatcher.d.ts","sourceRoot":"","sources":["../../src/backends/FSWatcher.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,mBAAmB,EAAE,MAAM,uBAAuB,CAAC;AAiD5D,qBAAa,SAAU,SAAQ,mBAAmB;IAChD,OAAO,CAAC,UAAU,CAAyB;IAE3C,OAAO,CAAC,MAAM,CAAS;gBAEJ,OAAO,EAAE,MAAM;IAsDrB,KAAK;CAOnB"}

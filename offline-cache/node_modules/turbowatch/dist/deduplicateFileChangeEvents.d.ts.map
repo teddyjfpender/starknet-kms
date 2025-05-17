@@ -1,0 +1,1 @@
+{"version":3,"file":"deduplicateFileChangeEvents.d.ts","sourceRoot":"","sources":["../src/deduplicateFileChangeEvents.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,eAAe,EAAE,MAAM,SAAS,CAAC;AAE/C,eAAO,MAAM,2BAA2B,qBACpB,SAAS,eAAe,EAAE,KAC3C,SAAS,eAAe,EAgB1B,CAAC"}

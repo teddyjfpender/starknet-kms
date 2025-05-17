@@ -3,28 +3,28 @@
 [0m
 test/key-agent-base.test.ts:
 [0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should return the correct empty knownAddresses[0m
-[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should return the correct empty serializableData[0m
-[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive correct key pair[0m [0m[2m[[1m1577.77ms[0m[2m][0m
-[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive correct address for account index other than 0[0m [0m[2m[[1m1518.66ms[0m[2m][0m
-[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive multiple unique key pairs for each account index and store credentials properly[0m [0m[2m[[1m3030.15ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should return the correct empty serializableData[0m [0m[2m[0.08ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive correct key pair[0m [0m[2m[[1m1669.06ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive correct address for account index other than 0[0m [0m[2m[[1m1603.52ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive multiple unique key pairs for each account index and store credentials properly[0m [0m[2m[[1m3214.48ms[0m[2m][0m
 [0m[33m»[2m [0m[2mKeyAgentBase (Starknet Functionality)[2m > [0m[2mStarknet KeyAgent[2m >[0m[2m should export root key successfully[0m
 [0m[33m»[2m [0m[2mKeyAgentBase (Starknet Functionality)[2m > [0m[2mStarknet KeyAgent[2m >[0m[2m should use the generic sign<T> function for signing a transaction[0m
 stealthAddress {
-  [0mephemeralPrivateScalar[2m:[0m [0m[32m[0m[32m"0x394fecc7582f6031f39dd90a2ce4bd62e3ade18e7261099cae90c3ef210872f"[0m[0m[0m[2m,[0m
-  [0mephemeralPublicKey[2m:[0m [0m[32m[0m[32m"0x0406ef3a91254e884ed56d1a03903cc1ee1e6b7af40f61b485d594d378186ce0fe072538f155d329b35653306108b5749bb9023cc7422cd1e0059fb641b15228f3"[0m[0m[0m[2m,[0m
-  [0mstealthAddress[2m:[0m [0m[32m[0m[32m"0x0404f97bfff27aea58be7645263a0f8d7fad0c2e5385b54324f259012e323d661b03919e18149287b5214ee0944aecdf311a2503b4d7b429c365e49ba9626b615a"[0m[0m[0m[2m,[0m
+  [0mephemeralPrivateScalar[2m:[0m [0m[32m[0m[32m"0x78fb442f9ff66d90f4023531e53ab918f87c388741cbd20cb3616cde9eae3e2"[0m[0m[0m[2m,[0m
+  [0mephemeralPublicKey[2m:[0m [0m[32m[0m[32m"0x040145beb5d6ffbafb3e2e22b5eefd519a5c78de3120aa0444907843f1c99366e1051ed08759e712023253f0d94e625ff31a2c0ed87b19b56b5c7a66056ac0b415"[0m[0m[0m[2m,[0m
+  [0mstealthAddress[2m:[0m [0m[32m[0m[32m"0x04025bec370b7724a865c5934839923a4b07f19545bd2313b7c2f103998b0c6f420441dc99b10587567348ce25713aa60702366ffbcc0e203bae387d7460f41409"[0m[0m[0m[2m,[0m
 }
-[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive stealth address for itself and then confirm the stealth address is owned by itself[0m [0m[2m[[1m2285.76ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyAgentBase (Starknet Functionality)[2m > [0mStarknet KeyAgent[2m >[0m[1m should derive stealth address for itself and then confirm the stealth address is owned by itself[0m [0m[2m[[1m2410.89ms[0m[2m][0m
 [0m
 test/keyDecryptor.test.ts:
-[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m decryptChildPrivateKey should decrypt properly[0m [0m[2m[[1m1511.00ms[0m[2m][0m
-[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m decryptSeedBytes should decrypt seed bytes properly[0m [0m[2m[[1m1514.36ms[0m[2m][0m
-[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m should throw an authentication error if decryption fails[0m [0m[2m[[1m757.75ms[0m[2m][0m
-[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m should throw an authentication error if decryption fails in decryptSeed[0m [0m[2m[[1m755.40ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m decryptChildPrivateKey should decrypt properly[0m [0m[2m[[1m1594.48ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m decryptSeedBytes should decrypt seed bytes properly[0m [0m[2m[[1m1593.17ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m should throw an authentication error if decryption fails[0m [0m[2m[[1m837.75ms[0m[2m][0m
+[0m[32m✓[0m [0mKeyDecryptor[2m >[0m[1m should throw an authentication error if decryption fails in decryptSeed[0m [0m[2m[[1m798.72ms[0m[2m][0m
 [0m
 test/starknet/key-derivation.test.ts:
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m check test case from private key to expected public key[0m [0m[2m[0.85ms[0m[2m][0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should derive a private key from mnemonic and sign a message that can be verified[0m [0m[2m[[1m21.94ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m check test case from private key to expected public key[0m [0m[2m[0.91ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should derive a private key from mnemonic and sign a message that can be verified[0m [0m[2m[[1m24.40ms[0m[2m][0m
 {
   [0mspendingKeyPair[2m:[0m {
     [0mprivateSpendingKey[2m:[0m [0m[32m[0m[32m"0x78936b8dc426c649fccf3a9a8022b9795bdcd558dfb83956d66a25ae76992df"[0m[0m[0m[2m,[0m
@@ -35,26 +35,26 @@ test/starknet/key-derivation.test.ts:
     [0mpublicViewingKey[2m:[0m [0m[32m[0m[32m"0x04061cf81ed18d4d9466b86a4e7f44a4e9b5562362e60ed1d073bf10b84763fd2100bf6f13998b2477c65e55377f326dd2da1f133a1b517e7b9f6b0bba00e347e5"[0m[0m[0m[2m,[0m
   }[0m[2m,[0m
 }
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should derive a private key & viewing key from mnemonic[0m [0m[2m[6.31ms[0m[2m][0m
-Alice's spend key (x)    = 0x6b8eba5e8c36bc27ea45eb851e5cc8c998240c8518b9fc067cbb66595fa0aff
-Alice's spend pubkey (X) = 0x040701c4c2a41beeb647698b3b78f44f3fbb91ed36719f050387195f002752966e004325a13b89c1c8817b46dc130b3775a22ed1ebd756892468c6dab9ef00f668
-Alice's view key (y)     = 0x79faec2979658833cca2ef01a56dcbefc60fdeb9f37d0d0c477ac73f4cd2a6c
-Alice's view pubkey (Y)  = 0x04061c1c3d86cd03b7930906cc02e3fb3e4fa9d976474eecdcf19149dc2f49dbbf00da6956408c3c202b7c5a03abceb2096072cbe4e0abcf7f0ec1fad4863ffaa2
-Bob ephemeral r          = 0x3225fa8fc165a6e3b1f8291e54543ce5daea94d80dd36b836623b8a90067ecf
-R = r*G                  = 0x0401ad5e244dd423a1ca0d757b4acc933069ce4def24cc803b9ee00360ed5ea2e502d59eadc96083bc750f6a4f227bacc6fceaaa24ada505341d74b2eece7f2017
-Stealth address (P)      = 0x040213be00b03f1aa9cb1baea7f29d27c55c002a9e1f5cc4b87314cc8afbd6a87e03cfef5433628a7e92a39af4500d310f3e63c8c0c3522cfd2194724e5de9acdf
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should derive a private key & viewing key from mnemonic[0m [0m[2m[6.51ms[0m[2m][0m
+Alice's spend key (x)    = 0x2f817dd5449b69d1d024c54fda0e04b09d28e73e39f4195da1ee6cb5c37cc49
+Alice's spend pubkey (X) = 0x0406fa0938bfb056570adfd5dae0e58d22bd6e55e3a22410d4a64fe98896a6203a077e7ef58d631132d4d1646a89b2f1496525bcc42b68859f821b2afa3e0cc7aa
+Alice's view key (y)     = 0x5ecd5953b676c26ce92f4ad3bd3b74303ae884918af233cfedce764ec4c729d
+Alice's view pubkey (Y)  = 0x0402fae716bb79ad3b8db69f847b507b575b47da261cf093808b6a9238b54f4c7504a38de79994f22bcdd973793afafcda7ead3044b21ef7026f7cf1c0a7ae73e1
+Bob ephemeral r          = 0x1fb7e174ec05e256808dd45fdc6114edffb35887981b68edc882af56ae2d30c
+R = r*G                  = 0x0405403db400b724bc7da0b5ad1a3bf9c024232975edb1f2966291cf0c641713f307eb1d6ce3c48a8c5b84b46d206c699963370504b1447c651e496ac979945a79
+Stealth address (P)      = 0x0405616e7625148e759fac8138c5f79696c411ca173bf44e19053191c3a2613b7b0667d0aa88f9f3e2df9dc41e434109453a87022b1023092f7f4c520afe593a75
 Did Alice detect it?     = [0m[33mtrue[0m
 Can Bob claim it?        = [0m[33mfalse[0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should let Bob create a stealth address for Alice, which Alice can detect[0m [0m[2m[[1m11.44ms[0m[2m][0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should correctly create and verify stealth addresses using deterministically derived keys[0m [0m[2m[[1m29.06ms[0m[2m][0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should let Bob create a credential containing his encrypted spending & viewing keys[0m [0m[2m[0.04ms[0m[2m][0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should replicate argent test[0m [0m[2m[[1m38.08ms[0m[2m][0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m >[0m[1m should create an agent with given properties[0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m >[0m[1m should create an agent with given properties and return the getSeralizableData[0m [0m[2m[0.11ms[0m[2m][0m
-[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m >[0m[1m should export root private key[0m [0m[2m[[1m760.22ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should let Bob create a stealth address for Alice, which Alice can detect[0m [0m[2m[[1m12.89ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should correctly create and verify stealth addresses using deterministically derived keys[0m [0m[2m[[1m31.18ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should let Bob create a credential containing his encrypted spending & viewing keys[0m [0m[2m[0.05ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m > [0mDerive Keys From Mnemonic[2m >[0m[1m should replicate argent test[0m [0m[2m[[1m41.32ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m >[0m[1m should create an agent with given properties[0m [0m[2m[0.09ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m >[0m[1m should expose serializable data[0m [0m[2m[0.06ms[0m[2m][0m
+[0m[32m✓[0m [0mStarknet InMemoryKeyAgent[2m >[0m[1m should export root private key[0m [0m[2m[[1m799.82ms[0m[2m][0m
 [0m
 test/starknet/signing-operations.test.ts:
-[0m[32m✓[0m [0mDerive Keys From Mnemonic[2m >[0m[1m should derive a private key from mnemonic and sign a message that can be verified[0m [0m[2m[[1m20.51ms[0m[2m][0m
+[0m[32m✓[0m [0mDerive Keys From Mnemonic[2m >[0m[1m should derive a private key from mnemonic and sign a message that can be verified[0m [0m[2m[[1m21.76ms[0m[2m][0m
 {
   [0mspendingKeyPair[2m:[0m {
     [0mprivateSpendingKey[2m:[0m [0m[32m[0m[32m"0x78936b8dc426c649fccf3a9a8022b9795bdcd558dfb83956d66a25ae76992df"[0m[0m[0m[2m,[0m
@@ -65,10 +65,10 @@ test/starknet/signing-operations.test.ts:
     [0mpublicViewingKey[2m:[0m [0m[32m[0m[32m"0x61cf81ed18d4d9466b86a4e7f44a4e9b5562362e60ed1d073bf10b84763fd21"[0m[0m[0m[2m,[0m
   }[0m[2m,[0m
 }
-[0m[32m✓[0m [0mDerive Keys From Mnemonic[2m >[0m[1m should derive the same public key as starknet-js[0m [0m[2m[[1m43.12ms[0m[2m][0m
+[0m[32m✓[0m [0mDerive Keys From Mnemonic[2m >[0m[1m should derive the same public key as starknet-js[0m [0m[2m[6.51ms[0m[2m][0m
 Signature (r): [0m[33m2293056574926193534147339414100803236524630247540773034106576611683570015138n[0m
 Signature (s): [0m[33m86560749331161305974411664092316663224160975925034754871592127750130540981n[0m
-[0m[32m✓[0m [0mDerive Keys From Mnemonic[2m >[0m[1m should sign a message and verify it[0m [0m[2m[[1m22.49ms[0m[2m][0m
+[0m[32m✓[0m [0mDerive Keys From Mnemonic[2m >[0m[1m should sign a message and verify it[0m [0m[2m[[1m22.31ms[0m[2m][0m
 
 [0m[2m2 tests skipped:[0m
 [0m[33m»[2m [0m[2mKeyAgentBase (Starknet Functionality)[2m > [0m[2mStarknet KeyAgent[2m >[0m[2m should export root key successfully[0m
@@ -77,5 +77,5 @@ Signature (s): [0m[33m86560749331161305974411664092316663224160975925034754871
 [0m[32m 23 pass[0m
  [0m[33m2 skip[0m
 [0m[2m 0 fail[0m
- 43 expect() calls
-Ran 25 tests across 4 files. [0m[2m[[1m26.40s[0m[2m][0m
+ 42 expect() calls
+Ran 25 tests across 4 files. [0m[2m[[1m27.87s[0m[2m][0m
