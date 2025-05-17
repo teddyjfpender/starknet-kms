@@ -97,7 +97,6 @@ export interface KeyAgent {
     payload: T,
     signable: ChainSignablePayload,
     args: ChainOperationArgs,
-    getPassphrase: GetPassphrase,
   ): Promise<ChainSignatureResult>
 
   deriveKeyPair(
@@ -119,9 +118,9 @@ export interface KeyAgent {
     groupedCredential: GroupedCredentials,
   ): Promise<boolean>
 
-  exportRootPrivateKey(getPassphrase: GetPassphrase): Promise<Uint8Array>
+  exportRootPrivateKey(): Promise<Uint8Array>
 
-  decryptSeed(getPassphrase: GetPassphrase): Promise<Uint8Array>
+  decryptSeed(): Promise<Uint8Array>
 }
 
 export type ChainDerivationArgs = StarknetDerivationArgs
