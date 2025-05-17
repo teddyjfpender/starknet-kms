@@ -1,7 +1,7 @@
 {
   "name": "starkms",
   "private": true,
-  "description": "An exploratory Starknet Key Management System.",
+  "description": "An exploratory Starknet key management system.",
   "homepage": "https://github.com/teddyjfpender/starkms",
   "license": "Apache-2.0",
   "scripts": {

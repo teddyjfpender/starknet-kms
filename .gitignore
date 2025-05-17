@@ -42,3 +42,8 @@ yarn-error.log*
 
 # Local Netlify folder
 .netlify
+
+# TypeScript build artifacts
+**/*.tsbuildinfo
+**/tsconfig.tsbuildinfo
+**/tsc-trace.log
