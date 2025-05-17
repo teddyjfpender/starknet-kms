@@ -22,6 +22,7 @@
     "@noble/ciphers": "0.5.3",
     "@noble/hashes": "1.4.0",
     "@noble/secp256k1": "2.1.0",
+    "@starkms/common": "workspace:*",
     "@starkms/crypto": "workspace:*",
     "@scure/base": "1.1.7",
     "@scure/bip32": "1.4.0",
@@ -34,7 +35,6 @@
     "ts-custom-error": "3.3.1"
   },
   "devDependencies": {
-    "@starkms/common": "workspace:*",
     "@starkms/crypto": "workspace:*",
     "@starkms/util": "workspace:*"
   }
