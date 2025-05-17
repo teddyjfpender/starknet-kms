@@ -46,20 +46,15 @@ export const randScalar   = (): Scalar => stark.utils.randomPrivateKey(); // 1 �
 
 ## 4 Secondary generator (generators.ts)
 ```ts
-import { sha256 } from '@noble/hashes/sha256';
-import { concatBytes, utf8ToBytes } from '@noble/hashes/utils';
-import { Fr, G, Point, CURVE } from './curve.js';
+import { utf8ToBytes } from '@noble/hashes/utils';
+import { starkCurve } from '@noble/curves/stark';
+import { G, Point } from './curve.js';
 
-/** Hashes an arbitrary string to a field element < n */
-export function hashToScalar(domain: string): bigint {
-  const digest = sha256(utf8ToBytes(domain));
-  return Fr.create(BigInt('0x' + Buffer.from(digest).toString('hex')));
-}
-
-/** H = h • G   (guaranteed non-zero, cofactor = 1 on Stark curve) */
-export const H: Point = G.multiply(hashToScalar('ChaumPedersen.H'));
+/** Derive secondary generator via hash-to-curve */
+export const H: Point =
+  starkCurve.ProjectivePoint.hashToCurve(utf8ToBytes('ChaumPedersen.H'));
 ```
->Rationale: scalar-multiple of G keeps arithmetic simple while still hiding log relationship (the hash is unknown to anyone).
+>Rationale: `hashToCurve` avoids exposing a discrete-log relation between `G` and `H`, which is critical for soundness.
 
 ## 5 Transcript helper (transcript.ts)
 ```ts
@@ -175,7 +170,7 @@ Issue	Mitigation
 Nonce reuse	randScalar() wraps noble-curves CSPRNG; always regenerate r.
 Timing leaks	Rely on constant-time ops in micro-starknet; never branch on secrets in TS.
 Small-order points	Stark curve cofactor = 1 ⇒ no subgroup checks needed, but still validate external inputs (Point.fromHex).
-Secondary generator	Derivation via hashToScalar('ChaumPedersen.H') ensures no known log relation to G under Random-Oracle assumption.
+Secondary generator	Derivation via hashToCurve('ChaumPedersen.H') ensures no known log relation to G under Random-Oracle assumption.
 Soundness	Order n ≈ 2²⁵¹ ⇒ 128-bit security margin; Poseidon FS-transform keeps tightness.
 
 ## 10 Next steps
