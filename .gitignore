@@ -3,7 +3,7 @@
 graph.pdf
 
 .idea
-dist
+# dist (Commented out to include build artifacts for offline development)
 
 # dependencies
 node_modules
@@ -16,7 +16,7 @@ coverage
 # next.js
 .next/
 out/
-build
+# build (Commented out to include build artifacts for offline development)
 
 # misc
 .DS_Store
@@ -35,7 +35,7 @@ yarn-error.log*
 .env.production.local
 
 # turbo
-.turbo
+# .turbo (Commented out to include turbo cache for offline development)
 
 # vercel
 .vercel
