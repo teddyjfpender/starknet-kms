@@ -141,6 +141,7 @@ common/ # shared types & errors
 | Task | Command (root) | CI-gated |
 |------|----------------|----------|
 | Lint & format | `bun run lint` (Biome) | ✅ |
+| Lint & fix | `bun run lint:fix` |  ✅ |
 | Type-check | `bun typecheck` | ✅ |
 | Build all | `bun run build` (Turborepo) | ✅ |
 | Full pipeline | `bun run ci` | ✅ |

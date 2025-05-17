@@ -2534,6 +2534,7 @@ export {
   POINT_AT_INFINITY,
   POINT_AT_INFINITY_HEX_UNCOMPRESSED,
   PRIME,
+  ProjectivePoint,
   addPoints,
   addPointsStarknet,
   arePointsEqual,

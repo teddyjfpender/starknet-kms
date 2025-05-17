@@ -1,4 +1,5 @@
 import { ProjectivePoint } from '@scure/starknet';
+export { ProjectivePoint } from '@scure/starknet';
 
 declare const POINT_AT_INFINITY_HEX_UNCOMPRESSED: string;
 /**
@@ -72,6 +73,7 @@ declare function deriveStealthPrivateKeyStarknet(recipientPrivateSpendKeyHex: st
 
 type Scalar = bigint;
 type Point = ProjectivePoint;
+
 declare const CURVE_ORDER: bigint;
 declare const PRIME: bigint;
 declare const G: Point;
@@ -90,16 +92,25 @@ declare function pointToHex(P: Point, compressed?: boolean): string;
 declare const hexToPoint: (h: string) => Point;
 declare const poseidonHashScalars: (xs: Scalar[]) => Scalar;
 
+/** Statement proved in the Chaum‑Pedersen protocol. */
 interface Statement {
+    /** U = x⋅G */
     U: Point;
+    /** V = x⋅H */
     V: Point;
 }
+/** Commitment values for the first round of the interactive protocol. */
 interface InteractiveCommit {
+    /** P = r⋅G */
     P: Point;
+    /** Q = r⋅H */
     Q: Point;
 }
+/** Non‑interactive Chaum‑Pedersen proof. */
 interface Proof extends InteractiveCommit {
+    /** Fiat‑Shamir challenge */
     c: Scalar;
+    /** Response: e = r + c⋅x mod n */
     e: Scalar;
 }
 /**
@@ -107,6 +118,11 @@ interface Proof extends InteractiveCommit {
  * Generates a commitment (P, Q) based on a random nonce r.
  * @param r Optional pre-generated random nonce scalar. If not provided, one will be generated.
  * @returns An object containing the commitment {P, Q} and the nonce r used.
+ */
+/**
+ * Generate an interactive commitment.
+ * @param r optional nonce; a random scalar will be generated if omitted
+ * @returns commitment points and the nonce used
  */
 declare function commit(r?: Scalar): {
     commit: InteractiveCommit;
@@ -120,11 +136,20 @@ declare function commit(r?: Scalar): {
  * @param c The challenge scalar provided by the verifier.
  * @returns The response scalar e.
  */
+/**
+ * Compute the prover response for a given challenge.
+ * @param x secret witness
+ * @param r nonce used during {@link commit}
+ * @param c verifier challenge
+ */
 declare function respond(x: Scalar, r: Scalar, c: Scalar): Scalar;
 /**
  * Full Fiat-Shamir proof generation.
  * @param x The secret scalar x.
  * @returns An object containing the statement {U, V} and the non-interactive proof {P, Q, c, e}.
+ */
+/**
+ * Create a non‑interactive (Fiat‑Shamir) proof for secret {@code x}.
  */
 declare function proveFS(x: Scalar): {
     stmt: Statement;
@@ -136,6 +161,9 @@ declare function proveFS(x: Scalar): {
  * @param stmt The statement {U, V}.
  * @param proof The proof {P, Q, c, e}.
  * @returns True if the proof is valid, false otherwise.
+ */
+/**
+ * Verify a Chaum‑Pedersen proof.
  */
 declare function verify(stmt: Statement, proof: Proof): boolean;
 
