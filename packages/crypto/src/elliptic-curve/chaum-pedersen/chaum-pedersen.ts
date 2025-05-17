@@ -1,6 +1,7 @@
 import {
   G,
   type Point,
+  ProjectivePoint,
   type Scalar,
   moduloOrder,
   randScalar,
@@ -10,19 +11,28 @@ import { generateChallenge } from "./transcript"
 
 /* ------------------------  Public types  ------------------------ */
 
+/** Statement proved in the Chaum‑Pedersen protocol. */
 export interface Statement {
-  U: Point // = x*G
-  V: Point // = x*H
+  /** U = x⋅G */
+  U: Point
+  /** V = x⋅H */
+  V: Point
 }
 
+/** Commitment values for the first round of the interactive protocol. */
 export interface InteractiveCommit {
-  P: Point // = r*G
-  Q: Point // = r*H
+  /** P = r⋅G */
+  P: Point
+  /** Q = r⋅H */
+  Q: Point
 }
 
+/** Non‑interactive Chaum‑Pedersen proof. */
 export interface Proof extends InteractiveCommit {
-  c: Scalar // challenge
-  e: Scalar // response = r + c*x mod n
+  /** Fiat‑Shamir challenge */
+  c: Scalar
+  /** Response: e = r + c⋅x mod n */
+  e: Scalar
 }
 
 /* ------------------------  Algorithms  -------------------------- */
@@ -32,6 +42,11 @@ export interface Proof extends InteractiveCommit {
  * Generates a commitment (P, Q) based on a random nonce r.
  * @param r Optional pre-generated random nonce scalar. If not provided, one will be generated.
  * @returns An object containing the commitment {P, Q} and the nonce r used.
+ */
+/**
+ * Generate an interactive commitment.
+ * @param r optional nonce; a random scalar will be generated if omitted
+ * @returns commitment points and the nonce used
  */
 export function commit(r: Scalar = randScalar()): {
   commit: InteractiveCommit
@@ -54,6 +69,12 @@ export function commit(r: Scalar = randScalar()): {
  * @param c The challenge scalar provided by the verifier.
  * @returns The response scalar e.
  */
+/**
+ * Compute the prover response for a given challenge.
+ * @param x secret witness
+ * @param r nonce used during {@link commit}
+ * @param c verifier challenge
+ */
 export function respond(x: Scalar, r: Scalar, c: Scalar): Scalar {
   const cx = c * x // c*x
   const r_plus_cx = r + cx // r + c*x
@@ -64,6 +85,9 @@ export function respond(x: Scalar, r: Scalar, c: Scalar): Scalar {
  * Full Fiat-Shamir proof generation.
  * @param x The secret scalar x.
  * @returns An object containing the statement {U, V} and the non-interactive proof {P, Q, c, e}.
+ */
+/**
+ * Create a non‑interactive (Fiat‑Shamir) proof for secret {@code x}.
  */
 export function proveFS(x: Scalar): { stmt: Statement; proof: Proof } {
   const U = G.multiply(x)
@@ -88,6 +112,9 @@ export function proveFS(x: Scalar): { stmt: Statement; proof: Proof } {
  * @param stmt The statement {U, V}.
  * @param proof The proof {P, Q, c, e}.
  * @returns True if the proof is valid, false otherwise.
+ */
+/**
+ * Verify a Chaum‑Pedersen proof.
  */
 export function verify(stmt: Statement, proof: Proof): boolean {
   const { U, V } = stmt
@@ -122,4 +149,42 @@ export function verify(stmt: Statement, proof: Proof): boolean {
   // Check equalities
   // Points are ProjectivePoints from starknet.js, they have an .equals() method.
   return eG.equals(P_plus_cU) && eH.equals(Q_plus_cV)
+}
+
+/**
+ * Serialise a proof to a fixed width byte representation (6×32 bytes).
+ */
+export function encodeProof({ P, Q, c, e }: Proof): Uint8Array {
+  const be = (n: bigint) =>
+    new Uint8Array(32)
+      .fill(0)
+      .map((_, i) => Number((n >> (8n * BigInt(31 - i))) & 0xffn))
+  return new Uint8Array([
+    ...be(P.x),
+    ...be(P.y),
+    ...be(Q.x),
+    ...be(Q.y),
+    ...be(c),
+    ...be(e),
+  ])
+}
+
+/**
+ * Parse a proof previously encoded with {@link encodeProof}.
+ */
+export function decodeProof(bytes: Uint8Array): Proof {
+  const read = (off: number) =>
+    bytes.slice(off, off + 32).reduce((acc, v) => (acc << 8n) | BigInt(v), 0n)
+
+  const P = ProjectivePoint.fromAffine({
+    x: read(0),
+    y: read(32),
+  }) as Point
+  const Q = ProjectivePoint.fromAffine({
+    x: read(64),
+    y: read(96),
+  }) as Point
+  const c = read(128)
+  const e = read(160)
+  return { P, Q, c, e }
 }

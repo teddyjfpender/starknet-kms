@@ -1,7 +1,7 @@
 import { bytesToHex } from "@noble/hashes/utils"
 import {
   CURVE,
-  ProjectivePoint, // <- real class name
+  ProjectivePoint, // underlying class
   poseidonHashMany,
   utils as starkUtils,
 } from "@scure/starknet"
@@ -14,7 +14,8 @@ const buf2hex = (b: Uint8Array) =>
 
 /* -------------------------- public re-exports ------------------------------ */
 export type Scalar = bigint
-export type Point = ProjectivePoint // keep old name available
+export type Point = ProjectivePoint
+export { ProjectivePoint }
 
 export const CURVE_ORDER = CURVE.n
 export const PRIME = CURVE.p

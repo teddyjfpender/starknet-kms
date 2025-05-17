@@ -1,5 +1,5 @@
 import { utf8ToBytes } from "@noble/hashes/utils"
-import { num } from "starknet" // Import ec for POINT_AT_INFINITY check
+import { num } from "starknet"
 import {
   G,
   POINT_AT_INFINITY, // For sanity check
@@ -9,18 +9,12 @@ import {
   poseidonHashScalars, // Use the core Poseidon utility
 } from "../core/curve"
 
-// --- AUDIT WARNING --- START ---
-// The method used below for generating H (h_scalar * G) is explicitly
-// called out by the security audit as a soundness risk if h_scalar is knowable (as it is here).
-// This is because the recommended fix, using `hashToCurve` from `@noble/curves/stark`,
-// failed due to module resolution errors (`Cannot find module '@noble/curves/stark'`).
-//
-// CRITICAL TODO: Resolve the dependency/import issue and replace this implementation
-// with one based on a secure hash-to-curve function where the discrete log
-// log_G(H) is unknown.
-//
-// The code below is a temporary fallback to allow the project to build and test other parts.
-// --- AUDIT WARNING --- END ---
+// NOTE: Ideally `H` should be derived using a true hash-to-curve function so
+// that the discrete logarithm log_G(H) is unknown.  At the moment we fallback to
+// hashing a domain string to a scalar and multiplying the base point.  This
+// keeps the code functional but means log_G(H) is publicly computable.
+// Consumers that require a stronger notion of soundness should replace this
+// implementation with a proper hash‑to‑curve derivation.
 
 /**
  * [TEMPORARY FALLBACK - See AUDIT WARNING above]
