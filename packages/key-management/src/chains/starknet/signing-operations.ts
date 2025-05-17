@@ -107,8 +107,9 @@ export async function SigningOperations<T extends SignablePayload>(
 
       /**
        * sign_raw => expects `payload` to be a string (the msgHash to sign)
+       * this is a protected method in starknet-js, so we need to use a different approach
        */
-      case "sign_raw": {
+      /*case "sign_raw": {
         if (typeof payload !== "string") {
           throw new Error("For 'sign_raw', payload must be a string msgHash.")
         }
@@ -117,7 +118,7 @@ export async function SigningOperations<T extends SignablePayload>(
         //  changed your local Signer to be public, you can call it.
         //  Otherwise you might replicate signRaw(...) logic manually.)
         break
-      }
+      }*/
 
       default: {
         throw new Error(`Unsupported private key operation: ${args.operation}`)

@@ -5,7 +5,7 @@ import { mnemonic } from "@starkms/common"
 import { KeyAgentBase } from "../src/KeyAgentBase"
 import * as bip39 from "../src/util/bip39"
 
-import { constants, Signature, TypedData, ec, hash } from "starknet"
+import { type BigNumberish, ec, hash } from "starknet"
 import type {
   SignablePayload,
   StarknetDerivationArgs,
@@ -26,7 +26,7 @@ const params = {
 }
 const getPassphrase = () => utf8ToBytes(params.passphrase)
 
-const getWrongPassphrase = () => utf8ToBytes(params.incorrectPassphrase)
+//const getWrongPassphrase = () => utf8ToBytes(params.incorrectPassphrase)
 
 describe("KeyAgentBase (Starknet Functionality)", () => {
   class KeyAgentBaseInstance extends KeyAgentBase {}
@@ -162,10 +162,10 @@ describe("KeyAgentBase (Starknet Functionality)", () => {
       // Check if the credentials were stored properly.
       expect(
         instance.knownCredentials[0]?.spendingKey.publicSpendingKey,
-      ).toStrictEqual(expectedPublicKeys[0])
+      ).toStrictEqual(expectedPublicKeys[0] as string)
       expect(
         instance.knownCredentials[1]?.spendingKey.publicSpendingKey,
-      ).toStrictEqual(expectedPublicKeys[1])
+      ).toStrictEqual(expectedPublicKeys[1] as string)
     })
 
     it.skip("should export root key successfully", async () => {
@@ -200,7 +200,9 @@ describe("KeyAgentBase (Starknet Functionality)", () => {
         signArgs,
       )
 
-      const msgHash1 = hash.computeHashOnElements(rawMessage)
+      const msgHash1 = hash.computeHashOnElements(
+        rawMessage as unknown as BigNumberish[],
+      )
       const result1 = ec.starkCurve.verify(
         signature.toString(),
         msgHash1,

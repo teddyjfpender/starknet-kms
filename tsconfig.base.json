@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@starkms/common": ["packages/common/src"],
+      "@starkms/common/*": ["packages/common/src/*"]
+    }
+  }
+}

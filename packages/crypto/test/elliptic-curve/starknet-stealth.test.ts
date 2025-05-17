@@ -21,7 +21,7 @@ describe("Starknet Stealth Address Primitives", () => {
   const evePrivateSpendKeyHex = generateRandomScalarStarknet()
   const evePublicSpendKeyHex = getPublicKeyStarknet(evePrivateSpendKeyHex)
   const evePrivateViewKeyHex = generateRandomScalarStarknet()
-  const evePublicViewKeyHex = getPublicKeyStarknet(evePrivateViewKeyHex)
+  // const evePublicViewKeyHex = getPublicKeyStarknet(evePrivateViewKeyHex)
 
   describe("createStealthAddressStarknet, checkStealthAddressOwnershipStarknet, and deriveStealthPrivateKeyStarknet", () => {
     it("should allow Alice to receive a stealth payment and derive its private key", () => {

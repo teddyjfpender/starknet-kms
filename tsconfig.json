@@ -1,0 +1,19 @@
+{
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@starkms/common": ["packages/common/src/index.ts"],
+      "@starkms/common/*": ["packages/common/src/*"]
+    },
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noPropertyAccessFromIndexSignature": false
+  },
+  "include": ["packages/**/*"],
+  "exclude": ["**/dist", "node_modules", ".turbo"]
+}

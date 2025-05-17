@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test"
-import { ec, encode, num, stark } from "starknet"
+import { ec, encode, num } from "starknet"
 import {
   addPointsStarknet,
   generateRandomScalarStarknet,
@@ -115,7 +115,6 @@ describe("Starknet Elliptic Curve Primitives", () => {
     const P_hex = getPublicKeyStarknet(generateRandomScalarStarknet()) // A random point P
     const G_hex = getBasePointStarknet()
     const scalar1 = "0x1"
-    const scalar2 = "0x2"
     const randomScalar = generateRandomScalarStarknet()
 
     it("1 * P should equal P", () => {

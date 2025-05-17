@@ -11,7 +11,6 @@ import {
   encode,
   hash,
   num,
-  stark,
 } from "starknet"
 import {
   type FromBip39MnemonicWordsProps,
@@ -22,7 +21,6 @@ import {
   StarknetKeyConst,
   deriveStarknetKeyPairs,
   deriveStarknetPrivateKey,
-  deriveStarknetSpendKeyPair,
   deriveStarknetViewKeyPair,
   grindKey,
 } from "../../src/chains/starknet"
@@ -66,7 +64,6 @@ describe("Starknet InMemoryKeyAgent", () => {
   let rootKeyBytes: Uint8Array
   let seed: Uint8Array
   let root: bip32.HDKey
-  let networkType: string
 
   beforeEach(async () => {
     // Create keys for testing purposes
@@ -85,7 +82,7 @@ describe("Starknet InMemoryKeyAgent", () => {
     }
     agent = await InMemoryKeyAgent.fromMnemonicWords(agentArgs)
     // network type
-    networkType = "testnet"
+    //networkType = "testnet"
   })
 
   it("should create an agent with given properties", () => {
@@ -193,7 +190,7 @@ describe("Starknet InMemoryKeyAgent", () => {
 
       // === 4) Negative test: does Bob's view key claim ownership? Should fail ===
       const bobViewKey = generateRandomStarknetPrivKey()
-      const bobViewPubKey = getFullUncompressedPubkey(bobViewKey)
+      //const bobViewPubKey = getFullUncompressedPubkey(bobViewKey)
 
       const isOwnedByBob = checkStealthOwnership(
         bobViewKey,
