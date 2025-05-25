@@ -9,49 +9,75 @@ import {
 const STARKNET_CURVE = ec.starkCurve
 const CURVE_ORDER = STARKNET_CURVE.CURVE.n
 
+// Domain separation tag for hashing the shared secret point to derive k or k'
+const DOMAIN_TAG_K_STRING = "starknet_stealth_k_v1"
+const DOMAIN_TAG_K_HEX = encode.buf2hex(
+  encode.utf8ToArray(DOMAIN_TAG_K_STRING),
+) // Pre-calculated hex of domain tag
+
 /**
- * Creates a stealth address for a recipient.
+ * Creates a StarkNet stealth address for a recipient.
  *
- * @param recipientPubSpendKeyHex The recipient's public spend key (X) as a 0x-prefixed hex string.
- * @param recipientPubViewKeyHex The recipient's public view key (Y) as a 0x-prefixed hex string.
+ * This process involves the sender generating an ephemeral key pair (`r`, `R`)
+ * and using the recipient's public view key (`Y`) and public spend key (`X`)
+ * to compute the stealth address `P = X + H_s(rY)G`.
+ * `H_s` is a hash function (starknetKeccak with domain separation).
+ * `G` is the STARK curve generator point.
+ *
+ * @param recipientPubSpendKeyHex The recipient's public spend key (`X`) as a 0x-prefixed hex string.
+ *                                This key is part of the final stealth address.
+ * @param recipientPubViewKeyHex The recipient's public view key (`Y`) as a 0x-prefixed hex string.
+ *                               This key is used by the sender to generate the shared secret.
  * @returns An object containing:
- *   - ephemeralScalarHex: The sender's ephemeral private scalar (r) as a 0x-prefixed hex string.
- *   - ephemeralPublicKeyHex: The sender's ephemeral public key (R = r*G) as a 0x-prefixed hex string.
- *   - stealthAddressHex: The generated stealth address (P = X + H(r*Y)*G) as a 0x-prefixed hex string.
+ *   - `ephemeralScalarHex`: The sender's ephemeral private scalar (`r`) as a 0x-prefixed hex string.
+ *                           This MUST be kept secret by the sender if they need to reconstruct `k` later,
+ *                           but is typically discarded after `R` is computed.
+ *   - `ephemeralPublicKeyHex`: The sender's ephemeral public key (`R = rG`) as a 0x-prefixed hex string.
+ *                              This is transmitted publicly (e.g., on-chain) alongside the stealth address.
+ *   - `stealthAddressHex`: The generated stealth address (`P = X + kG`) as a 0x-prefixed hex string.
+ *                          `k = H_s("starknet_stealth_k_v1" || rY_compressed)`.
+ * @throws Error if any underlying cryptographic operation fails.
  */
 export function createStealthAddressStarknet(
   recipientPubSpendKeyHex: string,
   recipientPubViewKeyHex: string,
-) {
-  // 1. Sender picks ephemeral scalar r
+): {
+  ephemeralScalarHex: string
+  ephemeralPublicKeyHex: string
+  stealthAddressHex: string
+} {
+  // 1. Sender picks an ephemeral scalar r.
   const r_scalarHex = generateRandomScalarStarknet()
 
-  // 2. Compute ephemeral public key R = r*G
+  // 2. Compute ephemeral public key R = r*G.
   const R_publicKeyHex = getPublicKeyStarknet(r_scalarHex)
 
-  // 3. Compute shared secret point S = r*Y
-  //    (Y is recipientPubViewKeyHex)
+  // 3. Compute shared secret point S = r*Y (where Y is recipient's public view key).
   const S_sharedSecretPointHex = scalarMultiplyStarknet(
     r_scalarHex,
     recipientPubViewKeyHex,
   )
 
-  // 4. Compute k = Hash(S_compressed)
-  //    S_compressed is the compressed form of the shared secret point S
+  // 4. Compute scalar k = H_s("starknet_stealth_k_v1" || S_compressed).
+  //    S_compressed is the compressed form of the shared secret point S.
   const S_point = STARKNET_CURVE.ProjectivePoint.fromHex(
     encode.removeHexPrefix(S_sharedSecretPointHex),
   )
   const S_compressedBytes = S_point.toRawBytes(true) // true for compressed
-  const k_hashInputHex = encode.buf2hex(S_compressedBytes)
-  const k_hashedBigInt = num.toBigInt(hash.starknetKeccak(k_hashInputHex))
+  const pointHex = encode.buf2hex(S_compressedBytes) // Hex of compressed point, no "0x"
+
+  // Concatenate domain tag hex with point hex, then add "0x" for Keccak input.
+  const k_hashInputConcatenatedHex = DOMAIN_TAG_K_HEX + pointHex
+  const k_hashedBigInt = num.toBigInt(
+    hash.starknetKeccak(encode.addHexPrefix(k_hashInputConcatenatedHex)),
+  )
   const k_scalar = k_hashedBigInt % CURVE_ORDER
   const k_scalarHex = num.toHex(k_scalar)
 
-  // 5. Compute P_stealth_intermediate = k*G
+  // 5. Compute P_stealth_intermediate = k*G.
   const P_stealth_intermediateHex = getPublicKeyStarknet(k_scalarHex)
 
-  // 6. Compute stealth address P = X + k*G
-  //    (X is recipientPubSpendKeyHex)
+  // 6. Compute final stealth address P = X + k*G (where X is recipient's public spend key).
   const P_stealthAddressHex = addPointsStarknet(
     recipientPubSpendKeyHex,
     P_stealth_intermediateHex,
@@ -65,13 +91,20 @@ export function createStealthAddressStarknet(
 }
 
 /**
- * Checks if a stealth address belongs to the recipient.
+ * Checks if a given StarkNet stealth address belongs to the recipient.
  *
- * @param recipientPrivateViewKeyHex The recipient's private view key (y) as a 0x-prefixed hex string.
- * @param recipientPubSpendKeyHex The recipient's public spend key (X) as a 0x-prefixed hex string.
- * @param ephemeralPublicKeyHex The sender's ephemeral public key (R) as a 0x-prefixed hex string.
- * @param stealthAddressHex The stealth address (P) to check, as a 0x-prefixed hex string.
- * @returns True if the recipient owns the stealth address, false otherwise.
+ * The recipient uses their private view key (`y`) and public spend key (`X`),
+ * along with the sender's ephemeral public key (`R`), to reconstruct the
+ * candidate stealth address `P' = X + H_s(yR)G`.
+ * If `P'` matches the provided `stealthAddressHex`, the recipient owns it.
+ *
+ * @param recipientPrivateViewKeyHex The recipient's private view key (`y`) as a 0x-prefixed hex string.
+ * @param recipientPubSpendKeyHex The recipient's public spend key (`X`) as a 0x-prefixed hex string.
+ * @param ephemeralPublicKeyHex The sender's ephemeral public key (`R`) as a 0x-prefixed hex string,
+ *                              retrieved publicly (e.g., from the transaction).
+ * @param stealthAddressHex The stealth address (`P`) to check, as a 0x-prefixed hex string.
+ * @returns `true` if the recipient owns the stealth address, `false` otherwise.
+ * @throws Error if any underlying cryptographic operation fails.
  */
 export function checkStealthAddressOwnershipStarknet(
   recipientPrivateViewKeyHex: string,
@@ -79,90 +112,96 @@ export function checkStealthAddressOwnershipStarknet(
   ephemeralPublicKeyHex: string,
   stealthAddressHex: string,
 ): boolean {
-  // 1. Compute shared secret S' = y*R
-  //    (y is recipientPrivateViewKeyHex, R is ephemeralPublicKeyHex)
+  // 1. Compute shared secret S' = y*R (where y is recipient's private view key, R is sender's ephemeral public key).
   const S_prime_sharedSecretPointHex = scalarMultiplyStarknet(
     recipientPrivateViewKeyHex,
     ephemeralPublicKeyHex,
   )
 
-  // 2. Compute k' = Hash(S'_compressed)
+  // 2. Compute scalar k' = H_s("starknet_stealth_k_v1" || S'_compressed).
   const S_prime_point = STARKNET_CURVE.ProjectivePoint.fromHex(
     encode.removeHexPrefix(S_prime_sharedSecretPointHex),
   )
   const S_prime_compressedBytes = S_prime_point.toRawBytes(true)
-  const k_prime_hashInputHex = encode.buf2hex(S_prime_compressedBytes)
+  const pointPrimeHex = encode.buf2hex(S_prime_compressedBytes) // Hex of compressed point, no "0x"
+
+  // Concatenate domain tag hex with point hex, then add "0x" for Keccak input.
+  const k_prime_hashInputConcatenatedHex = DOMAIN_TAG_K_HEX + pointPrimeHex
   const k_prime_hashedBigInt = num.toBigInt(
-    hash.starknetKeccak(k_prime_hashInputHex),
+    hash.starknetKeccak(encode.addHexPrefix(k_prime_hashInputConcatenatedHex)),
   )
   const k_prime_scalar = k_prime_hashedBigInt % CURVE_ORDER
   const k_prime_scalarHex = num.toHex(k_prime_scalar)
 
-  // 3. Compute P'_candidate_intermediate = k'*G
+  // 3. Compute P'_candidate_intermediate = k'*G.
   const P_prime_candidate_intermediateHex =
     getPublicKeyStarknet(k_prime_scalarHex)
 
-  // 4. Compute candidate P' = X + k'*G
-  //    (X is recipientPubSpendKeyHex)
+  // 4. Compute candidate stealth address P' = X + k'*G (where X is recipient's public spend key).
   const P_prime_candidateHex = addPointsStarknet(
     recipientPubSpendKeyHex,
     P_prime_candidate_intermediateHex,
   )
 
-  // 5. Compare P' with the provided stealthAddressHex
+  // 5. Compare candidate P' (hex) with the provided stealthAddressHex (hex), case-insensitively.
   return P_prime_candidateHex.toLowerCase() === stealthAddressHex.toLowerCase()
 }
 
 /**
- * Derives the private key for a given stealth address.
+ * Derives the private key corresponding to a StarkNet stealth address.
  *
- * @param recipientPrivateSpendKeyHex The recipient's private spend key (x) as a 0x-prefixed hex string.
- * @param recipientPrivateViewKeyHex The recipient's private view key (y) as a 0x-prefixed hex string.
- * @param ephemeralPublicKeyHex The sender's ephemeral public key (R) as a 0x-prefixed hex string.
- * @returns The derived stealth private key (p_stealth = x + H(y*R)) as a 0x-prefixed hex string.
+ * The recipient uses their private spend key (`x`) and the scalar `k'`
+ * (derived from their private view key `y` and the sender's ephemeral public key `R`
+ * as `k' = H_s(yR_compressed)`) to compute the stealth private key:
+ * `p_stealth = (x + k') mod n`, where `n` is the curve order.
+ *
+ * @param recipientPrivateSpendKeyHex The recipient's private spend key (`x`) as a 0x-prefixed hex string.
+ * @param recipientPrivateViewKeyHex The recipient's private view key (`y`) as a 0x-prefixed hex string.
+ * @param ephemeralPublicKeyHex The sender's ephemeral public key (`R`) as a 0x-prefixed hex string.
+ * @returns The derived stealth private key (`p_stealth`) as a 0x-prefixed hex string.
+ * @throws Error if the derived stealth private key is zero, which is an invalid private key.
+ * @throws Error if any underlying cryptographic operation fails.
  */
 export function deriveStealthPrivateKeyStarknet(
   recipientPrivateSpendKeyHex: string,
   recipientPrivateViewKeyHex: string,
   ephemeralPublicKeyHex: string,
 ): string {
-  // 1. Compute shared secret S' = y*R (same as in ownership check)
+  // 1. Compute shared secret S' = y*R (same as in ownership check).
   const S_prime_sharedSecretPointHex = scalarMultiplyStarknet(
     recipientPrivateViewKeyHex,
     ephemeralPublicKeyHex,
   )
 
-  // 2. Compute k' = Hash(S'_compressed) (same as in ownership check)
+  // 2. Compute scalar k' = H_s("starknet_stealth_k_v1" || S'_compressed) (same as in ownership check).
   const S_prime_point = STARKNET_CURVE.ProjectivePoint.fromHex(
     encode.removeHexPrefix(S_prime_sharedSecretPointHex),
   )
   const S_prime_compressedBytes = S_prime_point.toRawBytes(true)
-  const k_prime_hashInputHex = encode.buf2hex(S_prime_compressedBytes)
+  const pointPrimeHex = encode.buf2hex(S_prime_compressedBytes) // Hex of compressed point, no "0x"
+
+  // Concatenate domain tag hex with point hex, then add "0x" for Keccak input.
+  const k_prime_hashInputConcatenatedHex = DOMAIN_TAG_K_HEX + pointPrimeHex
   const k_prime_hashedBigInt = num.toBigInt(
-    hash.starknetKeccak(k_prime_hashInputHex),
+    hash.starknetKeccak(encode.addHexPrefix(k_prime_hashInputConcatenatedHex)),
   )
   const k_prime_scalar = k_prime_hashedBigInt % CURVE_ORDER
 
-  // 3. Retrieve recipient's private spend key x
+  // 3. Retrieve recipient's private spend key x as a scalar.
   const x_recipientPrivateSpendScalar = num.toBigInt(
-    recipientPrivateSpendKeyHex,
+    recipientPrivateSpendKeyHex, // Assumes 0x-prefixed hex
   )
 
-  // 4. Compute stealth private key p_stealth = (x + k') mod n
+  // 4. Compute stealth private key p_stealth = (x + k') mod n.
   const p_stealth_scalar =
     (x_recipientPrivateSpendScalar + k_prime_scalar) % CURVE_ORDER
 
-  // Ensure the result is not 0, which is not a valid private key.
-  // If (x + k') is a multiple of CURVE_ORDER, it effectively becomes 0.
-  // While extremely rare for distinct x and k', it's a theoretical possibility.
-  // A private key of 0 would lead to a public key of point at infinity.
+  // 5. Validate that the derived private key is not zero.
+  // A private key of 0 is invalid as it leads to a known public key (point at infinity).
   if (p_stealth_scalar === 0n) {
-    // This case is highly unlikely but indicates an issue if it occurs.
-    // Depending on context, could throw or return a specific value indicating an invalid derived key.
-    // For now, we let it be, as getPublicKeyStarknet(0x0) would yield point at infinity.
-    // Standard practice is that private keys should not be 0.
-    // However, the math x+k could yield 0 mod n.
-    // Let's assume the consumer of this private key handles 0 if it's an issue for them.
+    throw new Error(
+      "Derived stealth private key is zero, which is invalid. This would lead to a known public key (point at infinity).",
+    )
   }
 
   return num.toHex(p_stealth_scalar)
