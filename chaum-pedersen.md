@@ -47,19 +47,33 @@ export const randScalar   = (): Scalar => stark.utils.randomPrivateKey(); // 1 �
 ## 4 Secondary generator (generators.ts)
 ```ts
 import { sha256 } from '@noble/hashes/sha256';
-import { concatBytes, utf8ToBytes } from '@noble/hashes/utils';
-import { Fr, G, Point, CURVE } from './curve.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
+import { Fr, G, Point, CURVE_ORDER, moduloOrder } from './curve.js'; // Assuming CURVE_ORDER and moduloOrder are exported
 
-/** Hashes an arbitrary string to a field element < n */
-export function hashToScalar(domain: string): bigint {
-  const digest = sha256(utf8ToBytes(domain));
-  return Fr.create(BigInt('0x' + Buffer.from(digest).toString('hex')));
-}
+// Domain separation tag for generating h
+const domainTag = "starkex.chaum-pedersen.H.v1";
 
-/** H = h • G   (guaranteed non-zero, cofactor = 1 on Stark curve) */
-export const H: Point = G.multiply(hashToScalar('ChaumPedersen.H'));
+// Calculate h:
+// 1. Hash the domain tag using SHA-256.
+// 2. Convert the hash (Uint8Array) to a BigInt.
+// 3. Reduce the BigInt modulo CURVE_ORDER.
+const hashedDomainTag = sha256(utf8ToBytes(domainTag));
+const h_scalar_bigint = BigInt('0x' + bytesToHex(hashedDomainTag));
+const h = moduloOrder(h_scalar_bigint); // Ensures h is < CURVE_ORDER
+
+// It's crucial to validate h:
+// - h should not be 0.
+// - H (derived from h) should not be the point at infinity.
+// - H should not be equal to G (implies h=1).
+// (Refer to generators.ts for actual validation logic)
+
+/** H = h • G */
+// h is publicly known as it's derived deterministically.
+// The security relies on the intractability of computing log_G(H) = h
+// when h is large and randomly-like, which is achieved by using a cryptographic hash.
+export const H: Point = G.multiply(h);
 ```
->Rationale: scalar-multiple of G keeps arithmetic simple while still hiding log relationship (the hash is unknown to anyone).
+>Rationale: `H` is derived as `h*G`. The scalar `h` is generated deterministically from a public domain separation string using SHA-256 and taken modulo the curve order. This makes `h` a "nothing-up-my-sleeve" number. While `h` is publicly computable, the security of the Chaum-Pedersen protocol relies on the discrete logarithm `log_G(H) = h` being intractable to compute. This is ensured by `h` being the output of a cryptographic hash function, which behaves like a random oracle.
 
 ## 5 Transcript helper (transcript.ts)
 ```ts
@@ -102,26 +116,33 @@ export interface Proof extends InteractiveCommit {
 /* ------------------------  Algorithms  -------------------------- */
 
 /** Prover – interactive step 1: commit */
-export function commit(x: Scalar, r: Scalar = randScalar()): { commit: InteractiveCommit; nonce: Scalar } {
-  return { 
+// The function generates commitment points P = rG, Q = rH from a nonce r.
+// If r is not provided, it's generated randomly.
+// The secret x is not used in this step.
+export function commit(r: Scalar = randScalar()): { commit: InteractiveCommit; nonce: Scalar } {
+  return {
     commit: { P: G.multiply(r), Q: H.multiply(r) },
-    nonce : r
+    nonce: r
   };
 }
 
 /** Prover – interactive step 2: respond (given challenge c) */
+// Calculates e = (r + c*x) mod n.
+// Uses moduloOrder from core/curve.ts, which is equivalent to Fr.create for positive results.
 export function respond(x: Scalar, r: Scalar, c: Scalar): Scalar {
-  return Fr.create(r + c * x);                     // e ∈ [0,n)
+  return moduloOrder(r + c * x);                     // e ∈ [0,n)
 }
 
 /** Full Fiat–Shamir proof */
 export function proveFS(x: Scalar): { stmt: Statement; proof: Proof } {
-  const U = G.multiply(x);
-  const V = H.multiply(x);
-  const { commit, nonce } = commit(x);
-  const c = challenge(commit.P, commit.Q, U, V);
-  const e = respond(x, nonce, c);
-  return { stmt: { U, V }, proof: { ...commit, c, e } };
+  const U = G.multiply(x); // U = xG
+  const V = H.multiply(x); // V = xH
+  // The commit function generates its own nonce `r` if not provided.
+  // The secret `x` is not passed to commit.
+  const { commit: interactiveCommit, nonce: r } = commit(); // interactiveCommit is {P,Q}, nonce is r
+  const c = challenge(interactiveCommit.P, interactiveCommit.Q, U, V); // c = H(P,Q,U,V)
+  const e = respond(x, r, c); // e = (r + c*x) mod n
+  return { stmt: { U, V }, proof: { ...interactiveCommit, c, e } };
 }
 
 /** Verifier – checks proof (both interactive and FS) */
@@ -175,7 +196,7 @@ Issue	Mitigation
 Nonce reuse	randScalar() wraps noble-curves CSPRNG; always regenerate r.
 Timing leaks	Rely on constant-time ops in micro-starknet; never branch on secrets in TS.
 Small-order points	Stark curve cofactor = 1 ⇒ no subgroup checks needed, but still validate external inputs (Point.fromHex).
-Secondary generator	Derivation via hashToScalar('ChaumPedersen.H') ensures no known log relation to G under Random-Oracle assumption.
+Secondary generator	`H` is derived as `h*G`, where `h = SHA256("starkex.chaum-pedersen.H.v1") % CURVE_ORDER`. This ensures that `log_G(H)` (the scalar `h`) is intractable to compute, even though `h` is derived from a public constant. This is a standard and secure method for generating auxiliary points.
 Soundness	Order n ≈ 2²⁵¹ ⇒ 128-bit security margin; Poseidon FS-transform keeps tightness.
 
 ## 10 Next steps

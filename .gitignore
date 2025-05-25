@@ -34,8 +34,11 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-turbo
+#turbo
 .turbo #(Commented out to include turbo cache for offline development)
+.turbo/
+.turbo/cache/
+.turbo/cookies/
 
 # vercel
 .vercel

@@ -35,8 +35,10 @@ export function randScalar(): Scalar {
 }
 
 /* --------------------------- point helpers --------------------------------- */
-export const getPublicKey = (priv: Scalar): Point =>
-  priv === 0n ? POINT_AT_INFINITY : G.multiply(moduloOrder(priv))
+export const getPublicKey = (priv: Scalar): Point => {
+  const privMod = moduloOrder(priv)
+  return privMod === 0n ? POINT_AT_INFINITY : G.multiply(privMod)
+}
 
 export const scalarMultiply = (k: Scalar, P: Point): Point => {
   const kMod = moduloOrder(k) // 0 ≤ kMod < n
@@ -52,22 +54,93 @@ export const negatePoint = (P: Point): Point =>
 
 export const arePointsEqual = (P: Point, Q: Point) => P.equals(Q)
 
-export const assertPointValidity = (P: Point) => P.assertValidity?.()
+export const assertPointValidity = (P: Point) => {
+  // POINT_AT_INFINITY is mathematically valid but the underlying library may consider it invalid
+  if (P.equals(POINT_AT_INFINITY)) return
+  P.assertValidity?.()
+}
 
 /* --------------------------- conversions ----------------------------------- */
 export const bigIntToHex = (x: Scalar) => addHexPrefix(x.toString(16))
-export const hexToBigInt = (h: string): Scalar =>
-  BigInt(addHexPrefix(removeHexPrefix(h)))
+
+export const hexToBigInt = (h: string): Scalar => {
+  // Input validation
+  if (h == null || h === undefined) {
+    throw new Error("Input cannot be null or undefined")
+  }
+  if (typeof h !== "string") {
+    throw new Error("Input must be a string")
+  }
+  if (h === "") {
+    throw new Error("Input cannot be an empty string")
+  }
+
+  // Normalize the hex string - add 0x prefix if missing
+  const normalizedHex = h.startsWith("0x") ? h : `0x${h}`
+
+  const hexPart = normalizedHex.slice(2)
+  if (hexPart === "") {
+    throw new Error("Hex string cannot be just '0x'")
+  }
+
+  // Check for valid hex characters
+  if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
+    throw new Error("Invalid hex characters")
+  }
+
+  // Check for reasonable length - scalars should be at most 64 hex chars (256 bits)
+  // The test uses 100 chars which should fail
+  if (hexPart.length > 64) {
+    throw new Error("Hex string too long")
+  }
+
+  return BigInt(normalizedHex)
+}
+
 export function pointToHex(P: Point, compressed = false): string {
   if (P.equals(POINT_AT_INFINITY))
     return compressed ? "0x00" : `0x04${"00".repeat(64)}`
   return addHexPrefix(buf2hex(P.toRawBytes(compressed)))
 }
 
-export const hexToPoint = (h: string): Point =>
-  h === "0x00" || h === `0x04${"00".repeat(64)}`
-    ? POINT_AT_INFINITY
-    : ProjectivePoint.fromHex(removeHexPrefix(h))
+export const hexToPoint = (h: string): Point => {
+  // Input validation - reuse the same validation logic as hexToBigInt but with different length limit
+  if (h == null || h === undefined) {
+    throw new Error("Input cannot be null or undefined")
+  }
+  if (typeof h !== "string") {
+    throw new Error("Input must be a string")
+  }
+  if (h === "") {
+    throw new Error("Input cannot be an empty string")
+  }
+
+  // Normalize the hex string - add 0x prefix if missing
+  const normalizedHex = h.startsWith("0x") ? h : `0x${h}`
+
+  const hexPart = normalizedHex.slice(2)
+  if (hexPart === "") {
+    throw new Error("Hex string cannot be just '0x'")
+  }
+
+  // Check for valid hex characters
+  if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
+    throw new Error("Invalid hex characters")
+  }
+
+  // Check for reasonable length - uncompressed points are 130 hex chars, compressed are 66
+  // The test uses 100 chars which should fail for this context
+  if (hexPart.length > 130) {
+    throw new Error("Hex string too long")
+  }
+
+  // Handle special cases for point at infinity
+  if (normalizedHex === "0x00" || normalizedHex === `0x04${"00".repeat(64)}`) {
+    return POINT_AT_INFINITY
+  }
+
+  return ProjectivePoint.fromHex(removeHexPrefix(normalizedHex))
+}
 
 /* --------------------------- Poseidon wrapper ------------------------------ */
 export const poseidonHashScalars = (xs: Scalar[]): Scalar =>

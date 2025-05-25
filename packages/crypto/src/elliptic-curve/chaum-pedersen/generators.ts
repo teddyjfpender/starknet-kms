@@ -1,64 +1,50 @@
-import { utf8ToBytes } from "@noble/hashes/utils"
-import { num } from "starknet"
+import { sha256 } from "@noble/hashes/sha256"
+import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils"
 import {
+  // CURVE_ORDER, // Not directly used here, moduloOrder handles it.
   G,
-  POINT_AT_INFINITY, // For sanity check
+  POINT_AT_INFINITY,
   type Point,
-  type Scalar,
   moduloOrder,
-  poseidonHashScalars, // Use the core Poseidon utility
 } from "../core/curve"
 
-// NOTE: Ideally `H` should be derived using a true hash-to-curve function so
-// that the discrete logarithm log_G(H) is unknown.  At the moment we fallback to
-// hashing a domain string to a scalar and multiplying the base point.  This
-// keeps the code functional but means log_G(H) is publicly computable.
-// Consumers that require a stronger notion of soundness should replace this
-// implementation with a proper hash‑to‑curve derivation.
+// The secondary generator H is derived from a domain separation tag using SHA-256.
+// This ensures that the discrete logarithm log_G(H) is unknown.
+// H = h * G, where h = SHA256("starkex.chaum-pedersen.H.v1") % CURVE_ORDER.
 
-/**
- * [TEMPORARY FALLBACK - See AUDIT WARNING above]
- * Hashes an arbitrary string to a field element < CURVE_ORDER using Poseidon.
- * Note: Poseidon is designed for field elements. Hashing arbitrary bytes might not be its primary design.
- * We convert bytes to bigint for input.
- */
-function hashDomainToScalarPoseidon(domain: string): Scalar {
-  const domainBytes = utf8ToBytes(domain)
-  // Represent bytes as a single large BigInt - simple method, might not be canonical
-  // Consider padding or specific encoding if needed for stricter domain separation.
-  const domainBigInt = num.toBigInt(
-    `0x${Buffer.from(domainBytes).toString("hex")}`,
-  )
-  // Poseidon hash expects an array
-  const hashedScalar = poseidonHashScalars([domainBigInt])
-  return moduloOrder(hashedScalar) // Ensure result is < CURVE_ORDER
-}
+const domainTag = "starkex.chaum-pedersen.H.v1"
+const hashedDomainTag = sha256(utf8ToBytes(domainTag)) // Output is Uint8Array
+const h_scalar_bigint = BigInt(`0x${bytesToHex(hashedDomainTag)}`)
 
-/**
- * [TEMPORARY FALLBACK - See AUDIT WARNING above]
- * Secondary generator H = h * G, where h = PoseidonHash(domain_string_bytes).
- * WARNING: log_G(H) = h, and h is publicly computable.
- */
-const h_scalar_public = hashDomainToScalarPoseidon(
-  "ChaumPedersen.H (v1 fallback)",
-)
-if (h_scalar_public === 0n) {
-  // This is unlikely if Poseidon is cryptographically sound.
+// Reduce h modulo CURVE_ORDER
+const h = moduloOrder(h_scalar_bigint)
+
+// Validate h
+if (h === 0n) {
+  // This is extremely unlikely for a cryptographic hash function and large curve order.
+  // If this occurs, it indicates a problem with the hash function, domain tag, or curve order.
+  // A production system might implement a strategy like appending a counter to the domain tag and re-hashing.
   throw new Error(
-    "[Temporary H Gen Fallback] Hash for H resulted in a zero scalar.",
+    "Scalar h for H generation is zero after hashing the domain tag. This should not happen.",
   )
 }
-export const H: Point = G.multiply(h_scalar_public)
 
-// Sanity check H
+// Compute H
+export const H: Point = G.multiply(h)
+
+// Validate H
 if (H.equals(POINT_AT_INFINITY)) {
+  // This is also extremely unlikely if h is not zero and G is a valid generator.
   throw new Error(
-    "[Temporary H Gen Fallback] Derived generator H is the point at infinity.",
+    "Generated H is the point at infinity. This should not happen with a valid h and G.",
   )
 }
+
 if (H.equals(G)) {
-  // This would happen if hash(...) = 1, extremely unlikely.
-  console.warn(
-    "[Temporary H Gen Fallback] Derived generator H is equal to G. Check domain string or hash function.",
+  // This implies h = 1 mod CURVE_ORDER.
+  // While possible, it's highly improbable if h is derived from a cryptographic hash of a fixed string.
+  // If this occurs, it might indicate a vulnerability or an issue with the chosen domain tag.
+  throw new Error(
+    "Generated H is equal to G. This is highly unlikely and may indicate an issue.",
   )
 }

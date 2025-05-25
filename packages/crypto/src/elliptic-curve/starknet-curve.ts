@@ -13,6 +13,47 @@ import {
   scalarMultiply as coreScalarMultiply,
 } from "./core/curve"
 
+// Strict validation functions for the API layer
+function validateStrictHex(h: string, context: string): void {
+  if (h == null || h === undefined) {
+    throw new Error("Input cannot be null or undefined")
+  }
+  if (typeof h !== "string") {
+    throw new Error("Input must be a string")
+  }
+  if (h === "") {
+    throw new Error("Input cannot be an empty string")
+  }
+  if (!h.startsWith("0x")) {
+    throw new Error("Hex string must start with '0x' prefix")
+  }
+  const hexPart = h.slice(2)
+  if (hexPart === "") {
+    throw new Error("Hex string cannot be just '0x'")
+  }
+  if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
+    throw new Error("Invalid hex characters")
+  }
+
+  // Context-specific length validation
+  if (context === "scalar" && hexPart.length > 64) {
+    throw new Error("Hex string too long")
+  }
+  if (context === "point" && hexPart.length > 130) {
+    throw new Error("Hex string too long")
+  }
+}
+
+function strictHexToBigInt(h: string) {
+  validateStrictHex(h, "scalar")
+  return coreHexToBigInt(h)
+}
+
+function strictHexToPoint(h: string) {
+  validateStrictHex(h, "point")
+  return coreHexToPoint(h)
+}
+
 // This constant was defined in the original starknet-curve.ts
 // It can now be derived from the core POINT_AT_INFINITY and pointToHex utility
 export const POINT_AT_INFINITY_HEX_UNCOMPRESSED = corePointToHex(
@@ -39,7 +80,7 @@ export function getPublicKeyStarknet(
   privateKeyHex: string,
   compressed = false,
 ): string {
-  const privateKeyScalar = coreHexToBigInt(privateKeyHex)
+  const privateKeyScalar = strictHexToBigInt(privateKeyHex)
   const publicKeyPoint = coreGetPublicKey(privateKeyScalar)
   return corePointToHex(publicKeyPoint, compressed)
 }
@@ -54,8 +95,8 @@ export function scalarMultiplyStarknet(
   scalarHex: string,
   pointHex: string,
 ): string {
-  const scalar = coreHexToBigInt(scalarHex)
-  const point = coreHexToPoint(pointHex)
+  const scalar = strictHexToBigInt(scalarHex)
+  const point = strictHexToPoint(pointHex)
   const resultPoint = coreScalarMultiply(scalar, point)
   return corePointToHex(resultPoint, false) // Default to uncompressed output as per original function
 }
@@ -70,8 +111,8 @@ export function addPointsStarknet(
   point1Hex: string,
   point2Hex: string,
 ): string {
-  const point1 = coreHexToPoint(point1Hex)
-  const point2 = coreHexToPoint(point2Hex)
+  const point1 = strictHexToPoint(point1Hex)
+  const point2 = strictHexToPoint(point2Hex)
   const resultPoint = coreAddPoints(point1, point2)
   return corePointToHex(resultPoint, false) // Default to uncompressed output
 }

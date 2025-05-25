@@ -8,6 +8,8 @@ export {
   respond,
   proveFS,
   verify,
+  encodeProof,
+  decodeProof,
 } from "./chaum-pedersen"
 
 // Re-exporting from the new core path
