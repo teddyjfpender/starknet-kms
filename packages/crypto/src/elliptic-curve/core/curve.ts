@@ -74,26 +74,26 @@ export const hexToBigInt = (h: string): Scalar => {
   if (h === "") {
     throw new Error("Input cannot be an empty string")
   }
-  
+
   // Normalize the hex string - add 0x prefix if missing
   const normalizedHex = h.startsWith("0x") ? h : `0x${h}`
-  
+
   const hexPart = normalizedHex.slice(2)
   if (hexPart === "") {
     throw new Error("Hex string cannot be just '0x'")
   }
-  
+
   // Check for valid hex characters
   if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
     throw new Error("Invalid hex characters")
   }
-  
+
   // Check for reasonable length - scalars should be at most 64 hex chars (256 bits)
   // The test uses 100 chars which should fail
   if (hexPart.length > 64) {
     throw new Error("Hex string too long")
   }
-  
+
   return BigInt(normalizedHex)
 }
 
@@ -114,31 +114,31 @@ export const hexToPoint = (h: string): Point => {
   if (h === "") {
     throw new Error("Input cannot be an empty string")
   }
-  
+
   // Normalize the hex string - add 0x prefix if missing
   const normalizedHex = h.startsWith("0x") ? h : `0x${h}`
-  
+
   const hexPart = normalizedHex.slice(2)
   if (hexPart === "") {
     throw new Error("Hex string cannot be just '0x'")
   }
-  
+
   // Check for valid hex characters
   if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
     throw new Error("Invalid hex characters")
   }
-  
+
   // Check for reasonable length - uncompressed points are 130 hex chars, compressed are 66
   // The test uses 100 chars which should fail for this context
   if (hexPart.length > 130) {
     throw new Error("Hex string too long")
   }
-  
+
   // Handle special cases for point at infinity
   if (normalizedHex === "0x00" || normalizedHex === `0x04${"00".repeat(64)}`) {
     return POINT_AT_INFINITY
   }
-  
+
   return ProjectivePoint.fromHex(removeHexPrefix(normalizedHex))
 }
 

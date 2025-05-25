@@ -1,32 +1,32 @@
-import { describe, it, expect } from "bun:test"
+import { describe, expect, it } from "bun:test"
 import * as fc from "fast-check"
 import {
   // Constants
   CURVE_ORDER,
-  PRIME,
   G,
   POINT_AT_INFINITY,
+  PRIME,
   // Types
-  type Scalar,
-  type Point,
+  //type Scalar,
+  //type Point,
   ProjectivePoint, // Also import ProjectivePoint for POINT_AT_INFINITY.equals(ProjectivePoint.ZERO)
-  // Scalar Helpers
-  moduloOrder,
-  randScalar,
-  // Point Helpers
-  getPublicKey,
-  scalarMultiply,
   addPoints,
-  negatePoint,
   arePointsEqual,
   assertPointValidity,
   // Conversions
   bigIntToHex,
+  // Point Helpers
+  getPublicKey,
   hexToBigInt,
-  pointToHex,
   hexToPoint,
+  // Scalar Helpers
+  moduloOrder,
+  negatePoint,
+  pointToHex,
   // Poseidon Wrapper
   poseidonHashScalars,
+  randScalar,
+  scalarMultiply,
 } from "../../../src/elliptic-curve/core/curve"
 
 describe("STARK Curve Core Utilities (core/curve.ts)", () => {
@@ -102,7 +102,8 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
       })
 
       it("should return values > 0 and < CURVE_ORDER", () => {
-        for (let i = 0; i < 100; i++) { // Test a few times
+        for (let i = 0; i < 100; i++) {
+          // Test a few times
           const s = randScalar()
           expect(s > 0n).toBe(true)
           expect(s < CURVE_ORDER).toBe(true)
@@ -111,10 +112,12 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
 
       it("property-based: 0 < randScalar() < CURVE_ORDER", () => {
         fc.assert(
-          fc.property(fc.integer({min:1, max:20}), (_i) => { // just to run it multiple times
+          fc.property(fc.integer({ min: 1, max: 20 }), (_i) => {
+            // just to run it multiple times
             const s = randScalar()
             return s > 0n && s < CURVE_ORDER
-          }), {numRuns: 20}
+          }),
+          { numRuns: 20 },
         )
       })
     })
@@ -138,17 +141,20 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
         expect(getPublicKey(CURVE_ORDER + 1n).equals(G)).toBe(true)
       })
       it("should return correct public key for a known private key", () => {
-        expect(getPublicKey(knownPrivateKey).equals(knownPublicKeyPoint)).toBe(true)
+        expect(getPublicKey(knownPrivateKey).equals(knownPublicKeyPoint)).toBe(
+          true,
+        )
       })
-       it("property-based: getPublicKey(s) should be G.multiply(moduloOrder(s)) or P_INF if s=0", () => {
+      it("property-based: getPublicKey(s) should be G.multiply(moduloOrder(s)) or P_INF if s=0", () => {
         fc.assert(
           fc.property(fc.bigInt(0n, CURVE_ORDER * 2n), (s) => {
-            const expectedModS = moduloOrder(s);
-            const expectedPubKey = expectedModS === 0n ? POINT_AT_INFINITY : G.multiply(expectedModS);
-            expect(getPublicKey(s).equals(expectedPubKey)).toBe(true);
-          })
-        );
-      });
+            const expectedModS = moduloOrder(s)
+            const expectedPubKey =
+              expectedModS === 0n ? POINT_AT_INFINITY : G.multiply(expectedModS)
+            expect(getPublicKey(s).equals(expectedPubKey)).toBe(true)
+          }),
+        )
+      })
     })
 
     describe("scalarMultiply(k, P)", () => {
@@ -159,10 +165,16 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
         expect(scalarMultiply(1n, G).equals(G)).toBe(true)
       })
       it("k=CURVE_ORDER should return POINT_AT_INFINITY", () => {
-        expect(scalarMultiply(CURVE_ORDER, G).equals(POINT_AT_INFINITY)).toBe(true)
+        expect(scalarMultiply(CURVE_ORDER, G).equals(POINT_AT_INFINITY)).toBe(
+          true,
+        )
       })
       it("P=POINT_AT_INFINITY should return POINT_AT_INFINITY", () => {
-        expect(scalarMultiply(knownPrivateKey, POINT_AT_INFINITY).equals(POINT_AT_INFINITY)).toBe(true)
+        expect(
+          scalarMultiply(knownPrivateKey, POINT_AT_INFINITY).equals(
+            POINT_AT_INFINITY,
+          ),
+        ).toBe(true)
       })
       it("scalarMultiply(2n, G) should equal G.add(G)", () => {
         expect(scalarMultiply(2n, G).equals(G.add(G))).toBe(true)
@@ -178,16 +190,16 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
           { k: 1n, P: G.multiply(knownPrivateKey) },
           { k: 2n, P: G.add(G) },
         ]
-        
+
         for (const { k, P } of testCases) {
-          if (P.equals(POINT_AT_INFINITY)) continue; // Skip point at infinity
-          
-          const kMod = moduloOrder(k);
-          if (kMod === 0n) continue; // Skip if k is a multiple of CURVE_ORDER
-          
-          const expectedRes = P.multiply(kMod);
-          const actualRes = scalarMultiply(k, P);
-          expect(actualRes.equals(expectedRes)).toBe(true);
+          if (P.equals(POINT_AT_INFINITY)) continue // Skip point at infinity
+
+          const kMod = moduloOrder(k)
+          if (kMod === 0n) continue // Skip if k is a multiple of CURVE_ORDER
+
+          const expectedRes = P.multiply(kMod)
+          const actualRes = scalarMultiply(k, P)
+          expect(actualRes.equals(expectedRes)).toBe(true)
         }
       })
     })
@@ -206,13 +218,17 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
         expect(addPoints(POINT_AT_INFINITY, Q).equals(Q)).toBe(true)
       })
       it("P + (-P) should return POINT_AT_INFINITY", () => {
-        expect(addPoints(P, negatePoint(P)).equals(POINT_AT_INFINITY)).toBe(true)
+        expect(addPoints(P, negatePoint(P)).equals(POINT_AT_INFINITY)).toBe(
+          true,
+        )
       })
     })
 
     describe("negatePoint(P)", () => {
       it("negatePoint(POINT_AT_INFINITY) should return POINT_AT_INFINITY", () => {
-        expect(negatePoint(POINT_AT_INFINITY).equals(POINT_AT_INFINITY)).toBe(true)
+        expect(negatePoint(POINT_AT_INFINITY).equals(POINT_AT_INFINITY)).toBe(
+          true,
+        )
       })
       it("G.add(negatePoint(G)) should be POINT_AT_INFINITY", () => {
         expect(G.add(negatePoint(G)).equals(POINT_AT_INFINITY)).toBe(true)
@@ -249,13 +265,14 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
 
   describe("Conversions", () => {
     const testScalar = 1234567890123456789012345678901234567890n
-    const testScalarHex = "0x29a2241af63c7c80554b159f89fc8f72" // actual hex for testScalar
-    const testScalarHexNoPrefix = "29a2241af63c7c80554b159f89fc8f72"
+    //const testScalarHex = "0x29a2241af63c7c80554b159f89fc8f72" // actual hex for testScalar
+    //const testScalarHexNoPrefix = "29a2241af63c7c80554b159f89fc8f72"
 
     describe("bigIntToHex(x) and hexToBigInt(h)", () => {
       it("round trip: hexToBigInt(bigIntToHex(x)) === x", () => {
         fc.assert(
-          fc.property(fc.bigInt(0n, PRIME), (x) => { // PRIME is just a large bigint for testing
+          fc.property(fc.bigInt(0n, PRIME), (x) => {
+            // PRIME is just a large bigint for testing
             expect(hexToBigInt(bigIntToHex(x))).toEqual(x)
           }),
         )
@@ -266,9 +283,9 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
         expect(hexToBigInt("0")).toBe(0n)
       })
       it("should handle a known positive value", () => {
-         // Adjust testScalar to be less than PRIME to avoid issues if PRIME is used as upper bound elsewhere
-        const smallerTestScalar = testScalar % PRIME;
-        const expectedHex = "0x" + smallerTestScalar.toString(16);
+        // Adjust testScalar to be less than PRIME to avoid issues if PRIME is used as upper bound elsewhere
+        const smallerTestScalar = testScalar % PRIME
+        const expectedHex = `0x${smallerTestScalar.toString(16)}`
         expect(bigIntToHex(smallerTestScalar)).toBe(expectedHex)
         expect(hexToBigInt(expectedHex)).toBe(smallerTestScalar)
         expect(hexToBigInt(expectedHex.substring(2))).toBe(smallerTestScalar) // No prefix
@@ -279,7 +296,7 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
     })
 
     describe("pointToHex(P, compressed) and hexToPoint(h)", () => {
-      const testPoint = G.multiply(testScalar); // Use the same testScalar for consistency
+      const testPoint = G.multiply(testScalar) // Use the same testScalar for consistency
 
       it("round trip for G (uncompressed)", () => {
         const hexG = pointToHex(G, false)
@@ -289,12 +306,15 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
       it("round trip for G (compressed)", () => {
         const hexGCompressed = pointToHex(G, true)
         expect(hexGCompressed.length < pointToHex(G, false).length).toBe(true) // Compressed is shorter
-        expect(hexGCompressed.startsWith("0x02") || hexGCompressed.startsWith("0x03")).toBe(true)
+        expect(
+          hexGCompressed.startsWith("0x02") ||
+            hexGCompressed.startsWith("0x03"),
+        ).toBe(true)
         expect(hexToPoint(hexGCompressed).equals(G)).toBe(true)
       })
       it("round trip for POINT_AT_INFINITY (uncompressed)", () => {
         const hexInf = pointToHex(POINT_AT_INFINITY, false)
-        expect(hexInf).toBe("0x04" + "00".repeat(64))
+        expect(hexInf).toBe(`0x04${"00".repeat(64)}`)
         expect(hexToPoint(hexInf).equals(POINT_AT_INFINITY)).toBe(true)
       })
       it("round trip for POINT_AT_INFINITY (compressed)", () => {
@@ -351,13 +371,15 @@ describe("STARK Curve Core Utilities (core/curve.ts)", () => {
         expect(result >= 0n && result < CURVE_ORDER).toBe(true)
         // Check it's different from single element hashes
         expect(result).not.toEqual(poseidonHashScalars([1n]))
-        expect(result).not.toEqual(poseidonHashScalars([1n,2n]))
+        expect(result).not.toEqual(poseidonHashScalars([1n, 2n]))
       })
       it("elements should be processed by moduloOrder before hashing", () => {
         const val = CURVE_ORDER + 1n
         const valModOrder = 1n
         // poseidonHashScalars([val]) should be same as poseidonHashScalars([valModOrder])
-        expect(poseidonHashScalars([val])).toEqual(poseidonHashScalars([valModOrder]))
+        expect(poseidonHashScalars([val])).toEqual(
+          poseidonHashScalars([valModOrder]),
+        )
       })
       it("property-based: output is always < CURVE_ORDER and >= 0", () => {
         fc.assert(

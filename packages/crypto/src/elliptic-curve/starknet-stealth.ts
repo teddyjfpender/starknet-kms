@@ -11,9 +11,7 @@ const CURVE_ORDER = STARKNET_CURVE.CURVE.n
 
 // Domain separation tag for hashing the shared secret point to derive k or k'
 const DOMAIN_TAG_K_STRING = "starknet_stealth_k_v1"
-const DOMAIN_TAG_K_HEX = encode.buf2hex(
-  encode.utf8ToArray(DOMAIN_TAG_K_STRING),
-) // Pre-calculated hex of domain tag
+const DOMAIN_TAG_K_HEX = encode.buf2hex(encode.utf8ToArray(DOMAIN_TAG_K_STRING)) // Pre-calculated hex of domain tag
 
 /**
  * Creates a StarkNet stealth address for a recipient.

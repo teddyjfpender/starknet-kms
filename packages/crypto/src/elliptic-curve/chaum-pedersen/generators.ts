@@ -14,10 +14,10 @@ import {
 
 const domainTag = "starkex.chaum-pedersen.H.v1"
 const hashedDomainTag = sha256(utf8ToBytes(domainTag)) // Output is Uint8Array
-const h_scalar_bigint = BigInt("0x" + bytesToHex(hashedDomainTag))
+const h_scalar_bigint = BigInt(`0x${bytesToHex(hashedDomainTag)}`)
 
 // Reduce h modulo CURVE_ORDER
-let h = moduloOrder(h_scalar_bigint)
+const h = moduloOrder(h_scalar_bigint)
 
 // Validate h
 if (h === 0n) {

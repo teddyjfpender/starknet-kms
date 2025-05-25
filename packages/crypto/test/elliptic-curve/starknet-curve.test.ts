@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test"
 import { ec, encode, num } from "starknet" // For STARKNET_CURVE, CURVE_ORDER, and some hex utils
+import { CURVE_ORDER as CORE_CURVE_ORDER } from "../../src/elliptic-curve/core/curve" // For CURVE_ORDER constant
 import {
   POINT_AT_INFINITY_HEX_UNCOMPRESSED as EXPORTED_POINT_AT_INFINITY_HEX,
   addPointsStarknet,
@@ -8,7 +9,6 @@ import {
   getPublicKeyStarknet,
   scalarMultiplyStarknet,
 } from "../../src/elliptic-curve/starknet-curve" // To be tested
-import { CURVE_ORDER as CORE_CURVE_ORDER } from "../../src/elliptic-curve/core/curve" // For CURVE_ORDER constant
 
 const STARKNET_CURVE = ec.starkCurve // Used for some direct comparisons or underlying objects
 // Ensure CURVE_ORDER used in tests is the one from core/curve.ts, which starknet-curve.ts relies on.
@@ -21,7 +21,7 @@ describe("Starknet Elliptic Curve Primitives (starknet-curve.ts API Layer)", () 
   describe("Constants", () => {
     it("EXPORTED_POINT_AT_INFINITY_HEX_UNCOMPRESSED should be correctly defined", () => {
       expect(EXPORTED_POINT_AT_INFINITY_HEX.toLowerCase()).toBe(
-        ("0x04" + "00".repeat(64)).toLowerCase(),
+        `0x04${"00".repeat(64)}`.toLowerCase(),
       )
     })
   })
@@ -81,8 +81,11 @@ describe("Starknet Elliptic Curve Primitives (starknet-curve.ts API Layer)", () 
       ["", "empty string"],
       ["invalid-hex-string", "non-hex string"],
       ["0xINVALID", "hex with invalid characters"],
-      ["12345", "hex without 0x prefix (starknet.js num/hexToBigInt might handle, but coreHexToBigInt expects 0x)"],
-      ["0x" + "f".repeat(100), "hex too long for scalar/point x-coord"], // Too long for a scalar or point coordinate
+      [
+        "12345",
+        "hex without 0x prefix (starknet.js num/hexToBigInt might handle, but coreHexToBigInt expects 0x)",
+      ],
+      [`0x${"f".repeat(100)}`, "hex too long for scalar/point x-coord"], // Too long for a scalar or point coordinate
     ]
 
     describe("getPublicKeyStarknet(privateKeyHex, compressed)", () => {
@@ -242,7 +245,9 @@ describe("Starknet Elliptic Curve Primitives (starknet-curve.ts API Layer)", () 
         const publicKeyHex = getPublicKeyStarknet(privateKeyHex)
         const G_hex = getBasePointStarknet(false) // Uncompressed G
         const calculatedPublicKey = scalarMultiplyStarknet(privateKeyHex, G_hex)
-        expect(publicKeyHex.toLowerCase()).toEqual(calculatedPublicKey.toLowerCase())
+        expect(publicKeyHex.toLowerCase()).toEqual(
+          calculatedPublicKey.toLowerCase(),
+        )
       })
     })
 
@@ -268,17 +273,23 @@ describe("Starknet Elliptic Curve Primitives (starknet-curve.ts API Layer)", () 
       const P2_hex = getPublicKeyStarknet(P2_priv)
 
       it("P + (-P) = O (point at infinity)", () => {
-        const P1_point = STARKNET_CURVE.ProjectivePoint.fromHex(encode.removeHexPrefix(P1_hex))
+        const P1_point = STARKNET_CURVE.ProjectivePoint.fromHex(
+          encode.removeHexPrefix(P1_hex),
+        )
         const minusP1_point = P1_point.negate()
         // starknet-curve.ts functions expect hex inputs.
         // corePointToHex is not directly imported here, but we can use getPublicKeyStarknet for 0 to get O_hex
         // or use the imported EXPORTED_POINT_AT_INFINITY_HEX.
         // For minusP1_hex, we need a way to convert Point object to hex string.
         // starknet.js 'encode.addHexPrefix(encode.buf2hex(minusP1_point.toRawBytes(false)))' can be used.
-        const minusP1_hex = encode.addHexPrefix(encode.buf2hex(minusP1_point.toRawBytes(false)))
+        const minusP1_hex = encode.addHexPrefix(
+          encode.buf2hex(minusP1_point.toRawBytes(false)),
+        )
 
         const R = addPointsStarknet(P1_hex, minusP1_hex)
-        expect(R.toLowerCase()).toEqual(EXPORTED_POINT_AT_INFINITY_HEX.toLowerCase())
+        expect(R.toLowerCase()).toEqual(
+          EXPORTED_POINT_AT_INFINITY_HEX.toLowerCase(),
+        )
       })
 
       it("(k1*G) + (k2*G) should equal (k1+k2)*G", () => {

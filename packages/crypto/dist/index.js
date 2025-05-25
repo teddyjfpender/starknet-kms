@@ -2366,7 +2366,10 @@ function randScalar() {
   } while (k === 0n);
   return k;
 }
-var getPublicKey = (priv) => priv === 0n ? POINT_AT_INFINITY : G.multiply(moduloOrder(priv));
+var getPublicKey = (priv) => {
+  const privMod = moduloOrder(priv);
+  return privMod === 0n ? POINT_AT_INFINITY : G.multiply(privMod);
+};
 var scalarMultiply = (k, P) => {
   const kMod = moduloOrder(k);
   if (kMod === 0n || P.equals(POINT_AT_INFINITY)) return POINT_AT_INFINITY;
@@ -2375,18 +2378,103 @@ var scalarMultiply = (k, P) => {
 var addPoints = (P, Q) => P.equals(POINT_AT_INFINITY) ? Q : Q.equals(POINT_AT_INFINITY) ? P : P.add(Q);
 var negatePoint = (P) => P.equals(POINT_AT_INFINITY) ? POINT_AT_INFINITY : P.negate();
 var arePointsEqual = (P, Q) => P.equals(Q);
-var assertPointValidity = (P) => P.assertValidity?.();
+var assertPointValidity = (P) => {
+  if (P.equals(POINT_AT_INFINITY)) return;
+  P.assertValidity?.();
+};
 var bigIntToHex = (x) => addHexPrefix(x.toString(16));
-var hexToBigInt = (h2) => BigInt(addHexPrefix(removeHexPrefix(h2)));
+var hexToBigInt = (h2) => {
+  if (h2 == null || h2 === void 0) {
+    throw new Error("Input cannot be null or undefined");
+  }
+  if (typeof h2 !== "string") {
+    throw new Error("Input must be a string");
+  }
+  if (h2 === "") {
+    throw new Error("Input cannot be an empty string");
+  }
+  const normalizedHex = h2.startsWith("0x") ? h2 : `0x${h2}`;
+  const hexPart = normalizedHex.slice(2);
+  if (hexPart === "") {
+    throw new Error("Hex string cannot be just '0x'");
+  }
+  if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
+    throw new Error("Invalid hex characters");
+  }
+  if (hexPart.length > 64) {
+    throw new Error("Hex string too long");
+  }
+  return BigInt(normalizedHex);
+};
 function pointToHex(P, compressed = false) {
   if (P.equals(POINT_AT_INFINITY))
     return compressed ? "0x00" : `0x04${"00".repeat(64)}`;
   return addHexPrefix(buf2hex(P.toRawBytes(compressed)));
 }
-var hexToPoint = (h2) => h2 === "0x00" || h2 === `0x04${"00".repeat(64)}` ? POINT_AT_INFINITY : ProjectivePoint.fromHex(removeHexPrefix(h2));
+var hexToPoint = (h2) => {
+  if (h2 == null || h2 === void 0) {
+    throw new Error("Input cannot be null or undefined");
+  }
+  if (typeof h2 !== "string") {
+    throw new Error("Input must be a string");
+  }
+  if (h2 === "") {
+    throw new Error("Input cannot be an empty string");
+  }
+  const normalizedHex = h2.startsWith("0x") ? h2 : `0x${h2}`;
+  const hexPart = normalizedHex.slice(2);
+  if (hexPart === "") {
+    throw new Error("Hex string cannot be just '0x'");
+  }
+  if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
+    throw new Error("Invalid hex characters");
+  }
+  if (hexPart.length > 130) {
+    throw new Error("Hex string too long");
+  }
+  if (normalizedHex === "0x00" || normalizedHex === `0x04${"00".repeat(64)}`) {
+    return POINT_AT_INFINITY;
+  }
+  return ProjectivePoint.fromHex(removeHexPrefix(normalizedHex));
+};
 var poseidonHashScalars = (xs) => poseidonHashMany(xs.map(moduloOrder)) % CURVE_ORDER2;
 
 // src/elliptic-curve/starknet-curve.ts
+function validateStrictHex(h2, context) {
+  if (h2 == null || h2 === void 0) {
+    throw new Error("Input cannot be null or undefined");
+  }
+  if (typeof h2 !== "string") {
+    throw new Error("Input must be a string");
+  }
+  if (h2 === "") {
+    throw new Error("Input cannot be an empty string");
+  }
+  if (!h2.startsWith("0x")) {
+    throw new Error("Hex string must start with '0x' prefix");
+  }
+  const hexPart = h2.slice(2);
+  if (hexPart === "") {
+    throw new Error("Hex string cannot be just '0x'");
+  }
+  if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
+    throw new Error("Invalid hex characters");
+  }
+  if (context === "scalar" && hexPart.length > 64) {
+    throw new Error("Hex string too long");
+  }
+  if (context === "point" && hexPart.length > 130) {
+    throw new Error("Hex string too long");
+  }
+}
+function strictHexToBigInt(h2) {
+  validateStrictHex(h2, "scalar");
+  return hexToBigInt(h2);
+}
+function strictHexToPoint(h2) {
+  validateStrictHex(h2, "point");
+  return hexToPoint(h2);
+}
 var POINT_AT_INFINITY_HEX_UNCOMPRESSED = pointToHex(
   POINT_AT_INFINITY,
   false
@@ -2395,19 +2483,19 @@ function generateRandomScalarStarknet() {
   return bigIntToHex(randScalar());
 }
 function getPublicKeyStarknet(privateKeyHex, compressed = false) {
-  const privateKeyScalar = hexToBigInt(privateKeyHex);
+  const privateKeyScalar = strictHexToBigInt(privateKeyHex);
   const publicKeyPoint = getPublicKey(privateKeyScalar);
   return pointToHex(publicKeyPoint, compressed);
 }
 function scalarMultiplyStarknet(scalarHex, pointHex) {
-  const scalar = hexToBigInt(scalarHex);
-  const point = hexToPoint(pointHex);
+  const scalar = strictHexToBigInt(scalarHex);
+  const point = strictHexToPoint(pointHex);
   const resultPoint = scalarMultiply(scalar, point);
   return pointToHex(resultPoint, false);
 }
 function addPointsStarknet(point1Hex, point2Hex) {
-  const point1 = hexToPoint(point1Hex);
-  const point2 = hexToPoint(point2Hex);
+  const point1 = strictHexToPoint(point1Hex);
+  const point2 = strictHexToPoint(point2Hex);
   const resultPoint = addPoints(point1, point2);
   return pointToHex(resultPoint, false);
 }
@@ -2420,9 +2508,7 @@ import { ec, encode, hash, num } from "starknet";
 var STARKNET_CURVE = ec.starkCurve;
 var CURVE_ORDER3 = STARKNET_CURVE.CURVE.n;
 var DOMAIN_TAG_K_STRING = "starknet_stealth_k_v1";
-var DOMAIN_TAG_K_HEX = encode.buf2hex(
-  encode.utf8ToArray(DOMAIN_TAG_K_STRING)
-);
+var DOMAIN_TAG_K_HEX = encode.buf2hex(encode.utf8ToArray(DOMAIN_TAG_K_STRING));
 function createStealthAddressStarknet(recipientPubSpendKeyHex, recipientPubViewKeyHex) {
   const r_scalarHex = generateRandomScalarStarknet();
   const R_publicKeyHex = getPublicKeyStarknet(r_scalarHex);
@@ -2758,7 +2844,7 @@ var sha2562 = /* @__PURE__ */ wrapConstructor(() => new SHA2562());
 // src/elliptic-curve/chaum-pedersen/generators.ts
 var domainTag = "starkex.chaum-pedersen.H.v1";
 var hashedDomainTag = sha2562(utf8ToBytes(domainTag));
-var h_scalar_bigint = BigInt("0x" + bytesToHex(hashedDomainTag));
+var h_scalar_bigint = BigInt(`0x${bytesToHex(hashedDomainTag)}`);
 var h = moduloOrder(h_scalar_bigint);
 if (h === 0n) {
   throw new Error(
@@ -2827,11 +2913,11 @@ function verify(stmt, proof) {
   } catch (error) {
     return false;
   }
-  const eG = G.multiply(e);
-  const eH = H.multiply(e);
-  const cU = U.multiply(c);
+  const eG = scalarMultiply(e, G);
+  const eH = scalarMultiply(e, H);
+  const cU = scalarMultiply(c, U);
   const P_plus_cU = P.add(cU);
-  const cV = V.multiply(c);
+  const cV = scalarMultiply(c, V);
   const Q_plus_cV = Q.add(cV);
   return eG.equals(P_plus_cU) && eH.equals(Q_plus_cV);
 }

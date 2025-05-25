@@ -34,7 +34,7 @@ function validateStrictHex(h: string, context: string): void {
   if (!/^[0-9a-fA-F]+$/.test(hexPart)) {
     throw new Error("Invalid hex characters")
   }
-  
+
   // Context-specific length validation
   if (context === "scalar" && hexPart.length > 64) {
     throw new Error("Hex string too long")

@@ -4,7 +4,6 @@ import {
   CURVE_ORDER,
   G,
   POINT_AT_INFINITY,
-  ProjectivePoint,
   type Point,
   moduloOrder,
 } from "../../src/elliptic-curve/core/curve"
@@ -18,19 +17,19 @@ import {
   type Scalar,
   type Statement,
   commit as cpCommit,
+  generateChallenge as cpGenerateChallenge,
+  respond as cpRespond,
   decodeProof,
   encodeProof,
-  generateChallenge as cpGenerateChallenge,
   proveFS,
   randScalar, // Already from core/curve via re-export in chaum-pedersen index
-  respond as cpRespond,
   verify,
 } from "../../src/elliptic-curve/chaum-pedersen" // Imports from main index
 
 // Helper to generate a valid scalar for fast-check (1 <= x < CURVE_ORDER)
 const fcScalar = fc.bigInt(1n, CURVE_ORDER - 1n)
 // Helper to generate a scalar that could be 0 or CURVE_ORDER for specific tests
-const fcInvalidScalar = fc.constantFrom(0n, CURVE_ORDER)
+//const fcInvalidScalar = fc.constantFrom(0n, CURVE_ORDER)
 
 // Helper to generate a random point for tampering tests
 const randPoint = (): Point => G.multiply(randScalar())
@@ -197,33 +196,33 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
     it("should fail if response 'e' is a different valid scalar", () => {
       let tampered_e = randScalar()
       while (tampered_e === originalProof.e) tampered_e = randScalar()
-      expect(
-        verify(originalStmt, { ...originalProof, e: tampered_e }),
-      ).toBe(false)
+      expect(verify(originalStmt, { ...originalProof, e: tampered_e })).toBe(
+        false,
+      )
     })
 
     it("should fail if challenge 'c' is a different valid scalar", () => {
       let tampered_c = randScalar()
       while (tampered_c === originalProof.c) tampered_c = randScalar()
-      expect(
-        verify(originalStmt, { ...originalProof, c: tampered_c }),
-      ).toBe(false)
+      expect(verify(originalStmt, { ...originalProof, c: tampered_c })).toBe(
+        false,
+      )
     })
 
     it("should fail if commitment P is a different valid point", () => {
       const tampered_P = G.multiply(randScalar())
       if (tampered_P.equals(originalProof.P)) return // Skip if unlucky
-      expect(
-        verify(originalStmt, { ...originalProof, P: tampered_P }),
-      ).toBe(false)
+      expect(verify(originalStmt, { ...originalProof, P: tampered_P })).toBe(
+        false,
+      )
     })
 
     it("should fail if commitment Q is a different valid point", () => {
       const tampered_Q = H.multiply(randScalar())
       if (tampered_Q.equals(originalProof.Q)) return // Skip if unlucky
-      expect(
-        verify(originalStmt, { ...originalProof, Q: tampered_Q }),
-      ).toBe(false)
+      expect(verify(originalStmt, { ...originalProof, Q: tampered_Q })).toBe(
+        false,
+      )
     })
 
     it("should fail if statement U is a different valid point", () => {
@@ -248,9 +247,9 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
     it("should fail if scalar e is CURVE_ORDER", () => {
       // Point multiplication by CURVE_ORDER is point at infinity for G,H
       // So eG = 0, eH = 0.  P + cU and Q + cV are unlikely to be 0.
-      expect(
-        verify(originalStmt, { ...originalProof, e: CURVE_ORDER }),
-      ).toBe(false)
+      expect(verify(originalStmt, { ...originalProof, e: CURVE_ORDER })).toBe(
+        false,
+      )
     })
 
     it("should pass if scalar c is 0n (eG=P, eH=Q must hold)", () => {
@@ -385,21 +384,25 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
 
     it("should fail verification or decoding if encoded proof bytes are tampered", () => {
       fc.assert(
-        fc.property(fcScalar, fc.integer({ min: 0, max: 191 }), (x, tamperIdx) => {
-          const { stmt, proof } = proveFS(x)
-          const encodedProof = encodeProof(proof)
-          const tamperedBytes = new Uint8Array(encodedProof) // Create a mutable copy
-          tamperedBytes[tamperIdx] = tamperedBytes[tamperIdx]! ^ 0xff // Flip all bits at tamperIdx
+        fc.property(
+          fcScalar,
+          fc.integer({ min: 0, max: 191 }),
+          (x, tamperIdx) => {
+            const { stmt, proof } = proveFS(x)
+            const encodedProof = encodeProof(proof)
+            const tamperedBytes = new Uint8Array(encodedProof) // Create a mutable copy
+            tamperedBytes[tamperIdx] = tamperedBytes[tamperIdx]! ^ 0xff // Flip all bits at tamperIdx
 
-          try {
-            const decodedTamperedProof = decodeProof(tamperedBytes)
-            // If decoding succeeded, verification must fail
-            expect(verify(stmt, decodedTamperedProof)).toBe(false)
-          } catch (e) {
-            // If decoding failed (e.g. point not on curve), this is also a pass
-            expect(e).toBeInstanceOf(Error)
-          }
-        }),
+            try {
+              const decodedTamperedProof = decodeProof(tamperedBytes)
+              // If decoding succeeded, verification must fail
+              expect(verify(stmt, decodedTamperedProof)).toBe(false)
+            } catch (e) {
+              // If decoding failed (e.g. point not on curve), this is also a pass
+              expect(e).toBeInstanceOf(Error)
+            }
+          },
+        ),
         { numRuns: 20 }, // Reduced for CI
       )
     })

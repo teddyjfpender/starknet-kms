@@ -5,9 +5,9 @@ import {
   type Point,
   // ProjectivePoint, // Removed unused import
   type Scalar,
+  hexToPoint, // Ensure this is imported
   moduloOrder,
   randScalar,
-  hexToPoint, // Ensure this is imported
   scalarMultiply, // Add this import for safe scalar multiplication
   // CURVE_ORDER, // Not strictly needed here if inputs are well-formed
 } from "../core/curve"
@@ -276,7 +276,7 @@ export function encodeProof({ P, Q, c, e }: Proof): Uint8Array {
       n >>= 8n // Shift right by 8 bits
     }
     // After shifting 32 times (for 32 bytes), if n is not zero, it means the original number was too large.
-    if (n !== 0n && n !== -1n) { 
+    if (n !== 0n && n !== -1n) {
       // For negative numbers, if all bits were 1s, n would become -1 after shifting.
       // This check is primarily for positive numbers. A more robust check for strict positive range might be needed
       // if the scalar can be negative and occupy full 32 bytes. Given c and e are field elements (positive),
@@ -318,20 +318,20 @@ export function decodeProof(bytes: Uint8Array): Proof {
   }
 
   const read = (offset: number): bigint => {
-    let result = 0n;
+    let result = 0n
     for (let i = 0; i < 32; i++) {
-      const byteValue = bytes[offset + i]; // Remove explicit type annotation
+      const byteValue = bytes[offset + i] // Remove explicit type annotation
       if (byteValue === undefined) {
         // This path should ideally be impossible if bytes.length check is correct
         // and bytes is a Uint8Array.
         throw new Error(
           `Byte value at offset ${offset + i} is unexpectedly undefined during proof decoding.`,
-        );
+        )
       }
-      result = (result << 8n) | BigInt(byteValue);
+      result = (result << 8n) | BigInt(byteValue)
     }
-    return result;
-  };
+    return result
+  }
 
   const Px_val: bigint = read(0)
   const Py_val: bigint = read(32)
