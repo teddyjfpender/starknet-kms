@@ -1,6 +1,5 @@
-import {
 import { concatBytes } from "@noble/hashes/utils"
-import { utils as starkUtils } from "@scure/starknet"
+// import { utils as starkUtils } from "@scure/starknet"; // Not used if reverting to self-contained BE conversion
 import {
   G,
   type Point,
@@ -265,24 +264,36 @@ export function verify(stmt: Statement, proof: Proof): boolean {
  *
  * @param proof The {@link Proof} object `{ P, Q, c, e }` to serialize.
  * @returns A `Uint8Array` of 192 bytes representing the proof.
- * @throws Error if `starkUtils.numberToBytesBE` fails.
+ * @throws Error if BigInt conversion to bytes fails (e.g., too large for 32 bytes).
  */
 export function encodeProof({ P, Q, c, e }: Proof): Uint8Array {
-  // Convert points to affine to get x, y.
-  // Note: .toAffine() returns {x, y} or throws if point is zero.
-  // However, P and Q in a valid proof are extremely unlikely to be point at infinity.
-  // If P or Q could be point at infinity, specific handling for (0,0) might be needed if not default.
-  // starkUtils.numberToBytesBE handles bigint to Uint8Array (BE).
+  const be = (n: bigint): Uint8Array => {
+    const arr = new Uint8Array(32)
+    for (let i = 0; i < 32; i++) {
+      arr[31 - i] = Number(n & 0xffn) // Get the least significant byte
+      n >>= 8n // Shift right by 8 bits
+    }
+    // After shifting 32 times (for 32 bytes), if n is not zero, it means the original number was too large.
+    if (n !== 0n && n !== -1n) { 
+      // For negative numbers, if all bits were 1s, n would become -1 after shifting.
+      // This check is primarily for positive numbers. A more robust check for strict positive range might be needed
+      // if the scalar can be negative and occupy full 32 bytes. Given c and e are field elements (positive),
+      // n !== 0n is the main concern.
+      throw new Error("BigInt too large for 32 bytes BE representation")
+    }
+    return arr
+  }
+
   const PAffine = P.toAffine()
   const QAffine = Q.toAffine()
 
   return concatBytes(
-    starkUtils.numberToBytesBE(PAffine.x, 32),
-    starkUtils.numberToBytesBE(PAffine.y, 32),
-    starkUtils.numberToBytesBE(QAffine.x, 32),
-    starkUtils.numberToBytesBE(QAffine.y, 32),
-    starkUtils.numberToBytesBE(c, 32),
-    starkUtils.numberToBytesBE(e, 32),
+    be(PAffine.x),
+    be(PAffine.y),
+    be(QAffine.x),
+    be(QAffine.y),
+    be(c),
+    be(e),
   )
 }
 
@@ -295,10 +306,7 @@ export function encodeProof({ P, Q, c, e }: Proof): Uint8Array {
  *
  * @param bytes The `Uint8Array` (192 bytes) to deserialize.
  * @returns The deserialized {@link Proof} object `{ P, Q, c, e }`.
- * @throws Error if the byte array has an unexpected length or if point reconstruction fails
- *         (e.g., coordinates do not form a valid point on the curve).
- *         It's assumed that `bytesToNumberBE` and `ProjectivePoint.fromAffine`
- *         will handle malformed inputs appropriately (e.g. by throwing).
+ * @throws Error if the byte array has an unexpected length or if point reconstruction fails.
  */
 export function decodeProof(bytes: Uint8Array): Proof {
   if (bytes.length !== 192) {
@@ -307,12 +315,20 @@ export function decodeProof(bytes: Uint8Array): Proof {
     )
   }
 
-  const Px = starkUtils.bytesToNumberBE(bytes.slice(0, 32))
-  const Py = starkUtils.bytesToNumberBE(bytes.slice(32, 64))
-  const Qx = starkUtils.bytesToNumberBE(bytes.slice(64, 96))
-  const Qy = starkUtils.bytesToNumberBE(bytes.slice(96, 128))
-  const c_scalar = starkUtils.bytesToNumberBE(bytes.slice(128, 160))
-  const e_scalar = starkUtils.bytesToNumberBE(bytes.slice(160, 192))
+  const read = (offset: number): bigint => {
+    let result = 0n
+    for (let i = 0; i < 32; i++) {
+      result = (result << 8n) | BigInt(bytes[offset + i])
+    }
+    return result
+  }
+
+  const Px = read(0)
+  const Py = read(32)
+  const Qx = read(64)
+  const Qy = read(96)
+  const c_scalar = read(128)
+  const e_scalar = read(160)
 
   // Reconstruct points from affine coordinates.
   // ProjectivePoint.fromAffine will throw if coordinates are invalid for the curve.
