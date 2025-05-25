@@ -3,10 +3,11 @@ import { concatBytes } from "@noble/hashes/utils"
 import {
   G,
   type Point,
-  ProjectivePoint,
+  ProjectivePoint, // Still needed for type Point = ProjectivePoint in core/curve
   type Scalar,
   moduloOrder,
   randScalar,
+  hexToPoint, // Ensure this is imported
   // CURVE_ORDER, // Not strictly needed here if inputs are well-formed
 } from "../core/curve"
 import { H } from "./generators"
@@ -316,12 +317,20 @@ export function decodeProof(bytes: Uint8Array): Proof {
   }
 
   const read = (offset: number): bigint => {
-    let result = 0n
+    let result = 0n;
     for (let i = 0; i < 32; i++) {
-      result = (result << 8n) | BigInt(bytes[offset + i])
+      const byteValue: number = bytes[offset + i]; // Explicitly type here
+      if (byteValue === undefined) {
+        // This path should ideally be impossible if bytes.length check is correct
+        // and bytes is a Uint8Array.
+        throw new Error(
+          `Byte value at offset ${offset + i} is unexpectedly undefined during proof decoding.`,
+        );
+      }
+      result = (result << 8n) | BigInt(byteValue);
     }
-    return result
-  }
+    return result;
+  };
 
   const Px_val: bigint = read(0)
   const Py_val: bigint = read(32)
@@ -330,23 +339,28 @@ export function decodeProof(bytes: Uint8Array): Proof {
   const c_scalar: bigint = read(128)
   const e_scalar: bigint = read(160)
 
-  // Define an interface for affine coordinates to ensure type compatibility
-  interface AffinePointCoords {
-    x: bigint
-    y: bigint
+  const coordToHex = (coord: bigint): string => {
+    const hex = coord.toString(16)
+    // Field elements of Starknet curve are < 2^252, so their hex representation is <= 63 chars.
+    // Pad to 64 chars (32 bytes).
+    if (hex.length > 64) {
+      // This should ideally not happen if coord is a valid field element from the curve.
+      throw new Error(`Coordinate hex representation is too long: ${hex}`)
+    }
+    return hex.padStart(64, "0")
   }
 
-  // Reconstruct points from affine coordinates using the interface
-  const pAffineCoords: AffinePointCoords = { x: Px_val, y: Py_val }
-  const P = ProjectivePoint.fromAffine(pAffineCoords)
+  // Reconstruct points from their uncompressed hex representation
+  const P_hex = `0x04${coordToHex(Px_val)}${coordToHex(Py_val)}`
+  const P = hexToPoint(P_hex)
 
-  const qAffineCoords: AffinePointCoords = { x: Qx_val, y: Qy_val }
-  const Q = ProjectivePoint.fromAffine(qAffineCoords)
+  const Q_hex = `0x04${coordToHex(Qx_val)}${coordToHex(Qy_val)}`
+  const Q = hexToPoint(Q_hex)
 
   return {
-    P: P as Point, // Cast because fromAffine returns ProjectivePoint, our type Point is an alias
-    Q: Q as Point,
-    c: c_scalar, 
+    P, // hexToPoint should return type Point
+    Q, // hexToPoint should return type Point
+    c: c_scalar,
     e: e_scalar,
   }
 }
