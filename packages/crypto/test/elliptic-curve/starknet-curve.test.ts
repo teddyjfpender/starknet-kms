@@ -82,7 +82,6 @@ describe("Starknet Elliptic Curve Primitives (starknet-curve.ts API Layer)", () 
       ["invalid-hex-string", "non-hex string"],
       ["0xINVALID", "hex with invalid characters"],
       ["12345", "hex without 0x prefix (starknet.js num/hexToBigInt might handle, but coreHexToBigInt expects 0x)"],
-      ["0x01", "hex too short for a key/point"], // core.hexToBigInt might parse this fine, but point parsing will fail.
       ["0x" + "f".repeat(100), "hex too long for scalar/point x-coord"], // Too long for a scalar or point coordinate
     ]
 

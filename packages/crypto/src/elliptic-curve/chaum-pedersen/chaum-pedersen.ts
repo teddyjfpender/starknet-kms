@@ -3,11 +3,12 @@ import { concatBytes } from "@noble/hashes/utils"
 import {
   G,
   type Point,
-  ProjectivePoint, // Still needed for type Point = ProjectivePoint in core/curve
+  // ProjectivePoint, // Removed unused import
   type Scalar,
   moduloOrder,
   randScalar,
   hexToPoint, // Ensure this is imported
+  scalarMultiply, // Add this import for safe scalar multiplication
   // CURVE_ORDER, // Not strictly needed here if inputs are well-formed
 } from "../core/curve"
 import { H } from "./generators"
@@ -237,16 +238,16 @@ export function verify(stmt: Statement, proof: Proof): boolean {
   // Calculate Left-Hand Sides of the verification equations:
   // eG = G.multiply(e)
   // eH = H.multiply(e)
-  const eG = G.multiply(e)
-  const eH = H.multiply(e)
+  const eG = scalarMultiply(e, G)
+  const eH = scalarMultiply(e, H)
 
   // Calculate Right-Hand Sides of the verification equations:
   // P_plus_cU = P.add(U.multiply(c))
   // Q_plus_cV = Q.add(V.multiply(c))
-  const cU = U.multiply(c)
+  const cU = scalarMultiply(c, U)
   const P_plus_cU = P.add(cU)
 
-  const cV = V.multiply(c)
+  const cV = scalarMultiply(c, V)
   const Q_plus_cV = Q.add(cV)
 
   // Verify the equalities:
@@ -319,7 +320,7 @@ export function decodeProof(bytes: Uint8Array): Proof {
   const read = (offset: number): bigint => {
     let result = 0n;
     for (let i = 0; i < 32; i++) {
-      const byteValue: number = bytes[offset + i]; // Explicitly type here
+      const byteValue = bytes[offset + i]; // Remove explicit type annotation
       if (byteValue === undefined) {
         // This path should ideally be impossible if bytes.length check is correct
         // and bytes is a Uint8Array.
