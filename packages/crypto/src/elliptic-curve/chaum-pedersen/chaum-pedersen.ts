@@ -323,22 +323,30 @@ export function decodeProof(bytes: Uint8Array): Proof {
     return result
   }
 
-  const Px = read(0)
-  const Py = read(32)
-  const Qx = read(64)
-  const Qy = read(96)
-  const c_scalar = read(128)
-  const e_scalar = read(160)
+  const Px_val: bigint = read(0)
+  const Py_val: bigint = read(32)
+  const Qx_val: bigint = read(64)
+  const Qy_val: bigint = read(96)
+  const c_scalar: bigint = read(128)
+  const e_scalar: bigint = read(160)
 
-  // Reconstruct points from affine coordinates.
-  // ProjectivePoint.fromAffine will throw if coordinates are invalid for the curve.
-  const P = ProjectivePoint.fromAffine({ x: Px, y: Py })
-  const Q = ProjectivePoint.fromAffine({ x: Qx, y: Qy })
+  // Define an interface for affine coordinates to ensure type compatibility
+  interface AffinePointCoords {
+    x: bigint
+    y: bigint
+  }
+
+  // Reconstruct points from affine coordinates using the interface
+  const pAffineCoords: AffinePointCoords = { x: Px_val, y: Py_val }
+  const P = ProjectivePoint.fromAffine(pAffineCoords)
+
+  const qAffineCoords: AffinePointCoords = { x: Qx_val, y: Qy_val }
+  const Q = ProjectivePoint.fromAffine(qAffineCoords)
 
   return {
     P: P as Point, // Cast because fromAffine returns ProjectivePoint, our type Point is an alias
     Q: Q as Point,
-    c: c_scalar,
+    c: c_scalar, 
     e: e_scalar,
   }
 }
