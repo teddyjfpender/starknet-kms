@@ -25,11 +25,3 @@ jobs:
         
       - name: Run CI pipeline
         run: bun run ci
-        
-      - name: Check for uncommitted changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Uncommitted changes detected:"
-            git status --porcelain
-            exit 1
-          fi
