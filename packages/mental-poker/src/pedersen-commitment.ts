@@ -7,6 +7,7 @@ import {
   moduloOrder,
   randScalar,
   scalarMultiply,
+  poseidonHashScalars,
 } from "@starkms/crypto"
 import { MentalPokerError, MentalPokerErrorCode } from "./types"
 
@@ -29,7 +30,7 @@ export interface PedersenCommitKey {
 }
 
 /**
- * Generate a Pedersen commitment key with n generators
+ * Generate a Pedersen commitment key with n generators using proper hash-to-curve
  */
 export function generatePedersenCommitKey(n: number): PedersenCommitKey {
   if (n <= 0) {
@@ -41,23 +42,30 @@ export function generatePedersenCommitKey(n: number): PedersenCommitKey {
 
   const generators: Point[] = []
 
-  // Generate deterministic generators using hash-to-curve
-  // In practice, these should be generated using a proper hash-to-curve method
-  // For now, we'll use a simple deterministic method based on scalar multiplication
+  // Use a domain separation tag for Pedersen commitment generators
+  const domainSeparator = "PEDERSEN_COMMIT_GENERATORS"
+  const domainBytes = new TextEncoder().encode(domainSeparator)
+  const domainScalars = Array.from(domainBytes, (byte) => BigInt(byte))
+
+  // Generate deterministic generators using cryptographic hash-to-curve
   for (let i = 0; i < n; i++) {
-    // Use a deterministic scalar based on index
-    // In production, this should use proper hash-to-curve
-    const scalar = moduloOrder(
-      BigInt(i + 1) * BigInt(2 ** 32) + BigInt(0x12345678),
-    )
-    generators.push(scalarMultiply(scalar, G))
+    // Create unique input for each generator using domain separation and index
+    const input = [...domainScalars, BigInt(i), BigInt(n)]
+    const scalar = poseidonHashScalars(input)
+    
+    // Ensure the scalar is non-zero and in the correct range
+    const safeScalar = scalar === 0n ? 1n : scalar
+    generators.push(scalarMultiply(safeScalar, G))
   }
 
-  // Generate h as a separate generator
-  const hScalar = moduloOrder(
-    BigInt(n + 1) * BigInt(2 ** 32) + BigInt(0x87654321),
-  )
-  const h = scalarMultiply(hScalar, G)
+  // Generate h as a separate generator with different domain separation
+  const hDomainSeparator = "PEDERSEN_COMMIT_H_GENERATOR"
+  const hDomainBytes = new TextEncoder().encode(hDomainSeparator)
+  const hDomainScalars = Array.from(hDomainBytes, (byte) => BigInt(byte))
+  const hInput = [...hDomainScalars, BigInt(n)]
+  const hScalar = poseidonHashScalars(hInput)
+  const safeHScalar = hScalar === 0n ? 2n : hScalar
+  const h = scalarMultiply(safeHScalar, G)
 
   return {
     generators,

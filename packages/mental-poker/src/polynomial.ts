@@ -1,4 +1,4 @@
-import { CURVE_ORDER, type Scalar, moduloOrder } from "@starkms/crypto"
+import { CURVE_ORDER, type Scalar, moduloOrder, randScalar } from "@starkms/crypto"
 import { MentalPokerError, MentalPokerErrorCode } from "./types"
 
 /**
@@ -140,6 +140,8 @@ export function createPermutationPolynomial(
 
 /**
  * Compute modular inverse using extended Euclidean algorithm
+ * NOTE: This is a custom implementation. In production, this should be reviewed
+ * for correctness and side-channel resistance, or replaced with a library implementation.
  */
 function modularInverse(a: Scalar): Scalar {
   const mod = CURVE_ORDER
@@ -165,7 +167,7 @@ function modularInverse(a: Scalar): Scalar {
 }
 
 /**
- * Generate random polynomial of given degree
+ * Generate random polynomial of given degree using secure randomness
  */
 export function randomPolynomial(degree: number): Polynomial {
   if (degree < 0) {
@@ -177,14 +179,8 @@ export function randomPolynomial(degree: number): Polynomial {
 
   const coefficients: Scalar[] = []
   for (let i = 0; i <= degree; i++) {
-    // Generate random coefficient
-    const randomBytes = new Uint8Array(32)
-    crypto.getRandomValues(randomBytes)
-    let coeff = 0n
-    for (let j = 0; j < 32; j++) {
-      coeff = (coeff << 8n) + BigInt(randomBytes[j]!)
-    }
-    coefficients.push(moduloOrder(coeff))
+    // Use the crypto library's secure random scalar generator
+    coefficients.push(randScalar())
   }
 
   return { coefficients }

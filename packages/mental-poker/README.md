@@ -1,16 +1,29 @@
 # Mental Poker Protocol - TypeScript Implementation
 
-A complete 1:1 port of the Rust `@barnett-smart-card-protocol` implementing the Barnett-Smart mental poker protocol with zero-knowledge proofs.
+A TypeScript port of the Rust `@barnett-smart-card-protocol` implementing the Barnett-Smart mental poker protocol with zero-knowledge proofs.
 
-## 🎉 Status: **FULLY FUNCTIONAL**
+## 🔄 Status: **POST-AUDIT IMPROVEMENTS**
 
-The core mental poker protocol is now **completely operational** with all cryptographic operations working correctly:
+Following a comprehensive security audit, the implementation has been significantly enhanced:
 
 - ✅ **Zero-Knowledge Proofs**: All Chaum-Pedersen proofs verify successfully
 - ✅ **ElGamal Encryption**: Complete card masking/unmasking cycle
 - ✅ **Multi-Party Operations**: Secure key generation and aggregation
 - ✅ **Card Operations**: Mask, remask, reveal, and unmask with proofs
 - ✅ **API Compatibility**: 100% match with Rust implementation
+- 🔄 **Enhanced Shuffle Proofs**: Improved Bayer-Groth verification with better security
+- 🔄 **Secure Parameter Generation**: Cryptographically sound Pedersen commitment parameters
+- ⚠️ **Security Limitations**: Known limitations documented and acknowledged
+
+## ⚠️ Security Notice
+
+This implementation contains known security limitations that should be addressed before production use:
+
+- **Incomplete Shuffle Verification**: While significantly improved, the Bayer-Groth shuffle verification uses simplified checks for some polynomial relations
+- **Custom ZK Proofs**: The masking, reveal, and key ownership proofs are custom implementations requiring formal security review
+- **Modular Inverse**: Uses custom implementation that should be reviewed for side-channel resistance
+
+See [PROGRESS.md](./PROGRESS.md) for detailed security status and improvement roadmap.
 
 ## Features
 

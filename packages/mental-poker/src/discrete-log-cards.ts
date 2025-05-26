@@ -689,7 +689,8 @@ export class DLCards extends BaseBarnettSmartProtocol {
 
       return verifyBayerGrothShuffle(shuffleParameters, statement, proof)
     } catch (error) {
-      console.error("Error verifying shuffle proof:", error)
+      // Return false for verification failures
+      // The error details are handled by the verification function
       return false
     }
   }
