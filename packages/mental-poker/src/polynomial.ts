@@ -1,6 +1,6 @@
 import { type Scalar, moduloOrder, randScalar } from "@starkms/crypto"
-import { MentalPokerError, MentalPokerErrorCode } from "./types"
 import { secureModularInverse } from "./crypto-utils"
+import { MentalPokerError, MentalPokerErrorCode } from "./types"
 
 /**
  * Represents a polynomial over the scalar field
@@ -138,8 +138,6 @@ export function createPermutationPolynomial(
 
   return { coefficients }
 }
-
-
 
 /**
  * Generate random polynomial of given degree using secure randomness

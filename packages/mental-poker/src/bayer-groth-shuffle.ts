@@ -8,13 +8,8 @@ import {
   randScalar,
   scalarMultiply,
 } from "@starkms/crypto"
-import {
-  type PedersenCommitKey,
-} from "./pedersen-commitment"
-import {
-  createPermutationPolynomial,
-  evaluatePolynomial,
-} from "./polynomial"
+import type { PedersenCommitKey } from "./pedersen-commitment"
+import { createPermutationPolynomial, evaluatePolynomial } from "./polynomial"
 import {
   type MaskedCard,
   MentalPokerError,
@@ -187,18 +182,18 @@ export function proveBayerGrothShuffle(
 
 /**
  * Verify a Bayer-Groth shuffle proof
- * 
+ *
  * This implementation provides ENHANCED verification that includes:
  * - Fiat-Shamir challenge verification
- * - Pedersen commitment opening verification  
+ * - Pedersen commitment opening verification
  * - Polynomial evaluation validation
  * - Structural consistency checks
  * - Enhanced range and validity checks
- * 
+ *
  * SECURITY STATUS: Significantly improved over the original placeholder.
  * This provides meaningful security guarantees while maintaining compatibility
  * with the current proof format.
- * 
+ *
  * LIMITATIONS: Complete polynomial arithmetic verification would require
  * additional cryptographic operations for full Bayer-Groth security.
  */
@@ -306,19 +301,38 @@ export function verifyBayerGrothShuffle(
       // Step 6: Enhanced Bayer-Groth verification (compatible with current proof format)
       // This provides significantly improved security over the original placeholder
       // while maintaining compatibility with the existing proof generation
-      
+
       // Verify the permutation polynomial commitments (basic structural checks)
-      if (!verifyPermutationPolynomialCompatible(parameters, statement, proof, challenge)) {
+      if (
+        !verifyPermutationPolynomialCompatible(
+          parameters,
+          statement,
+          proof,
+          challenge,
+        )
+      ) {
         return false
       }
 
       // Verify the polynomial commitment arithmetic (enhanced structural checks)
-      if (!verifyPolynomialCommitmentArithmeticCompatible(parameters, proof, challenge)) {
+      if (
+        !verifyPolynomialCommitmentArithmeticCompatible(
+          parameters,
+          proof,
+          challenge,
+        )
+      ) {
         return false
       }
 
       // Verify the shuffle permutation validity (basic consistency checks)
-      if (!verifyShufflePermutationValidityCompatible(parameters, statement, proof)) {
+      if (
+        !verifyShufflePermutationValidityCompatible(
+          parameters,
+          statement,
+          proof,
+        )
+      ) {
         return false
       }
     }
@@ -428,7 +442,11 @@ function verifyPermutationPolynomialCompatible(
   proof: ZKProofShuffle,
   _challenge: Scalar,
 ): boolean {
-  if (!proof.permutationCommitments || !proof.polynomialEvaluations || !proof.openingProofs) {
+  if (
+    !proof.permutationCommitments ||
+    !proof.polynomialEvaluations ||
+    !proof.openingProofs
+  ) {
     return false
   }
 
@@ -444,20 +462,33 @@ function verifyPermutationPolynomialCompatible(
 
   // Verify polynomial commitment consistency (compatible with current format)
   // Check that opening proofs are structurally valid
-  for (let i = 0; i < Math.min(proof.permutationCommitments.length, proof.openingProofs.length); i++) {
+  for (
+    let i = 0;
+    i <
+    Math.min(proof.permutationCommitments.length, proof.openingProofs.length);
+    i++
+  ) {
     const commitment = proof.permutationCommitments[i]!
     const openingProof = proof.openingProofs[i]!
-    
+
     // Verify the commitment structure is valid
-    if (!commitment || !openingProof.commitment || !openingProof.opening || !openingProof.randomness) {
+    if (
+      !commitment ||
+      !openingProof.commitment ||
+      !openingProof.opening ||
+      !openingProof.randomness
+    ) {
       return false
     }
-    
+
     // Basic range checks for opening values
     if (openingProof.opening < 0n || openingProof.opening >= CURVE_ORDER) {
       return false
     }
-    if (openingProof.randomness < 0n || openingProof.randomness >= CURVE_ORDER) {
+    if (
+      openingProof.randomness < 0n ||
+      openingProof.randomness >= CURVE_ORDER
+    ) {
       return false
     }
   }
@@ -474,7 +505,11 @@ function verifyPolynomialCommitmentArithmeticCompatible(
   proof: ZKProofShuffle,
   _challenge: Scalar,
 ): boolean {
-  if (!proof.permutationCommitments || !proof.polynomialEvaluations || !proof.responses) {
+  if (
+    !proof.permutationCommitments ||
+    !proof.polynomialEvaluations ||
+    !proof.responses
+  ) {
     return false
   }
 
@@ -482,7 +517,7 @@ function verifyPolynomialCommitmentArithmeticCompatible(
   // Verify response validity
   for (let i = 0; i < proof.responses.length; i++) {
     const response = proof.responses[i]!
-    
+
     // Basic range check for response
     if (response < 0n || response >= CURVE_ORDER) {
       return false
@@ -492,7 +527,7 @@ function verifyPolynomialCommitmentArithmeticCompatible(
   // Verify polynomial evaluations are valid
   for (let i = 0; i < proof.polynomialEvaluations.length; i++) {
     const evaluation = proof.polynomialEvaluations[i]!
-    
+
     // Basic range check for evaluation
     if (evaluation < 0n || evaluation >= CURVE_ORDER) {
       return false
@@ -500,7 +535,10 @@ function verifyPolynomialCommitmentArithmeticCompatible(
   }
 
   // Verify structural consistency
-  if (proof.responses.length === 0 || proof.polynomialEvaluations.length === 0) {
+  if (
+    proof.responses.length === 0 ||
+    proof.polynomialEvaluations.length === 0
+  ) {
     return false
   }
 
@@ -530,7 +568,7 @@ function verifyShufflePermutationValidityCompatible(
   // Verify that the polynomial evaluations are valid scalars
   for (let i = 0; i < proof.polynomialEvaluations.length; i++) {
     const evaluation = proof.polynomialEvaluations[i]!
-    
+
     // Basic range check for evaluation
     if (evaluation < 0n || evaluation >= CURVE_ORDER) {
       return false

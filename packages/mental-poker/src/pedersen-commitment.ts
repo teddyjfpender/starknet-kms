@@ -5,9 +5,9 @@ import {
   type Scalar,
   addPoints,
   moduloOrder,
+  poseidonHashScalars,
   randScalar,
   scalarMultiply,
-  poseidonHashScalars,
 } from "@starkms/crypto"
 import { MentalPokerError, MentalPokerErrorCode } from "./types"
 
@@ -52,7 +52,7 @@ export function generatePedersenCommitKey(n: number): PedersenCommitKey {
     // Create unique input for each generator using domain separation and index
     const input = [...domainScalars, BigInt(i), BigInt(n)]
     const scalar = poseidonHashScalars(input)
-    
+
     // Ensure the scalar is non-zero and in the correct range
     const safeScalar = scalar === 0n ? 1n : scalar
     generators.push(scalarMultiply(safeScalar, G))
