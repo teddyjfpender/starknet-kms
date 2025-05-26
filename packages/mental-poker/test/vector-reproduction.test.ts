@@ -282,8 +282,8 @@ describe("Mental Poker Vector Reproduction Tests", () => {
       // Create initial deck using vector cards
       const initialDeck: MaskedCard[] = []
 
-      // Mask first 4 cards for testing (full deck would be too slow for tests)
-      for (let i = 0; i < 4; i++) {
+      // Mask all 52 cards for complete reproduction
+      for (let i = 0; i < 52; i++) {
         const card = cardMappings[i]!.card
         const alpha = rng.nextScalar()
         const [maskedCard] = await dlCards.mask(
@@ -311,17 +311,16 @@ describe("Mental Poker Vector Reproduction Tests", () => {
           throw new Error(`No permutation found for shuffle ${shuffleIndex}`)
         }
 
-        // Create a 4-element permutation based on the vector permutation pattern
+        // Use the full vector permutation for complete reproduction
         const testPermutation = {
-          mapping: vectorPermutation.slice(0, 4).map((x) => x % 4), // Map to 0-3 range
-          size: 4,
+          mapping: vectorPermutation, // Use full 52-card permutation
+          size: 52,
         }
 
-        // Use actual vector masking factors (truncated to 4 elements)
+        // Use actual vector masking factors for all 52 cards
         const vectorFactors = vectorMaskingFactors[shuffleIndex]
-        const newMaskingFactors = vectorFactors
-          ? vectorFactors.slice(0, 4)
-          : Array.from({ length: 4 }, () => rng.nextScalar())
+        const newMaskingFactors =
+          vectorFactors || Array.from({ length: 52 }, () => rng.nextScalar())
 
         const [shuffledDeck, shuffleProof] = await dlCards.shuffleAndRemask(
           parameters,
@@ -341,7 +340,7 @@ describe("Mental Poker Vector Reproduction Tests", () => {
         )
 
         expect(isValid).toBe(true)
-        expect(shuffledDeck).toHaveLength(4)
+        expect(shuffledDeck).toHaveLength(52)
 
         currentDeck = [...shuffledDeck]
       }
@@ -410,8 +409,8 @@ describe("Mental Poker Vector Reproduction Tests", () => {
       // 2. Use vector player keys ✓ (done in beforeAll)
       expect(playerKeys.size).toBe(4)
 
-      // 3. Create initial deck from vector cards
-      const initialCards = cardMappings.slice(0, 4) // Test with 4 cards for performance
+      // 3. Create initial deck from all vector cards
+      const initialCards = cardMappings // Use all 52 cards for complete reproduction
       const maskedDeck: MaskedCard[] = []
 
       for (const { card } of initialCards) {
@@ -437,22 +436,21 @@ describe("Mental Poker Vector Reproduction Tests", () => {
         Math.min(shuffleSequence.length, shuffleSequences.length);
         shuffleIndex++
       ) {
-        // Use actual vector permutation (truncated to 4 elements for testing)
+        // Use actual vector permutation for complete reproduction
         const vectorPermutation = shuffleSequences[shuffleIndex]
         if (!vectorPermutation) {
           throw new Error(`No permutation found for shuffle ${shuffleIndex}`)
         }
 
         const testPermutation = {
-          mapping: vectorPermutation.slice(0, 4).map((x) => x % 4), // Map to 0-3 range
-          size: 4,
+          mapping: vectorPermutation, // Use full 52-card permutation
+          size: 52,
         }
 
-        // Use actual vector masking factors (truncated to 4 elements)
+        // Use actual vector masking factors for all 52 cards
         const vectorFactors = vectorMaskingFactors[shuffleIndex]
-        const newMaskingFactors = vectorFactors
-          ? vectorFactors.slice(0, 4)
-          : Array.from({ length: 4 }, () => rng.nextScalar())
+        const newMaskingFactors =
+          vectorFactors || Array.from({ length: 52 }, () => rng.nextScalar())
 
         const [shuffledDeck, shuffleProof] = await dlCards.shuffleAndRemask(
           parameters,
@@ -472,7 +470,7 @@ describe("Mental Poker Vector Reproduction Tests", () => {
         )
 
         expect(isValid).toBe(true)
-        expect(shuffledDeck).toHaveLength(4)
+        expect(shuffledDeck).toHaveLength(52)
 
         currentDeck = [...shuffledDeck]
       }
@@ -502,7 +500,7 @@ describe("Mental Poker Vector Reproduction Tests", () => {
       }
 
       // 6. Verify protocol completed successfully
-      expect(finalCards).toHaveLength(4)
+      expect(finalCards).toHaveLength(52)
 
       // Each final card should correspond to one of our initial cards
       for (const finalCard of finalCards) {
@@ -516,6 +514,19 @@ describe("Mental Poker Vector Reproduction Tests", () => {
 
       // 7. Verify the protocol maintains cryptographic integrity
       // (The exact final results will differ due to shuffling, but the protocol should work)
+
+      // 8. Compare final results structure to vector expectations
+      const finalResults = getFinalResults(testVector)
+      expect(Object.keys(finalResults)).toEqual([
+        "andrija",
+        "kobi",
+        "nico",
+        "tom",
+      ])
+      expect(finalResults.andrija).toBe("4♥")
+      expect(finalResults.kobi).toBe("6♠")
+      expect(finalResults.nico).toBe("9♣")
+      expect(finalResults.tom).toBe("3♣")
     })
   })
 

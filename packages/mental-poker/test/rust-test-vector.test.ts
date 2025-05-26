@@ -14,6 +14,8 @@ import {
 import { createChaCha20Rng } from "./chacha20-rng"
 import testVector from "./test_vector.json"
 import {
+  extractMaskingFactors,
+  extractShuffleSequences,
   getCardMappings,
   getFinalResults,
   getPlayerNames,
@@ -205,7 +207,8 @@ describe("Rust Test Vector Compatibility", () => {
     it("should reproduce shuffle operations with vector permutations", async () => {
       const initialDeck: MaskedCard[] = []
 
-      for (let i = 0; i < 4; i++) {
+      // Use all 52 cards for complete reproduction
+      for (let i = 0; i < 52; i++) {
         const card = cardMappings[i]!.card
         const alpha = rng.nextScalar()
         const [maskedCard] = await dlCards.mask(
@@ -219,18 +222,30 @@ describe("Rust Test Vector Compatibility", () => {
 
       let currentDeck = initialDeck
       const shuffleSequence = getShuffleSequence(testVector)
+      const shuffleSequences = extractShuffleSequences(testVector)
+      const vectorMaskingFactors = extractMaskingFactors(testVector)
 
-      for (const _ of shuffleSequence) {
-        // Create a simple valid 4-element permutation for testing
-        // The exact permutation isn't as important as verifying the shuffle mechanism works
-        const testPermutation = {
-          mapping: [3, 1, 0, 2], // A simple valid permutation
-          size: 4,
+      for (
+        let shuffleIndex = 0;
+        shuffleIndex <
+        Math.min(shuffleSequence.length, shuffleSequences.length);
+        shuffleIndex++
+      ) {
+        // Use actual vector permutation for complete reproduction
+        const vectorPermutation = shuffleSequences[shuffleIndex]
+        if (!vectorPermutation) {
+          throw new Error(`No permutation found for shuffle ${shuffleIndex}`)
         }
 
-        const newMaskingFactors = Array.from({ length: 4 }, () =>
-          rng.nextScalar(),
-        )
+        const testPermutation = {
+          mapping: vectorPermutation, // Use full 52-card permutation
+          size: 52,
+        }
+
+        // Use actual vector masking factors for all 52 cards
+        const vectorFactors = vectorMaskingFactors[shuffleIndex]
+        const newMaskingFactors =
+          vectorFactors || Array.from({ length: 52 }, () => rng.nextScalar())
 
         const [shuffledDeck, shuffleProof] = await dlCards.shuffleAndRemask(
           parameters,
@@ -249,7 +264,7 @@ describe("Rust Test Vector Compatibility", () => {
         )
 
         expect(isValid).toBe(true)
-        expect(shuffledDeck).toHaveLength(4)
+        expect(shuffledDeck).toHaveLength(52)
 
         currentDeck = [...shuffledDeck]
       }
@@ -308,8 +323,8 @@ describe("Rust Test Vector Compatibility", () => {
       // Use vector player keys
       expect(playerKeys.size).toBe(4)
 
-      // Create initial deck from vector cards
-      const initialCards = cardMappings.slice(0, 4)
+      // Create initial deck from all vector cards
+      const initialCards = cardMappings // Use all 52 cards for complete reproduction
       const maskedDeck: MaskedCard[] = []
 
       for (const { card } of initialCards) {
@@ -323,21 +338,33 @@ describe("Rust Test Vector Compatibility", () => {
         maskedDeck.push(maskedCard)
       }
 
-      // Apply vector shuffle sequence
+      // Apply vector shuffle sequence using actual vector data
       let currentDeck = maskedDeck
       const shuffleSequence = getShuffleSequence(testVector)
+      const shuffleSequences = extractShuffleSequences(testVector)
+      const vectorMaskingFactors = extractMaskingFactors(testVector)
 
-      for (const _ of shuffleSequence) {
-        // Create a simple valid 4-element permutation for testing
-        // The exact permutation isn't as important as verifying the shuffle mechanism works
-        const testPermutation = {
-          mapping: [3, 1, 0, 2], // A simple valid permutation
-          size: 4,
+      for (
+        let shuffleIndex = 0;
+        shuffleIndex <
+        Math.min(shuffleSequence.length, shuffleSequences.length);
+        shuffleIndex++
+      ) {
+        // Use actual vector permutation for complete reproduction
+        const vectorPermutation = shuffleSequences[shuffleIndex]
+        if (!vectorPermutation) {
+          throw new Error(`No permutation found for shuffle ${shuffleIndex}`)
         }
 
-        const newMaskingFactors = Array.from({ length: 4 }, () =>
-          rng.nextScalar(),
-        )
+        const testPermutation = {
+          mapping: vectorPermutation, // Use full 52-card permutation
+          size: 52,
+        }
+
+        // Use actual vector masking factors for all 52 cards
+        const vectorFactors = vectorMaskingFactors[shuffleIndex]
+        const newMaskingFactors =
+          vectorFactors || Array.from({ length: 52 }, () => rng.nextScalar())
 
         const [shuffledDeck] = await dlCards.shuffleAndRemask(
           parameters,
@@ -375,7 +402,7 @@ describe("Rust Test Vector Compatibility", () => {
       }
 
       // Verify protocol completed successfully
-      expect(finalCards).toHaveLength(4)
+      expect(finalCards).toHaveLength(52)
 
       // Each final card should correspond to one of our initial cards
       for (const finalCard of finalCards) {
