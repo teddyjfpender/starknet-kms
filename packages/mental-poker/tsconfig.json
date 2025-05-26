@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@starkms/crypto": ["../crypto/src"],
+      "@starkms/crypto/*": ["../crypto/src/*"],
+      "@starkms/common": ["../common/src"],
+      "@starkms/common/*": ["../common/src/*"],
+      "@starkms/util": ["../util/src"],
+      "@starkms/util/*": ["../util/src/*"]
+    }
+  },
+  "include": ["src/**/*", "test/**/*", "examples/**/*"],
+  "exclude": ["dist", "node_modules"]
+} 

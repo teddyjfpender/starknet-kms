@@ -1,0 +1,30 @@
+{
+  "name": "@starkms/mental-poker",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Mental Poker Protocol Implementation - Barnett-Smart Card Protocol",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "bun x --bun tsc --noEmit && bun x --bun tsup",
+    "dev": "bun x --bun tsup --watch",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "cleanup": "bun x --bun rimraf node_modules dist .turbo"
+  },
+  "dependencies": {
+    "@starkms/common": "workspace:*",
+    "@starkms/crypto": "workspace:*",
+    "@starkms/util": "workspace:*",
+    "micro-starknet": "^0.2.3"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+} 

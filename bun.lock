@@ -37,8 +37,8 @@
       "name": "@starkms/crypto",
       "version": "0.0.1",
       "dependencies": {
-        "@starkms/common": "packages/common",
-        "@starkms/util": "packages/util",
+        "@starkms/common": "workspace:*",
+        "@starkms/util": "workspace:*",
         "bs58check": "4.0.0",
         "buffer": "6.0.3",
         "fast-check": "^4.1.1",
@@ -73,11 +73,24 @@
         "@starkms/util": "packages/util",
       },
     },
+    "packages/mental-poker": {
+      "name": "@starkms/mental-poker",
+      "version": "0.0.1",
+      "dependencies": {
+        "@starkms/common": "workspace:*",
+        "@starkms/crypto": "workspace:*",
+        "@starkms/util": "workspace:*",
+        "micro-starknet": "^0.2.3",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+    },
     "packages/util": {
       "name": "@starkms/util",
       "version": "0.0.1",
       "dependencies": {
-        "@starkms/common": "packages/common",
+        "@starkms/common": "workspace:*",
         "bs58check": "4.0.0",
         "buffer": "6.0.3",
         "ts-custom-error": "3.3.1",
@@ -267,6 +280,8 @@
     "@starkms/crypto": ["@starkms/crypto@workspace:packages/crypto"],
 
     "@starkms/key-management": ["@starkms/key-management@workspace:packages/key-management"],
+
+    "@starkms/mental-poker": ["@starkms/mental-poker@workspace:packages/mental-poker"],
 
     "@starkms/util": ["@starkms/util@workspace:packages/util"],
 
@@ -1278,6 +1293,8 @@
 
     "@starkms/key-management/@scure/base": ["@scure/base@1.1.7", "", {}, "sha512-PPNYBslrLNNUQ/Yad37MHYsNQtK67EhWb6WtSvNLLPo7SdVZgkUjD6Dg+5On7zNwmskf8OX7I7Nx5oN+MIWE0g=="],
 
+    "@starkms/mental-poker/@types/bun": ["@types/bun@1.2.14", "", { "dependencies": { "bun-types": "1.2.14" } }, "sha512-VsFZKs8oKHzI7zwvECiAJ5oSorWndIWEVhfbYqZd4HI/45kzW7PN2Rr5biAzvGvRuNmYLSANY+H59ubHq8xw7Q=="],
+
     "@turbo/workspaces/js-yaml": ["js-yaml@4.1.0", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA=="],
 
     "@turbo/workspaces/semver": ["semver@7.6.2", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-FNAIBWCx9qcRhoHcgcJ0gvU7SN1lYU2ZXuSfl04bSC5OpvDHFyJCjdNHomPXxjQlCBU67YW64PzY7/VIEH7F2w=="],
@@ -1447,6 +1464,8 @@
     "@isaacs/cliui/strip-ansi/ansi-regex": ["ansi-regex@6.1.0", "", {}, "sha512-7HSX4QQb4CspciLpVFwyRe79O3xsIZDDLER21kERQ71oaPodF8jL725AgJMFAYbooIqolJoRLuM81SpeUkpkvA=="],
 
     "@isaacs/cliui/wrap-ansi/ansi-styles": ["ansi-styles@6.2.1", "", {}, "sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug=="],
+
+    "@starkms/mental-poker/@types/bun/bun-types": ["bun-types@1.2.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-Kuh4Ub28ucMRWeiUUWMHsT9Wcbr4H3kLIO72RZZElSDxSu7vpetRvxIUDUaW6QtaIeixIpm7OXtNnZPf82EzwA=="],
 
     "@turbo/workspaces/js-yaml/argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 
