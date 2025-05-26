@@ -1,5 +1,6 @@
-import { CURVE_ORDER, type Scalar, moduloOrder, randScalar } from "@starkms/crypto"
+import { type Scalar, moduloOrder, randScalar } from "@starkms/crypto"
 import { MentalPokerError, MentalPokerErrorCode } from "./types"
+import { secureModularInverse } from "./crypto-utils"
 
 /**
  * Represents a polynomial over the scalar field
@@ -114,7 +115,7 @@ export function createPermutationPolynomial(
       if (i !== j) {
         // Multiply by (x - j) / (i - j)
         const denominator = moduloOrder(BigInt(i) - BigInt(j))
-        const denominatorInv = modularInverse(denominator)
+        const denominatorInv = secureModularInverse(denominator)
 
         // (x - j) polynomial
         const linearPoly: Polynomial = {
@@ -138,35 +139,7 @@ export function createPermutationPolynomial(
   return { coefficients }
 }
 
-/**
- * Compute modular inverse using extended Euclidean algorithm
- * 
- * SECURITY WARNING: This is a custom implementation that lacks constant-time guarantees
- * and may be vulnerable to side-channel attacks. This should be reviewed for side-channel
- * resistance or replaced with a hardened library implementation before production use.
- */
-function modularInverse(a: Scalar): Scalar {
-  const mod = CURVE_ORDER
 
-  // Extended Euclidean Algorithm
-  let [oldR, r] = [a, mod]
-  let [oldS, s] = [1n, 0n]
-
-  while (r !== 0n) {
-    const quotient = oldR / r
-    ;[oldR, r] = [r, oldR - quotient * r]
-    ;[oldS, s] = [s, oldS - quotient * s]
-  }
-
-  if (oldR > 1n) {
-    throw new MentalPokerError(
-      `No modular inverse exists for ${a}`,
-      MentalPokerErrorCode.CRYPTOGRAPHIC_ERROR,
-    )
-  }
-
-  return moduloOrder(oldS)
-}
 
 /**
  * Generate random polynomial of given degree using secure randomness
