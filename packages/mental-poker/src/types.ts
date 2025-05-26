@@ -177,9 +177,9 @@ export enum MentalPokerErrorCode {
  * Creates a PlayerId with validation
  */
 export function createPlayerId(id: number): PlayerId {
-  if (!Number.isInteger(id) || id < 0) {
+  if (!Number.isInteger(id) || id <= 0) {
     throw new MentalPokerError(
-      `Invalid player ID: ${id}. Must be a non-negative integer.`,
+      `Invalid player ID: ${id}. Must be a positive integer.`,
       MentalPokerErrorCode.INVALID_PLAYER_COUNT
     );
   }

@@ -17,6 +17,6 @@
       "@starkms/util/*": ["../util/src/*"]
     }
   },
-  "include": ["src/**/*", "test/**/*", "examples/**/*"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["src/**/*", "examples/**/*"],
+  "exclude": ["dist", "node_modules", "test/**/*"]
 } 

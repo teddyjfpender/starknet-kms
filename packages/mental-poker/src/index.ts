@@ -35,5 +35,20 @@ export { BaseBarnettSmartProtocol } from "./protocol";
 // Discrete log cards implementation
 export { DLCards } from "./discrete-log-cards";
 
-// Utility functions and helpers (to be implemented)
-// export * from "./utils"; 
+// Card encoding system
+export type { ClassicPlayingCard, CardEncoding } from "./card-encoding";
+export {
+  Suite,
+  Value,
+  createClassicCard,
+  formatCard,
+  getCardKey,
+  getPointKey,
+  createStandardDeck,
+  encodeStandardDeck,
+  getCardByIndex,
+  getCardIndex,
+  getCardPoint,
+  getPlayingCard,
+  validateEncoding,
+} from "./card-encoding"; 

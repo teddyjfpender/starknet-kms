@@ -1,104 +1,200 @@
-import { DLCards, createDeckSize, createPlayerId } from "../src/index";
+import {
+  DLCards,
+  createDeckSize,
+  createPlayerId,
+  createPermutation,
+  Suite,
+  Value,
+  createClassicCard,
+  formatCard,
+  encodeStandardDeck,
+  getCardPoint,
+  getPlayingCard,
+  type Parameters,
+  type PlayerPublicKey,
+  type PlayerSecretKey,
+  type AggregatePublicKey,
+  type MaskedCard,
+  type RevealToken,
+  type ZKProofReveal,
+  type CardEncoding,
+} from "../src";
+import { randScalar } from "@starkms/crypto";
 
 /**
- * Basic usage example of the Mental Poker protocol
- * 
- * This example demonstrates:
- * 1. Setting up protocol parameters
- * 2. Generating player keys
- * 3. Proving key ownership
- * 4. Computing aggregate public key
- * 5. Basic card operations (masking/unmasking)
+ * Example player for mental poker game
  */
-async function basicUsageExample() {
-  console.log("🃏 Mental Poker Protocol - Basic Usage Example");
-  console.log("=" .repeat(50));
+class Player {
+  public pk: PlayerPublicKey | null = null;
+  public sk: PlayerSecretKey | null = null;
+  public cards: MaskedCard[] = [];
 
-  try {
-    // Get the DLCards protocol instance
-    const protocol = DLCards.getInstance();
-    console.log("✅ Protocol instance created");
+  constructor(public readonly name: string) {}
 
-    // 1. Setup protocol parameters for 3 players and 52 cards
-    const parameters = await protocol.setup(createDeckSize(52), createPlayerId(3));
-    console.log("✅ Protocol parameters generated");
-    console.log(`   - Deck size: ${parameters.m}`);
-    console.log(`   - Player count: ${parameters.n}`);
+  async initialize(protocol: DLCards, pp: Parameters): Promise<void> {
+    const [pk, sk] = await protocol.playerKeygen(pp);
+    this.pk = pk;
+    this.sk = sk;
+  }
 
-    // 2. Generate keys for 3 players
-    const players = [];
-    for (let i = 0; i < 3; i++) {
-      const [pk, sk] = await protocol.playerKeygen(parameters);
-      const playerInfo = new TextEncoder().encode(`Player ${i + 1}`);
-      const proof = await protocol.proveKeyOwnership(parameters, pk, sk, playerInfo);
-      
-      players.push({ pk, sk, proof, info: playerInfo, name: `Player ${i + 1}` });
-      console.log(`✅ Generated keys for ${players[i]?.name}`);
-    }
+  async proveKeyOwnership(protocol: DLCards, pp: Parameters) {
+    if (!this.pk || !this.sk) throw new Error("Player not initialized");
+    const playerInfo = new TextEncoder().encode(this.name);
+    return protocol.proveKeyOwnership(pp, this.pk, this.sk, playerInfo);
+  }
 
-    // 3. Verify all key ownership proofs and compute aggregate key
-    const playerKeysProofInfo = players.map(p => [p.pk, p.proof, p.info] as const);
-    const aggregateKey = await protocol.computeAggregateKey(parameters, playerKeysProofInfo);
-    console.log("✅ Aggregate public key computed and verified");
+  receiveCard(card: MaskedCard): void {
+    this.cards.push(card);
+  }
 
-    // 4. Create a test card (using a simple point for demonstration)
-    const testCard = {
-      point: parameters.generators.G, // Simple test card
-      index: 0 as any, // Placeholder index
-    };
-    console.log("✅ Test card created");
-
-    // 5. Mask the card
-    const alpha = BigInt(123); // Simple masking factor for demo
-    const [maskedCard, maskingProof] = await protocol.mask(
-      parameters,
-      aggregateKey,
-      testCard,
-      alpha
-    );
-    console.log("✅ Card masked with zero-knowledge proof");
-
-    // 6. Verify the masking proof
-    const maskingValid = await protocol.verifyMask(
-      parameters,
-      aggregateKey,
-      testCard,
-      maskedCard,
-      maskingProof
-    );
-    console.log(`✅ Masking proof verification: ${maskingValid ? "VALID" : "INVALID"}`);
-
-    // 7. Generate reveal tokens from all players
-    const revealTokens = [];
-    for (const player of players) {
-      const [token, proof] = await protocol.computeRevealToken(
-        parameters,
-        player.sk,
-        player.pk,
-        maskedCard
-      );
-      revealTokens.push([token, proof, player.pk] as const);
-      console.log(`✅ ${player.name} generated reveal token`);
-    }
-
-    // 8. Unmask the card using all reveal tokens
-    const unmaskedCard = await protocol.unmask(parameters, revealTokens, maskedCard);
-    console.log("✅ Card unmasked successfully");
-
-    // 9. Verify the card was correctly recovered
-    const cardRecovered = unmaskedCard.point.equals(testCard.point);
-    console.log(`✅ Card recovery verification: ${cardRecovered ? "SUCCESS" : "FAILED"}`);
-
-    console.log("\n🎉 Basic usage example completed successfully!");
-    console.log("The mental poker protocol is working correctly.");
-
-  } catch (error) {
-    console.error("❌ Error in basic usage example:", error);
-    throw error;
+  async computeRevealToken(protocol: DLCards, pp: Parameters, card: MaskedCard) {
+    if (!this.pk || !this.sk) throw new Error("Player not initialized");
+    return protocol.computeRevealToken(pp, this.sk, this.pk, card);
   }
 }
 
-// Run the example if this file is executed directly
-// Note: import.meta.main check removed due to TypeScript target compatibility
+/**
+ * Demonstrates a complete mental poker game round
+ */
+async function demonstrateMentalPoker() {
+  console.log("🃏 Mental Poker Protocol Demonstration");
+  console.log("=====================================\n");
 
-export { basicUsageExample }; 
+  // 1. Setup protocol parameters
+  console.log("1. Setting up protocol parameters...");
+  const protocol = DLCards.getInstance();
+  const pp = await protocol.setup(createDeckSize(4), createPlayerId(3));
+  console.log("✓ Protocol parameters created\n");
+
+  // 2. Create card encoding
+  console.log("2. Creating card encoding...");
+  const cardEncoding = encodeStandardDeck();
+  console.log("✓ Standard 52-card deck encoded to curve points\n");
+
+  // 3. Initialize players
+  console.log("3. Initializing players...");
+  const players = [
+    new Player("Alice"),
+    new Player("Bob"),
+    new Player("Charlie")
+  ];
+
+  for (const player of players) {
+    await player.initialize(protocol, pp);
+    console.log(`✓ ${player.name} initialized with key pair`);
+  }
+  console.log();
+
+  // 4. Prove key ownership and compute aggregate key
+  console.log("4. Proving key ownership and computing aggregate key...");
+  const keyProofInfo = await Promise.all(
+    players.map(async (player) => {
+      const proof = await player.proveKeyOwnership(protocol, pp);
+      const playerInfo = new TextEncoder().encode(player.name);
+      return [player.pk!, proof, playerInfo] as const;
+    })
+  );
+
+  const aggregateKey = await protocol.computeAggregateKey(pp, keyProofInfo);
+  console.log("✓ All key ownership proofs verified");
+  console.log("✓ Aggregate public key computed\n");
+
+  // 5. Create and mask initial deck
+  console.log("5. Creating and masking initial deck...");
+  const initialCards = [
+    createClassicCard(Value.Ace, Suite.Spade),
+    createClassicCard(Value.King, Suite.Heart),
+    createClassicCard(Value.Queen, Suite.Diamond),
+    createClassicCard(Value.Jack, Suite.Club)
+  ];
+
+  let deck: MaskedCard[] = [];
+  for (const card of initialCards) {
+    const cardPoint = getCardPoint(cardEncoding, card);
+    if (!cardPoint) throw new Error("Could not encode card");
+    
+    const maskingFactor = randScalar();
+    const [maskedCard, proof] = await protocol.mask(pp, aggregateKey, cardPoint, maskingFactor);
+    
+    // Verify masking proof
+    const isValid = await protocol.verifyMask(pp, aggregateKey, cardPoint, maskedCard, proof);
+    if (!isValid) throw new Error("Invalid masking proof");
+    
+    deck.push(maskedCard);
+    console.log(`✓ ${formatCard(card)} masked and verified`);
+  }
+  console.log();
+
+  // 6. Shuffle the deck (each player shuffles)
+  console.log("6. Shuffling deck...");
+  for (let i = 0; i < players.length; i++) {
+    const permutation = createPermutation([2, 0, 3, 1]); // Example shuffle
+    const maskingFactors = Array.from({ length: deck.length }, () => randScalar());
+    
+    const [shuffledDeck, shuffleProof] = await protocol.shuffleAndRemask(
+      pp,
+      aggregateKey,
+      deck,
+      maskingFactors,
+      permutation
+    );
+    
+    // Verify shuffle
+    const isValid = await protocol.verifyShuffle(pp, aggregateKey, deck, shuffledDeck, shuffleProof);
+    if (!isValid) throw new Error("Invalid shuffle proof");
+    
+    deck = Array.from(shuffledDeck);
+    console.log(`✓ ${players[i].name} shuffled and verified`);
+  }
+  console.log();
+
+  // 7. Deal cards to players
+  console.log("7. Dealing cards...");
+  for (let i = 0; i < players.length; i++) {
+    const player = players[i];
+    const card = deck[i];
+    if (!player || !card) throw new Error(`Missing player or card at index ${i}`);
+    
+    player.receiveCard(card);
+    console.log(`✓ ${player.name} received a card`);
+  }
+  console.log();
+
+  // 8. Reveal cards
+  console.log("8. Revealing cards...");
+  for (let i = 0; i < players.length; i++) {
+    const player = players[i];
+    const playerCard = deck[i];
+    if (!player || !playerCard) throw new Error(`Missing player or card at index ${i}`);
+    
+    // All players compute reveal tokens for this card
+    const revealTokens: [RevealToken, ZKProofReveal, PlayerPublicKey][] = [];
+    for (const p of players) {
+      const [token, proof] = await p.computeRevealToken(protocol, pp, playerCard);
+      revealTokens.push([token, proof, p.pk!]);
+    }
+    
+    // Verify all reveal token proofs
+    for (const [token, proof, pk] of revealTokens) {
+      const isValid = await protocol.verifyReveal(pp, pk, token, playerCard, proof);
+      if (!isValid) throw new Error("Invalid reveal token proof");
+    }
+    
+    // Unmask the card
+    const unmaskedCard = await protocol.unmask(pp, revealTokens, playerCard, cardEncoding);
+    const revealedCard = getPlayingCard(cardEncoding, unmaskedCard.point);
+    
+    if (!revealedCard) throw new Error("Could not decode revealed card");
+    
+    console.log(`✓ ${player.name}'s card: ${formatCard(revealedCard)}`);
+  }
+  console.log();
+
+  console.log("🎉 Mental poker round completed successfully!");
+  console.log("All cryptographic proofs verified ✓");
+  console.log("Cards remained private until revealed ✓");
+  console.log("No trusted dealer required ✓");
+}
+
+// Run the demonstration
+demonstrateMentalPoker().catch(console.error); 

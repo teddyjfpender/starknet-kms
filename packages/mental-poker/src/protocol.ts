@@ -17,6 +17,7 @@ import type {
   PlayerId,
 } from "./types";
 import { MentalPokerError } from "./types";
+import type { CardEncoding } from "./card-encoding";
 
 /**
  * Mental Poker protocol based on the one described by Barnett and Smart (2003).
@@ -218,13 +219,15 @@ export interface BarnettSmartProtocol {
    * @param pp Protocol parameters
    * @param decryptionKey Array of [reveal token, proof, public key] tuples from all players
    * @param maskedCard Masked card to unmask
+   * @param cardEncoding Optional card encoding for proper index resolution
    * @returns The original unmasked card
    * @throws {MentalPokerError} If unmasking fails or insufficient reveal tokens
    */
   unmask(
     pp: Parameters,
     decryptionKey: readonly (readonly [RevealToken, ZKProofReveal, PlayerPublicKey])[],
-    maskedCard: MaskedCard
+    maskedCard: MaskedCard,
+    cardEncoding?: CardEncoding
   ): Promise<Card>;
 
   /* ------------------------  Shuffle Operations  ------------------------ */
@@ -336,7 +339,8 @@ export abstract class BaseBarnettSmartProtocol implements BarnettSmartProtocol {
   abstract unmask(
     pp: Parameters,
     decryptionKey: readonly (readonly [RevealToken, ZKProofReveal, PlayerPublicKey])[],
-    maskedCard: MaskedCard
+    maskedCard: MaskedCard,
+    cardEncoding?: CardEncoding
   ): Promise<Card>;
   abstract shuffleAndRemask(
     pp: Parameters,
