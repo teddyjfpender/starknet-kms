@@ -16,7 +16,7 @@ export type {
   PlayerId,
   CardIndex,
   DeckSize,
-} from "./types";
+} from "./types"
 
 // Error types
 export {
@@ -26,17 +26,17 @@ export {
   createCardIndex,
   createDeckSize,
   createPermutation,
-} from "./types";
+} from "./types"
 
 // Protocol interface
-export type { BarnettSmartProtocol } from "./protocol";
-export { BaseBarnettSmartProtocol } from "./protocol";
+export type { BarnettSmartProtocol } from "./protocol"
+export { BaseBarnettSmartProtocol } from "./protocol"
 
 // Discrete log cards implementation
-export { DLCards } from "./discrete-log-cards";
+export { DLCards } from "./discrete-log-cards"
 
 // Card encoding system
-export type { ClassicPlayingCard, CardEncoding } from "./card-encoding";
+export type { ClassicPlayingCard, CardEncoding } from "./card-encoding"
 export {
   Suite,
   Value,
@@ -51,4 +51,4 @@ export {
   getCardPoint,
   getPlayingCard,
   validateEncoding,
-} from "./card-encoding"; 
+} from "./card-encoding"
