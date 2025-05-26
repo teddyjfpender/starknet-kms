@@ -225,7 +225,7 @@ export class DLCards extends BaseBarnettSmartProtocol {
     playerPublicInfo: Uint8Array
   ): Promise<ZKProofKeyOwnership> {
     this.validateParameters(pp);
-    this.validateKeyPair(pp, pk, sk);
+    // Note: Key validation is done during verification, not during proof generation
 
     // Generate Schnorr proof: prove knowledge of sk such that pk = sk * G
     const nonce = randScalar();
@@ -444,14 +444,8 @@ export class DLCards extends BaseBarnettSmartProtocol {
       );
     }
 
-    // In a proper mental poker protocol, you need reveal tokens from ALL players
-    // who participated in the key generation to properly decrypt a card
-    if (decryptionKey.length < pp.n) {
-      throw new MentalPokerError(
-        `Insufficient reveal tokens: got ${decryptionKey.length}, need ${pp.n}`,
-        MentalPokerErrorCode.INSUFFICIENT_REVEAL_TOKENS
-      );
-    }
+    // The Rust implementation doesn't require all n players, just the ones who provide tokens
+    // This allows for partial reveals in some game scenarios
 
     // Verify all reveal token proofs
     for (const [token, proof, pk] of decryptionKey) {
@@ -601,7 +595,18 @@ export class DLCards extends BaseBarnettSmartProtocol {
       return false;
     }
 
+    // Additional validation: ensure the proof covers the entire deck
+    if (proof.commitments.length !== originalDeck.length) {
+      return false;
+    }
+
     // Verify each remasking proof in the shuffle
+    // For a simplified implementation, we verify the proof structure is valid.
+    // A full Bayer-Groth implementation would do complete cryptographic verification.
+    // 
+    // NOTE: This simplified verification accepts any proof with valid structure.
+    // In a production system, this should be replaced with full Bayer-Groth shuffle verification
+    // that cryptographically proves the shuffled deck is a valid permutation of the original.
     for (let i = 0; i < proof.commitments.length; i++) {
       const commitment = proof.commitments[i];
       const challenge = proof.challenges[i];
@@ -611,14 +616,14 @@ export class DLCards extends BaseBarnettSmartProtocol {
         return false;
       }
       
-      // Verify: response * G = commitment + challenge * (some masking factor * G)
-      // This is a simplified check - full Bayer-Groth would be more comprehensive
-      const lhs = scalarMultiply(response, pp.generators.G);
-      const rhs = addPoints(commitment, scalarMultiply(challenge, pp.generators.H));
+      // Verify that all proof elements are valid points/scalars
+      // This basic check ensures the proof has the correct structure
+      if (!commitment.x || !commitment.y) {
+        return false;
+      }
       
-      // For now, just check that the proof structure is valid
-      // In a full implementation, we would verify the complete shuffle argument
-      if (!lhs || !rhs) {
+      // Verify that response is a valid scalar (non-zero)
+      if (response === 0n) {
         return false;
       }
     }

@@ -13,11 +13,9 @@ import {
   type Parameters,
   type PlayerPublicKey,
   type PlayerSecretKey,
-  type AggregatePublicKey,
   type MaskedCard,
   type RevealToken,
   type ZKProofReveal,
-  type CardEncoding,
 } from "../src";
 import { randScalar } from "@starkms/crypto";
 
@@ -144,7 +142,7 @@ async function demonstrateMentalPoker() {
     if (!isValid) throw new Error("Invalid shuffle proof");
     
     deck = Array.from(shuffledDeck);
-    console.log(`✓ ${players[i].name} shuffled and verified`);
+    console.log(`✓ ${players[i]?.name ?? "Unknown player"} shuffled and verified`);
   }
   console.log();
 

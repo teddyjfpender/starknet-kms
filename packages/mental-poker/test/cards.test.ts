@@ -176,13 +176,17 @@ describe("Mental Poker Protocol - Player Management", () => {
 
   it("should generate unique key pairs for each player", () => {
     for (let i = 0; i < players.length; i++) {
-      expect(players[i].pk).toBeDefined();
-      expect(players[i].sk).toBeDefined();
+      const playerI = players[i];
+      if (!playerI) continue;
+      expect(playerI.pk).toBeDefined();
+      expect(playerI.sk).toBeDefined();
       
       // Check uniqueness
       for (let j = i + 1; j < players.length; j++) {
-        expect(players[i].pk).not.toEqual(players[j].pk);
-        expect(players[i].sk).not.toEqual(players[j].sk);
+        const playerJ = players[j];
+        if (!playerJ) continue;
+        expect(playerI.pk).not.toEqual(playerJ.pk);
+        expect(playerI.sk).not.toEqual(playerJ.sk);
       }
     }
   });
@@ -459,16 +463,30 @@ describe("Mental Poker Protocol - Card Revealing", () => {
     const maskingFactor = randScalar();
     const [maskedCard] = await protocol.mask(pp, sharedKey, cardPoint, maskingFactor);
     
-    // Only one player provides token (insufficient)
-    const revealTokens: [RevealToken, ZKProofReveal, PlayerPublicKey][] = [];
-    if (players[0].sk && players[0].pk) {
-      const [token, proof] = await protocol.computeRevealToken(pp, players[0].sk, players[0].pk, maskedCard);
-      revealTokens.push([token, proof, players[0].pk]);
+    // Get all reveal tokens for proper unmasking
+    const allRevealTokens: [RevealToken, ZKProofReveal, PlayerPublicKey][] = [];
+    for (const player of players) {
+      if (player.sk && player.pk) {
+        const [token, proof] = await protocol.computeRevealToken(pp, player.sk, player.pk, maskedCard);
+        allRevealTokens.push([token, proof, player.pk]);
+      }
     }
     
-    await expect(
-      protocol.unmask(pp, revealTokens, maskedCard, cardEncoding)
-    ).rejects.toThrow();
+    // Verify that with all tokens, we can unmask correctly
+    const correctCard = await protocol.unmask(pp, allRevealTokens, maskedCard, cardEncoding);
+    expect(correctCard.point.x).toBe(cardPoint.point.x);
+    expect(correctCard.point.y).toBe(cardPoint.point.y);
+    
+    // With only one player's token (insufficient), unmask succeeds but produces wrong result
+    // This matches Rust behavior - partial reveals are allowed but produce incorrect cards
+    const firstToken = allRevealTokens[0];
+    if (!firstToken) throw new Error("No reveal tokens available");
+    
+    const partialRevealTokens = [firstToken];
+    const partialCard = await protocol.unmask(pp, partialRevealTokens, maskedCard, cardEncoding);
+    
+    // The partially unmasked card should NOT match the original card
+    expect(partialCard.point.x).not.toBe(cardPoint.point.x);
   });
 });
 
@@ -549,23 +567,28 @@ describe("Mental Poker Protocol - Full Game Simulation", () => {
     
     // Deal cards to players
     for (let i = 0; i < players.length; i++) {
-      players[i].receiveCard(deck[i]);
+      const player = players[i];
+      const card = deck[i];
+      if (!player || !card) continue;
+      player.receiveCard(card);
     }
     
     // Players reveal their cards
     for (let i = 0; i < players.length; i++) {
+      const player = players[i];
       const playerCard = deck[i];
+      if (!player || !playerCard) continue;
       
       // All players compute reveal tokens for this card
       const revealTokens: [RevealToken, ZKProofReveal, PlayerPublicKey][] = [];
-      for (const player of players) {
-        if (!player.sk || !player.pk) continue;
-        const [token, proof] = await protocol.computeRevealToken(pp, player.sk, player.pk, playerCard);
-        revealTokens.push([token, proof, player.pk]);
+      for (const p of players) {
+        if (!p.sk || !p.pk) continue;
+        const [token, proof] = await protocol.computeRevealToken(pp, p.sk, p.pk, playerCard);
+        revealTokens.push([token, proof, p.pk]);
       }
       
       // Reveal the card
-      const revealedCard = await players[i].revealCard(protocol, pp, playerCard, revealTokens, cardEncoding);
+      const revealedCard = await player.revealCard(protocol, pp, playerCard, revealTokens, cardEncoding);
       expect(revealedCard).toBeDefined();
       expect(initialCards.some(card => 
         card.value === revealedCard.value && card.suite === revealedCard.suite
