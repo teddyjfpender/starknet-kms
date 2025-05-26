@@ -8,16 +8,15 @@ This document addresses the audit findings for the TypeScript mental poker imple
 
 ### 1. Cryptographic Issues
 
-#### ✅ **Partial Shuffle Proof - ADDRESSED**
+#### ⚠️ **Partial Shuffle Proof - PARTIALLY ADDRESSED**
 - **Issue**: Shuffle proof was a placeholder that only verified individual card remasking
-- **Resolution**: Implemented proper Bayer-Groth shuffle proof with:
+- **Resolution**: Implemented Bayer-Groth shuffle proof scaffolding with:
   - Permutation polynomial commitments using Pedersen commitments
   - Fiat-Shamir challenge generation
   - Opening proofs for commitment verification
-  - Polynomial evaluation verification
   - Enhanced structural validation
-- **Status**: **SIGNIFICANTLY IMPROVED** - Now uses cryptographically sound Bayer-Groth structure
-- **Note**: While not a complete polynomial arithmetic verification, this provides substantial security improvements over the original placeholder
+- **Status**: **INCOMPLETE** - Verification remains simplified and does not validate permutation polynomial
+- **Critical Limitation**: The shuffle verification is still a structural placeholder and is NOT cryptographically sound
 
 #### ✅ **Pedersen Parameter Generation - FIXED**
 - **Issue**: Weak parameter generation using simple scalar multiplications
@@ -59,20 +58,21 @@ This document addresses the audit findings for the TypeScript mental poker imple
 ## Current Implementation Status
 
 ### ✅ **What Works Well**
-1. **Secure Bayer-Groth Structure**: Proper polynomial commitments and challenge generation
+1. **Improved Parameter Generation**: Hash-to-curve Pedersen parameter generation
 2. **Rust API Compatibility**: Maintains 1:1 API compatibility with Rust implementation
 3. **Comprehensive Testing**: All 28 tests pass including 6 Rust compatibility tests
 4. **Clean Codebase**: No TypeScript errors, proper error handling
-5. **Secure Parameter Generation**: Hash-to-curve Pedersen parameter generation
-6. **Consistent Randomness**: Uses `randScalar()` throughout
+5. **Consistent Randomness**: Uses `randScalar()` throughout
+6. **Shuffle Proof Scaffolding**: Basic Bayer-Groth structure implemented
 
-### ⚠️ **Known Limitations (Documented)**
-1. **Simplified Shuffle Verification**: While significantly improved, full verification would require complete polynomial arithmetic validation
+### ⚠️ **Critical Limitations**
+1. **INCOMPLETE SHUFFLE VERIFICATION**: The shuffle proof verification is still a simplified structural check and does NOT validate the permutation polynomial - this is a critical security vulnerability
 2. **Custom ZK Proofs**: Masking, reveal, and key ownership proofs need formal security review
-3. **Modular Inverse**: Custom implementation should be reviewed for side-channel resistance
+3. **Modular Inverse**: Custom implementation lacks constant-time guarantees and needs side-channel review
+4. **Documentation vs Reality**: Previous documentation incorrectly claimed cryptographic soundness
 
-### 🔒 **Security Improvements Made**
-1. **Enhanced Shuffle Proof**: Replaced placeholder with cryptographically sound Bayer-Groth structure
+### 🔧 **Improvements Made (Not Security Fixes)**
+1. **Shuffle Proof Scaffolding**: Added Bayer-Groth structure but verification remains incomplete
 2. **Secure Parameter Generation**: Implemented proper hash-to-curve methods
 3. **Consistent Cryptographic Primitives**: Unified randomness and hashing approaches
 4. **Proper Error Handling**: Eliminated console logging in cryptographic functions
@@ -88,11 +88,11 @@ This document addresses the audit findings for the TypeScript mental poker imple
 
 | Requirement | Status | Implementation |
 |-------------|--------|----------------|
-| Complete shuffle proof | ⚠️ Improved | Bayer-Groth structure with simplified verification |
+| Complete shuffle proof | ❌ **INCOMPLETE** | Bayer-Groth scaffolding but verification is still a structural placeholder |
 | Secure Pedersen parameters | ✅ Complete | Hash-to-curve generation |
 | Consistent randomness | ✅ Complete | `randScalar()` throughout |
 | Proper error handling | ✅ Complete | No console logging in crypto functions |
-| Updated documentation | ✅ Complete | All docs reflect current status |
+| Updated documentation | ⚠️ **CORRECTED** | Documentation now accurately reflects limitations |
 | Clean codebase | ✅ Complete | No unused files or TypeScript errors |
 
 ## Recommendations for Further Security
@@ -104,11 +104,18 @@ This document addresses the audit findings for the TypeScript mental poker imple
 
 ## Conclusion
 
-The TypeScript implementation has been significantly improved to address the audit findings. While some limitations remain (clearly documented), the implementation now provides:
+**CRITICAL SECURITY NOTICE**: The shuffle proof vulnerability identified in the original audit remains largely unresolved. While scaffolding for Bayer-Groth proofs has been added, the verification is still a simplified structural check that does NOT validate the permutation polynomial.
 
-- **Substantially enhanced security** through proper Bayer-Groth shuffle structure
-- **Full 1:1 Rust API compatibility** with no breaking changes
-- **Professional code quality** with clean error handling and documentation
-- **Comprehensive testing** with 100% test pass rate
+**Current Status**:
+- ❌ **Shuffle verification remains insecure** - still a structural placeholder
+- ✅ **Parameter generation improved** - now uses secure hash-to-curve methods  
+- ✅ **API compatibility maintained** - full 1:1 Rust compatibility preserved
+- ✅ **Code quality improved** - clean error handling and consistent randomness
+- ⚠️ **Documentation corrected** - now accurately reflects security limitations
 
-The implementation is now suitable for production use with the documented limitations, and provides a solid foundation for further security enhancements. 
+**NOT SUITABLE FOR PRODUCTION USE** - The implementation should be marked as experimental until:
+1. Complete Bayer-Groth polynomial verification is implemented
+2. Custom ZK proofs receive formal security review
+3. Modular inverse implementation is hardened for side-channel resistance
+
+The implementation provides a foundation for further development but does not resolve the critical shuffle proof vulnerability. 

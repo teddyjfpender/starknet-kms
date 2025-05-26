@@ -2,28 +2,30 @@
 
 A TypeScript port of the Rust `@barnett-smart-card-protocol` implementing the Barnett-Smart mental poker protocol with zero-knowledge proofs.
 
-## 🔄 Status: **POST-AUDIT IMPROVEMENTS**
+## ⚠️ Status: **EXPERIMENTAL - CRITICAL SECURITY ISSUES REMAIN**
 
-Following a comprehensive security audit, the implementation has been significantly enhanced:
+**IMPORTANT**: Following a security audit, while some improvements have been made, critical vulnerabilities remain unresolved:
 
 - ✅ **Zero-Knowledge Proofs**: All Chaum-Pedersen proofs verify successfully
 - ✅ **ElGamal Encryption**: Complete card masking/unmasking cycle
 - ✅ **Multi-Party Operations**: Secure key generation and aggregation
 - ✅ **Card Operations**: Mask, remask, reveal, and unmask with proofs
 - ✅ **API Compatibility**: 100% match with Rust implementation
-- 🔄 **Enhanced Shuffle Proofs**: Improved Bayer-Groth verification with better security
-- 🔄 **Secure Parameter Generation**: Cryptographically sound Pedersen commitment parameters
-- ⚠️ **Security Limitations**: Known limitations documented and acknowledged
+- ❌ **Shuffle Proofs**: Verification is still a simplified structural check - NOT cryptographically sound
+- ✅ **Secure Parameter Generation**: Cryptographically sound Pedersen commitment parameters
+- ⚠️ **Documentation Corrected**: Now accurately reflects security limitations
 
-## ⚠️ Security Notice
+## 🚨 CRITICAL SECURITY NOTICE
 
-This implementation contains known security limitations that should be addressed before production use:
+**NOT SUITABLE FOR PRODUCTION USE** - This implementation has critical security vulnerabilities:
 
-- **Incomplete Shuffle Verification**: While significantly improved, the Bayer-Groth shuffle verification uses simplified checks for some polynomial relations
+- **INCOMPLETE SHUFFLE VERIFICATION**: The shuffle proof verification is still a simplified structural check that does NOT validate the permutation polynomial - this is a critical security vulnerability
 - **Custom ZK Proofs**: The masking, reveal, and key ownership proofs are custom implementations requiring formal security review
-- **Modular Inverse**: Uses custom implementation that should be reviewed for side-channel resistance
+- **Modular Inverse**: Uses custom implementation that lacks constant-time guarantees and needs side-channel review
 
-See [PROGRESS.md](./PROGRESS.md) for detailed security status and improvement roadmap.
+**The implementation should be considered EXPERIMENTAL until these issues are resolved.**
+
+See [PROGRESS.md](./PROGRESS.md) and [AUDIT-RESPONSE.md](./AUDIT-RESPONSE.md) for detailed security status.
 
 ## Features
 

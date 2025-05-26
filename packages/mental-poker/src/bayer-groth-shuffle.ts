@@ -187,6 +187,10 @@ export function proveBayerGrothShuffle(
 
 /**
  * Verify a Bayer-Groth shuffle proof
+ * 
+ * WARNING: This is a SIMPLIFIED verification that only checks structural consistency.
+ * It does NOT validate the permutation polynomial and is NOT cryptographically sound.
+ * This is a critical security vulnerability that must be addressed.
  */
 export function verifyBayerGrothShuffle(
   parameters: ShuffleParameters,
@@ -308,9 +312,13 @@ export function verifyBayerGrothShuffle(
       }
     }
 
-    // The proof has passed verification
-    // Note: This is a simplified verification that ensures structural consistency
-    // Full Bayer-Groth verification would require complete polynomial arithmetic validation
+    // WARNING: This is NOT a complete Bayer-Groth verification!
+    // This only checks structural consistency and does NOT validate:
+    // 1. The permutation polynomial correctness
+    // 2. The polynomial commitment arithmetic
+    // 3. The actual shuffle permutation validity
+    // 
+    // This is a CRITICAL SECURITY VULNERABILITY - the shuffle is NOT proven correct
     return true
   } catch (error) {
     // Return false for verification failures without logging

@@ -241,8 +241,8 @@ describe("Rust Compatibility Tests", () => {
     )
     expect(isValid).toBe(true)
 
-    // Test with wrong output - The full Bayer-Groth implementation correctly
-    // rejects shuffles that don't match the proof, providing proper security.
+    // Test with wrong output - NOTE: The current implementation has incomplete
+    // verification that only checks structural consistency, not cryptographic correctness.
     const wrongOutput: MaskedCard[] = []
     for (let i = 0; i < deckSize; i++) {
       const randomness = scalarMultiply(randScalar(), G)
@@ -260,7 +260,8 @@ describe("Rust Compatibility Tests", () => {
       wrongOutput,
       shuffleProof,
     )
-    // The secure Bayer-Groth implementation correctly rejects invalid shuffles
+    // The current simplified verification may reject some invalid shuffles
+    // but does NOT provide cryptographic security guarantees
     expect(isWrongValid).toBe(false)
   })
 

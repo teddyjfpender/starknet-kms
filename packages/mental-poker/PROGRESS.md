@@ -38,9 +38,9 @@ This document tracks the progress of implementing a 1:1 port of the Rust `@barne
 - [x] **Build Validation**: Full TypeScript compilation with strict checking
 - [x] **Proof Verification**: All cryptographic proofs working correctly
 
-## Current Status: Post-Audit Improvements Complete ✅
+## Current Status: Post-Audit - Critical Issues Remain ⚠️
 
-The TypeScript implementation has been significantly enhanced following a comprehensive security audit. All critical issues have been addressed while maintaining full 1:1 Rust API compatibility.
+**IMPORTANT**: While some improvements have been made following the security audit, the critical shuffle proof vulnerability remains largely unresolved. The implementation should be considered experimental.
 
 ## Implementation Status
 
@@ -52,20 +52,20 @@ The TypeScript implementation has been significantly enhanced following a compre
 - [x] **Reveal Token Generation**: Complete with verification
 - [x] **Card Unmasking**: Complete multi-party reveal process
 
-### ✅ Enhanced Shuffle Implementation (Significantly Improved)
-- [x] **Bayer-Groth Shuffle Proofs**: Cryptographically sound structure implemented
+### ⚠️ Shuffle Implementation (Scaffolding Added, Verification Incomplete)
+- [x] **Bayer-Groth Shuffle Scaffolding**: Basic structure implemented but verification incomplete
   - [x] Permutation polynomial commitments using Pedersen commitments
   - [x] Fiat-Shamir challenge generation
   - [x] Opening proofs for commitment verification
-  - [x] Polynomial evaluation verification
   - [x] Enhanced structural validation
+  - ❌ **CRITICAL**: Polynomial verification is still simplified and does NOT validate permutation
 - [x] **Secure Parameter Generation**: Hash-to-curve Pedersen parameter generation
 - [x] **Consistent Randomness**: Uses `randScalar()` throughout
 - [x] **Proper Error Handling**: No console logging in cryptographic functions
 
-### ✅ Security & Quality Improvements (Complete)
-- [x] **Audit Response**: All critical findings addressed
-- [x] **Documentation**: Updated to reflect current status and limitations
+### ⚠️ Security & Quality Improvements (Partial)
+- ❌ **Audit Response**: Critical shuffle proof vulnerability remains unresolved
+- [x] **Documentation**: Updated to accurately reflect current limitations
 - [x] **Code Quality**: Clean TypeScript compilation, no unused code
 - [x] **Testing**: 100% test pass rate (28/28 tests including 6 Rust compatibility tests)
 
@@ -79,8 +79,8 @@ All public APIs maintain exact compatibility with the Rust reference implementat
 - [x] `proveKeyOwnership()` - Key ownership proofs
 - [x] `computeAggregateKey()` - Multi-party key aggregation
 - [x] `mask()` / `remask()` - Card masking operations
-- [x] `shuffleAndRemask()` - **Enhanced** shuffle with Bayer-Groth proofs
-- [x] `verifyShuffle()` - **Enhanced** shuffle verification
+- [x] `shuffleAndRemask()` - **Scaffolding** for Bayer-Groth proofs (verification incomplete)
+- [x] `verifyShuffle()` - **Simplified** shuffle verification (NOT cryptographically sound)
 - [x] `computeRevealToken()` - Reveal token generation
 - [x] `unmask()` - Multi-party card revealing
 
@@ -97,7 +97,7 @@ All public APIs maintain exact compatibility with the Rust reference implementat
 - [x] Card encoding and deck management
 - [x] Player key generation and aggregation
 - [x] Card masking and remasking with proofs
-- [x] **Enhanced shuffle operations** with Bayer-Groth proofs
+- [x] **Shuffle operations** with incomplete Bayer-Groth verification
 - [x] Multi-party card revealing
 - [x] Full game simulation
 - [x] Security property validation
@@ -105,16 +105,16 @@ All public APIs maintain exact compatibility with the Rust reference implementat
 
 ## Security Status
 
-### ✅ Significantly Enhanced Security
-1. **Shuffle Proofs**: Upgraded from placeholder to cryptographically sound Bayer-Groth structure
-2. **Parameter Generation**: Secure hash-to-curve methods replace weak scalar multiplication
-3. **Randomness**: Consistent cryptographically secure random generation
-4. **Error Handling**: Professional error propagation without information leakage
+### ⚠️ Security Status - Critical Issues Remain
+1. **Shuffle Proofs**: ❌ **INCOMPLETE** - Verification is still a simplified structural check, NOT cryptographically sound
+2. **Parameter Generation**: ✅ Secure hash-to-curve methods replace weak scalar multiplication
+3. **Randomness**: ✅ Consistent cryptographically secure random generation
+4. **Error Handling**: ✅ Professional error propagation without information leakage
 
-### ⚠️ Known Limitations (Documented)
-1. **Simplified Shuffle Verification**: While significantly improved, full verification would require complete polynomial arithmetic validation
+### ❌ Critical Limitations
+1. **INCOMPLETE SHUFFLE VERIFICATION**: The shuffle proof verification does NOT validate the permutation polynomial - this is a critical security vulnerability
 2. **Custom ZK Proofs**: Masking, reveal, and key ownership proofs need formal security review
-3. **Modular Inverse**: Custom implementation should be reviewed for side-channel resistance
+3. **Modular Inverse**: Custom implementation lacks constant-time guarantees and needs side-channel review
 
 ## Performance Characteristics
 
@@ -148,16 +148,21 @@ All public APIs maintain exact compatibility with the Rust reference implementat
 
 ## Conclusion
 
-The TypeScript mental poker implementation has been substantially improved following the security audit. It now provides:
+**CRITICAL SECURITY NOTICE**: The shuffle proof vulnerability identified in the original audit remains largely unresolved. While some improvements have been made, the implementation should be considered experimental.
 
-- **Enhanced cryptographic security** through proper Bayer-Groth shuffle implementation
-- **Full 1:1 Rust API compatibility** with no breaking changes
-- **Professional code quality** with comprehensive testing and documentation
-- **Clear security documentation** with known limitations properly disclosed
+**Current Status**:
+- ❌ **Shuffle verification remains insecure** - still a simplified structural check
+- ✅ **Parameter generation improved** - secure hash-to-curve methods implemented
+- ✅ **API compatibility maintained** - full 1:1 Rust compatibility preserved
+- ✅ **Code quality improved** - clean error handling and consistent randomness
+- ⚠️ **Documentation corrected** - now accurately reflects security limitations
 
-The implementation is now suitable for production use with the documented limitations and provides a solid foundation for further security enhancements.
+**NOT SUITABLE FOR PRODUCTION USE** - The implementation should remain experimental until:
+1. Complete Bayer-Groth polynomial verification is implemented
+2. Custom ZK proofs receive formal security review
+3. Modular inverse implementation is hardened for side-channel resistance
 
-**Status**: ✅ **Production Ready with Documented Limitations**
+**Status**: ⚠️ **EXPERIMENTAL - Critical Security Issues Remain**
 
 ---
 

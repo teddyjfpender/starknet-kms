@@ -140,8 +140,10 @@ export function createPermutationPolynomial(
 
 /**
  * Compute modular inverse using extended Euclidean algorithm
- * NOTE: This is a custom implementation. In production, this should be reviewed
- * for correctness and side-channel resistance, or replaced with a library implementation.
+ * 
+ * SECURITY WARNING: This is a custom implementation that lacks constant-time guarantees
+ * and may be vulnerable to side-channel attacks. This should be reviewed for side-channel
+ * resistance or replaced with a hardened library implementation before production use.
  */
 function modularInverse(a: Scalar): Scalar {
   const mod = CURVE_ORDER
