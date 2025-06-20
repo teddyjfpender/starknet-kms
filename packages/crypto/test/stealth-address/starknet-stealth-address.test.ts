@@ -13,7 +13,7 @@ import {
   getPublicKeyStarknet,
 } from "../../src"
 
-// Helper for fast-check to generate valid StarkNet key pairs (hex strings)
+// Helper for fast-check to generate valid Starknet key pairs (hex strings)
 const fcStarknetKeyPair = fc
   .bigInt(1n, CURVE_ORDER - 1n) // Valid private key scalar range
   .map((privScalar) => {

@@ -1,8 +1,9 @@
 import {
   type Point,
   type Scalar,
-  poseidonHashScalars, // Use the centralized Poseidon hashing utility
+  POINT_AT_INFINITY,
 } from "../core/curve"
+import { poseidonHashScalars } from "../core/hash"
 
 /**
  * Serializes an elliptic curve point for inclusion in a transcript hash.
@@ -19,15 +20,30 @@ import {
  *
  * @param P The elliptic curve point (`Point` type, typically `ProjectivePoint` from `@scure/starknet`) to serialize.
  * @returns An array of two `bigint` values: `[affine_x_coordinate, y_parity]`.
- * @throws Error if the point conversion to affine coordinates fails (e.g., if `P` is the point at infinity,
- *         though `toAffine()` on `@scure/starknet` points typically handles this by returning specific values or throwing).
- *         The behavior for the point at infinity should be tested and handled consistently if it can be an input.
- *         (Note: Chaum-Pedersen points U,V,P,Q are typically not the point at infinity in valid proofs).
+ * @throws Error if the point is null/undefined, the point at infinity, or point conversion fails.
  */
 export function serializePointForTranscript(P: Point): bigint[] {
-  const PAffine = P.toAffine() // Converts to affine { x, y }
-  // Standard Starknet serialization for Poseidon hashing involves x and y-parity.
-  return [PAffine.x, PAffine.y & 1n]
+  if (!P) {
+    throw new Error("Point cannot be null or undefined for transcript serialization")
+  }
+  
+  if (P.equals(POINT_AT_INFINITY)) {
+    throw new Error("Point at infinity cannot be serialized for transcript")
+  }
+  
+  try {
+    P.assertValidity()
+  } catch (error) {
+    throw new Error(`Invalid point for transcript serialization: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
+  
+  try {
+    const PAffine = P.toAffine() // Converts to affine { x, y }
+    // Standard Starknet serialization for Poseidon hashing involves x and y-parity.
+    return [PAffine.x, PAffine.y & 1n]
+  } catch (error) {
+    throw new Error(`Failed to convert point to affine coordinates: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
 }
 
 /**
@@ -51,16 +67,28 @@ export function serializePointForTranscript(P: Point): bigint[] {
  *
  * @param points An array of `Point` objects to be included in the hash.
  *               These points typically form the context of the proof, e.g., `(P, Q, U, V)`
- *               in a Chaum-Pedersen proof.
+ *               in a Chaum-Pedersen proof. Must contain at least one point.
  * @returns A `Scalar` (bigint) representing the challenge `c`, where `0 <= c < CURVE_ORDER`.
- * @throws Error if point serialization or hashing fails.
+ * @throws Error if point serialization or hashing fails, or if no points are provided.
  */
 export function generateChallenge(...points: Point[]): Scalar {
-  // Flatten the serialized representation of all points into a single array of bigints.
-  const serializedInputs: bigint[] = points.flatMap(serializePointForTranscript)
+  if (points.length === 0) {
+    throw new Error("At least one point is required for challenge generation")
+  }
+  
+  try {
+    // Flatten the serialized representation of all points into a single array of bigints.
+    const serializedInputs: bigint[] = points.flatMap(serializePointForTranscript)
 
-  // Use the centralized poseidonHashScalars utility from core/curve.ts.
-  // This function handles hashing an array of bigints with Poseidon and
-  // ensures the result is correctly reduced modulo CURVE_ORDER.
-  return poseidonHashScalars(serializedInputs)
+    if (serializedInputs.length === 0) {
+      throw new Error("Internal error: no serialized inputs generated")
+    }
+
+    // Use the centralized poseidonHashScalars utility from core/curve.ts.
+    // This function handles hashing an array of bigints with Poseidon and
+    // ensures the result is correctly reduced modulo CURVE_ORDER.
+    return poseidonHashScalars(serializedInputs)
+  } catch (error) {
+    throw new Error(`Failed to generate challenge: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
 }

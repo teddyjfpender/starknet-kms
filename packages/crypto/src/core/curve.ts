@@ -52,7 +52,7 @@ export interface Curve<CPoint, CScalar> {
   randScalar(): CScalar
 }
 
-// Export the StarkNet curve implementation
+// Export the Starknet curve implementation
 export const StarkCurve: Curve<Point, Scalar> = {
   order: CURVE_ORDER,
   prime: PRIME,

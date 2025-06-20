@@ -15,10 +15,10 @@ Welcome to the `@starkms/crypto` package! This library provides a suite of robus
 *   **Core Elliptic Curve Utilities (`core/curve.ts` & `starknet-curve.ts`):**
     *   Provides foundational elements for STARK curve operations, including `Scalar` (bigint) and `Point` types, and robust arithmetic functions.
     *   Offers both a low-level API working directly with `Point` objects and `Scalar` bigints (`core/curve.ts`).
-    *   Provides a convenient hex-string based API layer (`starknet-curve.ts`) for easier integration with StarkNet.js and similar environments.
+    *   Provides a convenient hex-string based API layer (`starknet-curve.ts`) for easier integration with Starknet.js and similar environments.
     *   All curve utilities are thoroughly tested for correctness and edge cases.
-*   **StarkNet Stealth Address Implementation (`starknet-stealth.ts`):**
-    *   Implements a scheme for generating and managing stealth addresses on StarkNet.
+*   **Starknet Stealth Address Implementation (`starknet-stealth.ts`):**
+    *   Implements a scheme for generating and managing stealth addresses on Starknet.
     *   Includes functions to create stealth addresses, check ownership, and derive stealth private keys.
     *   Features domain separation in hash computations for enhanced security and robust error handling (e.g., for zero derived private keys).
     *   Comprehensively tested for various scenarios, including input validation and edge cases.

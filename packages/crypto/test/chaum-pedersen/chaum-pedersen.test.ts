@@ -6,15 +6,14 @@ import {
   POINT_AT_INFINITY,
   type Point,
   moduloOrder,
-} from "../src/core/curve"
+} from "../../src/core/curve"
 
 import {
   H, // Ensured import from generators
-} from "../src/chaum-pedersen/generators"
+} from "../../src/chaum-pedersen/generators"
 
 import {
   type Proof,
-  type Scalar,
   type Statement,
   commit as cpCommit,
   generateChallenge as cpGenerateChallenge,
@@ -22,9 +21,18 @@ import {
   decodeProof,
   encodeProof,
   proveFS,
-  randScalar, // Already from core/curve via re-export in chaum-pedersen index
   verify,
-} from "../src/chaum-pedersen" // Imports from main index
+} from "../../src/chaum-pedersen" // Imports from main index
+import { type Scalar } from "../../src/core/curve"
+
+import {
+  randScalar,
+} from "../../src/core"
+
+import {
+  serializePointForTranscript,
+  generateChallenge,
+} from "../../src/chaum-pedersen/transcript"
 
 // Helper to generate a valid scalar for fast-check (1 <= x < CURVE_ORDER)
 const fcScalar = fc.bigInt(1n, CURVE_ORDER - 1n)
@@ -46,6 +54,172 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
 
     it("H should be a valid point on the curve", () => {
       expect(() => H.assertValidity()).not.toThrow()
+    })
+  })
+
+  describe("Input Validation", () => {
+    describe("commit() validation", () => {
+      it("should reject zero nonce", () => {
+        expect(() => cpCommit(0n)).toThrow("nonce r must be in range [1")
+      })
+
+      it("should reject CURVE_ORDER nonce", () => {
+        expect(() => cpCommit(CURVE_ORDER)).toThrow("nonce r must be in range [1")
+      })
+
+      it("should reject negative nonce", () => {
+        expect(() => cpCommit(-1n)).toThrow("nonce r must be in range [1")
+      })
+
+      it("should reject non-bigint nonce", () => {
+        expect(() => cpCommit(42 as any)).toThrow("nonce r must be a bigint")
+      })
+    })
+
+    describe("respond() validation", () => {
+      const validX = randScalar()
+      const validR = randScalar()
+      const validC = randScalar()
+
+      it("should reject zero secret x", () => {
+        expect(() => cpRespond(0n, validR, validC)).toThrow("secret x must be in range [1")
+      })
+
+      it("should reject zero nonce r", () => {
+        expect(() => cpRespond(validX, 0n, validC)).toThrow("nonce r must be in range [1")
+      })
+
+      it("should accept zero challenge c", () => {
+        expect(() => cpRespond(validX, validR, 0n)).not.toThrow()
+      })
+
+      it("should reject CURVE_ORDER challenge c", () => {
+        expect(() => cpRespond(validX, validR, CURVE_ORDER)).toThrow("challenge c must be in range [0")
+      })
+
+      it("should reject non-bigint inputs", () => {
+        expect(() => cpRespond("invalid" as any, validR, validC)).toThrow("secret x must be a bigint")
+        expect(() => cpRespond(validX, "invalid" as any, validC)).toThrow("nonce r must be a bigint")
+        expect(() => cpRespond(validX, validR, "invalid" as any)).toThrow("challenge c must be a bigint")
+      })
+    })
+
+    describe("proveFS() validation", () => {
+      it("should reject zero secret", () => {
+        expect(() => proveFS(0n)).toThrow("secret x must be in range [1")
+      })
+
+      it("should reject CURVE_ORDER secret", () => {
+        expect(() => proveFS(CURVE_ORDER)).toThrow("secret x must be in range [1")
+      })
+
+      it("should reject non-bigint secret", () => {
+        expect(() => proveFS("invalid" as any)).toThrow("secret x must be a bigint")
+      })
+    })
+
+    describe("verify() validation", () => {
+      let validStmt: Statement
+      let validProof: Proof
+
+      beforeEach(() => {
+        const { stmt, proof } = proveFS(randScalar())
+        validStmt = stmt
+        validProof = proof
+      })
+
+      it("should reject null/undefined statement", () => {
+        expect(verify(null as any, validProof)).toBe(false)
+        expect(verify(undefined as any, validProof)).toBe(false)
+      })
+
+      it("should reject null/undefined proof", () => {
+        expect(verify(validStmt, null as any)).toBe(false)
+        expect(verify(validStmt, undefined as any)).toBe(false)
+      })
+
+      it("should reject statement with point at infinity", () => {
+        expect(verify({ ...validStmt, U: POINT_AT_INFINITY }, validProof)).toBe(false)
+        expect(verify({ ...validStmt, V: POINT_AT_INFINITY }, validProof)).toBe(false)
+      })
+
+      it("should reject proof with point at infinity", () => {
+        expect(verify(validStmt, { ...validProof, P: POINT_AT_INFINITY })).toBe(false)
+        expect(verify(validStmt, { ...validProof, Q: POINT_AT_INFINITY })).toBe(false)
+      })
+
+      it("should reject proof with invalid scalars", () => {
+        expect(verify(validStmt, { ...validProof, c: -1n })).toBe(false)
+        expect(verify(validStmt, { ...validProof, c: CURVE_ORDER })).toBe(false)
+        expect(verify(validStmt, { ...validProof, e: 0n })).toBe(false)
+        expect(verify(validStmt, { ...validProof, e: CURVE_ORDER })).toBe(false)
+      })
+    })
+
+    describe("encodeProof() validation", () => {
+      it("should reject null/undefined proof", () => {
+        expect(() => encodeProof(null as any)).toThrow("Proof cannot be null or undefined")
+        expect(() => encodeProof(undefined as any)).toThrow("Proof cannot be null or undefined")
+      })
+
+      it("should reject proof with invalid points", () => {
+        const validProof = proveFS(randScalar()).proof
+        expect(() => encodeProof({ ...validProof, P: POINT_AT_INFINITY })).toThrow("Proof.P cannot be the point at infinity")
+      })
+    })
+
+    describe("decodeProof() validation", () => {
+      it("should validate decoded proof", () => {
+        const originalProof = proveFS(randScalar()).proof
+        const encoded = encodeProof(originalProof)
+        
+        // Create invalid encoded data with point at infinity coordinates
+        const invalidEncoded = new Uint8Array(192)
+        invalidEncoded.fill(0) // All zeros = point at infinity
+        
+        expect(() => decodeProof(invalidEncoded)).toThrow("Failed to decode proof")
+      })
+    })
+  })
+
+  describe("Transcript Validation", () => {
+    describe("serializePointForTranscript() validation", () => {
+      it("should reject null/undefined point", () => {
+        expect(() => serializePointForTranscript(null as any)).toThrow("Point cannot be null or undefined")
+        expect(() => serializePointForTranscript(undefined as any)).toThrow("Point cannot be null or undefined")
+      })
+
+      it("should reject point at infinity", () => {
+        expect(() => serializePointForTranscript(POINT_AT_INFINITY)).toThrow("Point at infinity cannot be serialized")
+      })
+
+      it("should serialize valid points correctly", () => {
+        const P = G.multiply(randScalar())
+        const serialized = serializePointForTranscript(P)
+        expect(serialized).toHaveLength(2)
+        expect(typeof serialized[0]).toBe("bigint")
+        expect(typeof serialized[1]).toBe("bigint")
+        expect(serialized[1]).toBeGreaterThanOrEqual(0n)
+        expect(serialized[1]).toBeLessThanOrEqual(1n) // y-parity is 0 or 1
+      })
+    })
+
+    describe("generateChallenge() validation", () => {
+      it("should reject empty point array", () => {
+        expect(() => generateChallenge()).toThrow("At least one point is required")
+      })
+
+      it("should reject array with invalid points", () => {
+        expect(() => generateChallenge(POINT_AT_INFINITY)).toThrow("Failed to generate challenge")
+      })
+
+      it("should generate consistent challenges", () => {
+        const P = G.multiply(randScalar())
+        const Q = H.multiply(randScalar())
+        const c1 = generateChallenge(P, Q)
+        const c2 = generateChallenge(P, Q)
+        expect(c1).toEqual(c2)
+      })
     })
   })
 
@@ -274,16 +448,17 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
       expect(verify(originalStmt, proofWithCToZero)).toBe(true)
     })
 
-    it("should behave like c=0n if scalar c is CURVE_ORDER", () => {
+    it("should reject if scalar c is CURVE_ORDER (invalid range)", () => {
       const r_nonce = randScalar()
       const { commit } = cpCommit(r_nonce)
       const proofWithCToCurveOrder = {
         P: commit.P,
         Q: commit.Q,
-        c: CURVE_ORDER, // U.multiply(CURVE_ORDER) will be POINT_AT_INFINITY
+        c: CURVE_ORDER, // Invalid - outside valid range [0, CURVE_ORDER-1]
         e: r_nonce,
       }
-      expect(verify(originalStmt, proofWithCToCurveOrder)).toBe(true)
+      // With our improved validation, this should be rejected
+      expect(verify(originalStmt, proofWithCToCurveOrder)).toBe(false)
     })
 
     it("should fail if P in proof is point at infinity", () => {

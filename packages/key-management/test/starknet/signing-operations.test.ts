@@ -69,7 +69,7 @@ describe("Derive Keys From Mnemonic", () => {
     // Create a simpler typedData structure that follows the schema
     const myTypedData: TypedData = {
       types: {
-        StarkNetDomain: [
+        StarknetDomain: [
           { name: "name", type: "string" },
           { name: "version", type: "felt" },
           { name: "chainId", type: "felt" },

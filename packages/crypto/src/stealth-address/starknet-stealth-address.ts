@@ -14,7 +14,7 @@ const DOMAIN_TAG_K_STRING = "starknet_stealth_k_v1"
 const DOMAIN_TAG_K_HEX = encode.buf2hex(encode.utf8ToArray(DOMAIN_TAG_K_STRING)) // Pre-calculated hex of domain tag
 
 /**
- * Creates a StarkNet stealth address for a recipient.
+ * Creates a Starknet stealth address for a recipient.
  *
  * This process involves the sender generating an ephemeral key pair (`r`, `R`)
  * and using the recipient's public view key (`Y`) and public spend key (`X`)
@@ -89,7 +89,7 @@ export function createStealthAddressStarknet(
 }
 
 /**
- * Checks if a given StarkNet stealth address belongs to the recipient.
+ * Checks if a given Starknet stealth address belongs to the recipient.
  *
  * The recipient uses their private view key (`y`) and public spend key (`X`),
  * along with the sender's ephemeral public key (`R`), to reconstruct the
@@ -146,7 +146,7 @@ export function checkStealthAddressOwnershipStarknet(
 }
 
 /**
- * Derives the private key corresponding to a StarkNet stealth address.
+ * Derives the private key corresponding to a Starknet stealth address.
  *
  * The recipient uses their private spend key (`x`) and the scalar `k'`
  * (derived from their private view key `y` and the sender's ephemeral public key `R`

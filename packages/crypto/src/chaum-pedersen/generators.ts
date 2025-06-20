@@ -1,7 +1,6 @@
 import { sha256 } from "@noble/hashes/sha256"
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils"
 import {
-  // CURVE_ORDER, // Not directly used here, moduloOrder handles it.
   G,
   POINT_AT_INFINITY,
   type Point,

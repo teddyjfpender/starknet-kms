@@ -1,18 +1,99 @@
 import { concatBytes } from "@noble/hashes/utils"
-// import { utils as starkUtils } from "@scure/starknet"; // Not used if reverting to self-contained BE conversion
 import {
   G,
   type Point,
-  // ProjectivePoint, // Removed unused import
   type Scalar,
-  hexToPoint, // Ensure this is imported
+  hexToPoint,
   moduloOrder,
   randScalar,
-  scalarMultiply, // Add this import for safe scalar multiplication
-  // CURVE_ORDER, // Not strictly needed here if inputs are well-formed
+  scalarMultiply,
+  CURVE_ORDER,
+  POINT_AT_INFINITY,
 } from "../core/curve"
 import { H } from "./generators"
 import { generateChallenge } from "./transcript"
+
+/* ------------------------  Input Validation Helpers  -------------------- */
+
+/**
+ * Validates that a scalar is in the valid range [1, CURVE_ORDER - 1]
+ * @param scalar The scalar to validate
+ * @param name The name of the scalar for error messages
+ * @throws Error if scalar is invalid
+ */
+function validateScalar(scalar: Scalar, name: string): void {
+  if (typeof scalar !== 'bigint') {
+    throw new Error(`${name} must be a bigint`)
+  }
+  if (scalar <= 0n || scalar >= CURVE_ORDER) {
+    throw new Error(`${name} must be in range [1, ${CURVE_ORDER - 1n}], got ${scalar}`)
+  }
+}
+
+/**
+ * Validates that a scalar is in the valid range [0, CURVE_ORDER - 1]
+ * @param scalar The scalar to validate
+ * @param name The name of the scalar for error messages
+ * @throws Error if scalar is invalid
+ */
+function validateScalarIncludingZero(scalar: Scalar, name: string): void {
+  if (typeof scalar !== 'bigint') {
+    throw new Error(`${name} must be a bigint`)
+  }
+  if (scalar < 0n || scalar >= CURVE_ORDER) {
+    throw new Error(`${name} must be in range [0, ${CURVE_ORDER - 1n}], got ${scalar}`)
+  }
+}
+
+/**
+ * Validates that a point is valid and not the point at infinity
+ * @param point The point to validate
+ * @param name The name of the point for error messages
+ * @throws Error if point is invalid
+ */
+function validatePoint(point: Point, name: string): void {
+  if (!point) {
+    throw new Error(`${name} cannot be null or undefined`)
+  }
+  
+  if (point.equals(POINT_AT_INFINITY)) {
+    throw new Error(`${name} cannot be the point at infinity`)
+  }
+  
+  try {
+    point.assertValidity()
+  } catch (error) {
+    throw new Error(`${name} is not a valid point on the curve: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
+}
+
+/**
+ * Validates a complete statement
+ * @param stmt The statement to validate
+ * @throws Error if statement is invalid
+ */
+function validateStatement(stmt: Statement): void {
+  if (!stmt) {
+    throw new Error("Statement cannot be null or undefined")
+  }
+  validatePoint(stmt.U, "Statement.U")
+  validatePoint(stmt.V, "Statement.V")
+}
+
+/**
+ * Validates a complete proof
+ * @param proof The proof to validate
+ * @throws Error if proof is invalid
+ */
+function validateProof(proof: Proof): void {
+  if (!proof) {
+    throw new Error("Proof cannot be null or undefined")
+  }
+  validatePoint(proof.P, "Proof.P")
+  validatePoint(proof.Q, "Proof.Q")
+  validateScalarIncludingZero(proof.c, "Proof.c")
+  validateScalar(proof.e, "Proof.e")
+}
 
 /* ------------------------  Public types  ------------------------ */
 
@@ -98,19 +179,28 @@ export interface Proof extends InteractiveCommit {
  *          - `nonce`: The scalar nonce `r` used to generate the commitment. This must be used in the {@link respond} step.
  * @throws Error if `randScalar()` fails or if point operations encounter issues.
  */
-export function commit(r: Scalar = randScalar()): {
+export function commit(r?: Scalar): {
   commit: InteractiveCommit
   nonce: Scalar
 } {
-  // Ensure r is a valid scalar (randScalar() already ensures 0 < r < CURVE_ORDER)
-  // If r is provided, it's assumed to be a valid secret nonce.
-  // No explicit moduloOrder(r) here, as G.multiply and H.multiply will handle scalars correctly.
+  const nonce = r ?? randScalar()
+  
+  // Validate the nonce if provided
+  if (r !== undefined) {
+    validateScalar(r, "nonce r")
+  }
+
+  // Compute commitment points
+  const P = scalarMultiply(nonce, G)
+  const Q = scalarMultiply(nonce, H)
+
+  // Validate the generated points (should never fail with valid inputs)
+  validatePoint(P, "Generated commitment P")
+  validatePoint(Q, "Generated commitment Q")
+
   return {
-    commit: {
-      P: G.multiply(r), // P = rG
-      Q: H.multiply(r), // Q = rH
-    },
-    nonce: r,
+    commit: { P, Q },
+    nonce,
   }
 }
 
@@ -127,19 +217,30 @@ export function commit(r: Scalar = randScalar()): {
  * - `n` is the order of the elliptic curve.
  *
  * @param x The secret scalar (witness) such that `U = xG` and `V = xH`.
- *          It is assumed `0 < x < CURVE_ORDER`.
+ *          It must be in the range `[1, CURVE_ORDER - 1]`.
  * @param r The random nonce scalar used during the {@link commit} phase.
- *          It is assumed `0 < r < CURVE_ORDER`.
- * @param c The challenge scalar. It is assumed `0 <= c < CURVE_ORDER`.
+ *          It must be in the range `[1, CURVE_ORDER - 1]`.
+ * @param c The challenge scalar. It must be in the range `[0, CURVE_ORDER - 1]`.
  * @returns The response scalar `e`, guaranteed to be in the range `[0, CURVE_ORDER - 1]`.
- * @throws Error if scalar arithmetic encounters issues.
+ * @throws Error if scalar arithmetic encounters issues or inputs are invalid.
  */
 export function respond(x: Scalar, r: Scalar, c: Scalar): Scalar {
-  // x, r, c are assumed to be scalars (bigint).
-  // Multiplication and addition are standard bigint operations.
-  const cx = c * x // c*x can be > CURVE_ORDER
-  const r_plus_cx = r + cx // r + c*x can be > CURVE_ORDER
-  return moduloOrder(r_plus_cx) // Ensures result is in [0, CURVE_ORDER - 1]
+  // Validate all inputs
+  validateScalar(x, "secret x")
+  validateScalar(r, "nonce r")
+  validateScalarIncludingZero(c, "challenge c")
+
+  // Compute response: e = (r + c*x) mod n
+  const cx = c * x
+  const r_plus_cx = r + cx
+  const e = moduloOrder(r_plus_cx)
+
+  // Validate the result (should be in valid range)
+  if (e < 0n || e >= CURVE_ORDER) {
+    throw new Error(`Internal error: computed response e=${e} is out of range`)
+  }
+
+  return e
 }
 
 /**
@@ -157,34 +258,41 @@ export function respond(x: Scalar, r: Scalar, c: Scalar): Scalar {
  * The resulting proof is `(P, Q, c, e)` along with the statement `(U, V)`.
  *
  * @param x The secret scalar (witness) for which to generate the proof.
- *          It must be a valid scalar, ideally `0 < x < CURVE_ORDER`.
+ *          It must be in the range `[1, CURVE_ORDER - 1]`.
  * @returns An object containing:
  *          - `stmt`: The public statement {@link Statement} `{ U, V }`.
  *          - `proof`: The non-interactive {@link Proof} `{ P, Q, c, e }`.
- * @throws Error if any underlying cryptographic operation (scalar generation, point arithmetic, hashing) fails.
+ * @throws Error if any underlying cryptographic operation fails or inputs are invalid.
  */
 export function proveFS(x: Scalar): { stmt: Statement; proof: Proof } {
-  // x is assumed to be a valid secret scalar, e.g. 0 < x < CURVE_ORDER.
-  // If x could be >= CURVE_ORDER, it should be reduced: x = moduloOrder(x).
-  // However, typically x is a private key, already in range.
+  // Validate the secret
+  validateScalar(x, "secret x")
 
-  const U = G.multiply(x) // U = xG
-  const V = H.multiply(x) // V = xH
+  // Compute public statement points
+  const U = scalarMultiply(x, G)
+  const V = scalarMultiply(x, H)
+
+  // Validate generated statement points
+  validatePoint(U, "Generated statement U")
+  validatePoint(V, "Generated statement V")
 
   // Generate nonce r and commitments P = rG, Q = rH
   const { commit: interactiveCommit, nonce: r } = commit()
 
   // Generate challenge c = Hash(P, Q, U, V)
-  // generateChallenge is expected to return a scalar c in [0, CURVE_ORDER - 1]
   const c = generateChallenge(interactiveCommit.P, interactiveCommit.Q, U, V)
 
   // Compute response e = (r + c*x) mod n
   const e = respond(x, r, c)
 
-  return {
-    stmt: { U, V },
-    proof: { ...interactiveCommit, c, e }, // Proof = (P, Q, c, e)
-  }
+  const stmt = { U, V }
+  const proof = { ...interactiveCommit, c, e }
+
+  // Final validation
+  validateStatement(stmt)
+  validateProof(proof)
+
+  return { stmt, proof }
 }
 
 /**
@@ -201,58 +309,50 @@ export function proveFS(x: Scalar): { stmt: Statement; proof: Proof } {
  * - `H` is the secondary curve generator.
  *
  * Before performing calculations, this function validates that all input points (`U, V, P, Q`)
- * are valid points on the STARK curve using their `assertValidity()` method.
+ * are valid points on the STARK curve and that all scalars are in valid ranges.
  *
  * @param stmt The public statement {@link Statement} `{ U, V }` being verified.
  * @param proof The non-interactive proof {@link Proof} `{ P, Q, c, e }` to verify.
  * @returns `true` if the proof is valid for the given statement, `false` otherwise.
- *          Returns `false` if any input point is invalid.
- * @throws Error if point operations or comparisons encounter issues, though typical errors
- *         during verification (e.g., failed equality checks) result in `false`.
+ *          Returns `false` if any input is invalid.
+ * @throws Error only for unexpected internal errors, not for invalid proofs.
  */
 export function verify(stmt: Statement, proof: Proof): boolean {
-  const { U, V } = stmt
-  const { P, Q, c, e } = proof
-
-  // Validate that all provided points are valid on the curve.
-  // ProjectivePoint.assertValidity() checks if the point is on the curve
-  // and not the point at infinity (if that's a constraint of the specific implementation).
-  // For STARK curve (cofactor 1), any affine point (x,y) satisfying curve equation is valid.
   try {
-    // Assuming U, V, P, Q are instances of ProjectivePoint from @scure/starknet
-    U.assertValidity()
-    V.assertValidity()
-    P.assertValidity()
-    Q.assertValidity()
+    // Validate all inputs
+    validateStatement(stmt)
+    validateProof(proof)
   } catch (error) {
-    // If any point is not valid (e.g., not on the curve), the proof is invalid.
-    // console.error("Point validation failed during Chaum-Pedersen verify:", error);
+    // Invalid inputs result in failed verification, not thrown errors
     return false
   }
 
-  // Scalars c and e are assumed to be in [0, CURVE_ORDER - 1].
-  // If they could be outside this range, they should be reduced modulo CURVE_ORDER.
-  // c comes from generateChallenge, which should ensure this.
-  // e comes from respond, which uses moduloOrder.
+  const { U, V } = stmt
+  const { P, Q, c, e } = proof
 
-  // Calculate Left-Hand Sides of the verification equations:
-  // eG = G.multiply(e)
-  // eH = H.multiply(e)
-  const eG = scalarMultiply(e, G)
-  const eH = scalarMultiply(e, H)
+  try {
+    // Calculate Left-Hand Sides of the verification equations:
+    // eG = G.multiply(e)
+    // eH = H.multiply(e)
+    const eG = scalarMultiply(e, G)
+    const eH = scalarMultiply(e, H)
 
-  // Calculate Right-Hand Sides of the verification equations:
-  // P_plus_cU = P.add(U.multiply(c))
-  // Q_plus_cV = Q.add(V.multiply(c))
-  const cU = scalarMultiply(c, U)
-  const P_plus_cU = P.add(cU)
+    // Calculate Right-Hand Sides of the verification equations:
+    // P_plus_cU = P.add(U.multiply(c))
+    // Q_plus_cV = Q.add(V.multiply(c))
+    const cU = scalarMultiply(c, U)
+    const P_plus_cU = P.add(cU)
 
-  const cV = scalarMultiply(c, V)
-  const Q_plus_cV = Q.add(cV)
+    const cV = scalarMultiply(c, V)
+    const Q_plus_cV = Q.add(cV)
 
-  // Verify the equalities:
-  // eG == P + cU  AND  eH == Q + cV
-  return eG.equals(P_plus_cU) && eH.equals(Q_plus_cV)
+    // Verify the equalities:
+    // eG == P + cU  AND  eH == Q + cV
+    return eG.equals(P_plus_cU) && eH.equals(Q_plus_cV)
+  } catch (error) {
+    // Any computation error during verification means the proof is invalid
+    return false
+  }
 }
 
 /**
@@ -266,37 +366,48 @@ export function verify(stmt: Statement, proof: Proof): boolean {
  *
  * @param proof The {@link Proof} object `{ P, Q, c, e }` to serialize.
  * @returns A `Uint8Array` of 192 bytes representing the proof.
- * @throws Error if BigInt conversion to bytes fails (e.g., too large for 32 bytes).
+ * @throws Error if BigInt conversion to bytes fails or if proof is invalid.
  */
-export function encodeProof({ P, Q, c, e }: Proof): Uint8Array {
+export function encodeProof(proof: Proof): Uint8Array {
+  // Validate the proof before encoding
+  validateProof(proof)
+
+  const { P, Q, c, e } = proof
+
   const be = (n: bigint): Uint8Array => {
+    if (n < 0n || n >= (1n << 256n)) {
+      throw new Error(`BigInt ${n} is out of range for 32-byte encoding`)
+    }
+
     const arr = new Uint8Array(32)
+    let num = n
     for (let i = 0; i < 32; i++) {
-      arr[31 - i] = Number(n & 0xffn) // Get the least significant byte
-      n >>= 8n // Shift right by 8 bits
+      arr[31 - i] = Number(num & 0xffn)
+      num >>= 8n
     }
-    // After shifting 32 times (for 32 bytes), if n is not zero, it means the original number was too large.
-    if (n !== 0n && n !== -1n) {
-      // For negative numbers, if all bits were 1s, n would become -1 after shifting.
-      // This check is primarily for positive numbers. A more robust check for strict positive range might be needed
-      // if the scalar can be negative and occupy full 32 bytes. Given c and e are field elements (positive),
-      // n !== 0n is the main concern.
-      throw new Error("BigInt too large for 32 bytes BE representation")
+    
+    if (num !== 0n) {
+      throw new Error(`BigInt ${n} is too large for 32-byte encoding`)
     }
+    
     return arr
   }
 
-  const PAffine = P.toAffine()
-  const QAffine = Q.toAffine()
+  try {
+    const PAffine = P.toAffine()
+    const QAffine = Q.toAffine()
 
-  return concatBytes(
-    be(PAffine.x),
-    be(PAffine.y),
-    be(QAffine.x),
-    be(QAffine.y),
-    be(c),
-    be(e),
-  )
+    return concatBytes(
+      be(PAffine.x),
+      be(PAffine.y),
+      be(QAffine.x),
+      be(QAffine.y),
+      be(c),
+      be(e),
+    )
+  } catch (error) {
+    throw new Error(`Failed to encode proof: ${error instanceof Error ? error.message : 'unknown error'}`)
+  }
 }
 
 /**
@@ -308,7 +419,8 @@ export function encodeProof({ P, Q, c, e }: Proof): Uint8Array {
  *
  * @param bytes The `Uint8Array` (192 bytes) to deserialize.
  * @returns The deserialized {@link Proof} object `{ P, Q, c, e }`.
- * @throws Error if the byte array has an unexpected length or if point reconstruction fails.
+ * @throws Error if the byte array has an unexpected length, if point reconstruction fails,
+ *         or if the resulting proof is invalid.
  */
 export function decodeProof(bytes: Uint8Array): Proof {
   if (bytes.length !== 192) {
@@ -320,10 +432,8 @@ export function decodeProof(bytes: Uint8Array): Proof {
   const read = (offset: number): bigint => {
     let result = 0n
     for (let i = 0; i < 32; i++) {
-      const byteValue = bytes[offset + i] // Remove explicit type annotation
+      const byteValue = bytes[offset + i]
       if (byteValue === undefined) {
-        // This path should ideally be impossible if bytes.length check is correct
-        // and bytes is a Uint8Array.
         throw new Error(
           `Byte value at offset ${offset + i} is unexpectedly undefined during proof decoding.`,
         )
@@ -333,35 +443,41 @@ export function decodeProof(bytes: Uint8Array): Proof {
     return result
   }
 
-  const Px_val: bigint = read(0)
-  const Py_val: bigint = read(32)
-  const Qx_val: bigint = read(64)
-  const Qy_val: bigint = read(96)
-  const c_scalar: bigint = read(128)
-  const e_scalar: bigint = read(160)
+  try {
+    const Px_val: bigint = read(0)
+    const Py_val: bigint = read(32)
+    const Qx_val: bigint = read(64)
+    const Qy_val: bigint = read(96)
+    const c_scalar: bigint = read(128)
+    const e_scalar: bigint = read(160)
 
-  const coordToHex = (coord: bigint): string => {
-    const hex = coord.toString(16)
-    // Field elements of Starknet curve are < 2^252, so their hex representation is <= 63 chars.
-    // Pad to 64 chars (32 bytes).
-    if (hex.length > 64) {
-      // This should ideally not happen if coord is a valid field element from the curve.
-      throw new Error(`Coordinate hex representation is too long: ${hex}`)
+    const coordToHex = (coord: bigint): string => {
+      const hex = coord.toString(16)
+      if (hex.length > 64) {
+        throw new Error(`Coordinate hex representation is too long: ${hex}`)
+      }
+      return hex.padStart(64, "0")
     }
-    return hex.padStart(64, "0")
-  }
 
-  // Reconstruct points from their uncompressed hex representation
-  const P_hex = `0x04${coordToHex(Px_val)}${coordToHex(Py_val)}`
-  const P = hexToPoint(P_hex)
+    // Reconstruct points from their uncompressed hex representation
+    const P_hex = `0x04${coordToHex(Px_val)}${coordToHex(Py_val)}`
+    const P = hexToPoint(P_hex)
 
-  const Q_hex = `0x04${coordToHex(Qx_val)}${coordToHex(Qy_val)}`
-  const Q = hexToPoint(Q_hex)
+    const Q_hex = `0x04${coordToHex(Qx_val)}${coordToHex(Qy_val)}`
+    const Q = hexToPoint(Q_hex)
 
-  return {
-    P, // hexToPoint should return type Point
-    Q, // hexToPoint should return type Point
-    c: c_scalar,
-    e: e_scalar,
+    const proof: Proof = {
+      P,
+      Q,
+      c: c_scalar,
+      e: e_scalar,
+    }
+
+    // Validate the decoded proof
+    validateProof(proof)
+
+    return proof
+  } catch (error) {
+    throw new Error(`Failed to decode proof: ${error instanceof Error ? error.message : 'unknown error'}`)
   }
 }
