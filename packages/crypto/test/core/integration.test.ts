@@ -1,8 +1,13 @@
-import { describe, it, expect } from "bun:test"
-import { getPublicKey, StarkCurve } from "../../src/core/curve"
+import { describe, expect, it } from "bun:test"
+import { StarkCurve, getPublicKey } from "../../src/core/curve"
 import { poseidonHashScalars } from "../../src/core/hash"
+import {
+  G,
+  POINT_AT_INFINITY,
+  arePointsEqual,
+  scalarMultiply,
+} from "../../src/core/point"
 import { CURVE_ORDER, randScalar } from "../../src/core/scalar"
-import { G, POINT_AT_INFINITY, scalarMultiply, arePointsEqual } from "../../src/core/point"
 
 describe("Integration tests", () => {
   describe("getPublicKey", () => {
@@ -52,7 +57,7 @@ describe("Integration tests", () => {
       const hash1 = poseidonHashScalars([1n, 2n, 3n])
       const hash2 = poseidonHashScalars([3n, 2n, 1n])
       const hash3 = poseidonHashScalars([1n, 2n, 4n])
-      
+
       expect(hash1).not.toBe(hash2)
       expect(hash1).not.toBe(hash3)
       expect(hash2).not.toBe(hash3)
@@ -98,10 +103,10 @@ describe("Integration tests", () => {
     it("add operation works correctly", () => {
       const P = StarkCurve.multiply(randScalar(), StarkCurve.base)
       const Q = StarkCurve.multiply(randScalar(), StarkCurve.base)
-      
+
       const sum1 = StarkCurve.add(P, Q)
       const sum2 = StarkCurve.add(Q, P) // Commutativity
-      
+
       expect(StarkCurve.equals(sum1, sum2)).toBe(true)
     })
 
@@ -109,7 +114,7 @@ describe("Integration tests", () => {
       const k = randScalar()
       const result = StarkCurve.multiply(k, StarkCurve.base)
       const expected = scalarMultiply(k, G)
-      
+
       expect(StarkCurve.equals(result, expected)).toBe(true)
     })
 
@@ -117,7 +122,7 @@ describe("Integration tests", () => {
       const P = StarkCurve.multiply(randScalar(), StarkCurve.base)
       const negP = StarkCurve.negate(P)
       const sum = StarkCurve.add(P, negP)
-      
+
       expect(StarkCurve.equals(sum, StarkCurve.zero)).toBe(true)
     })
 
@@ -125,7 +130,7 @@ describe("Integration tests", () => {
       const validPoints = [
         StarkCurve.base,
         StarkCurve.zero,
-        StarkCurve.multiply(randScalar(), StarkCurve.base)
+        StarkCurve.multiply(randScalar(), StarkCurve.base),
       ]
 
       for (const P of validPoints) {
@@ -136,12 +141,12 @@ describe("Integration tests", () => {
     it("conversion functions work correctly", () => {
       const scalar = randScalar()
       const point = StarkCurve.multiply(scalar, StarkCurve.base)
-      
+
       // Test scalar conversions
       const scalarHex = StarkCurve.scalarToHex(scalar)
       const recoveredScalar = StarkCurve.hexToScalar(scalarHex)
       expect(recoveredScalar).toBe(scalar)
-      
+
       // Test point conversions
       const pointHex = StarkCurve.pointToHex(point)
       const recoveredPoint = StarkCurve.hexToPoint(pointHex)
@@ -152,7 +157,7 @@ describe("Integration tests", () => {
       const privateKey = randScalar()
       const publicKey1 = StarkCurve.getPublicKey(privateKey)
       const publicKey2 = getPublicKey(privateKey)
-      
+
       expect(StarkCurve.equals(publicKey1, publicKey2)).toBe(true)
     })
 
@@ -170,36 +175,36 @@ describe("Integration tests", () => {
       // Generate two key pairs
       const priv1 = randScalar()
       const priv2 = randScalar()
-      
+
       const pub1 = getPublicKey(priv1)
       const pub2 = getPublicKey(priv2)
-      
+
       // Verify public keys are different (with very high probability)
       expect(arePointsEqual(pub1, pub2)).toBe(false)
-      
+
       // Test that priv1 * pub2 = priv2 * pub1 (Diffie-Hellman property)
       const shared1 = scalarMultiply(priv1, pub2)
       const shared2 = scalarMultiply(priv2, pub1)
-      
+
       expect(arePointsEqual(shared1, shared2)).toBe(true)
     })
 
     it("hash-to-scalar pipeline", () => {
       const message = [1n, 2n, 3n, 4n, 5n]
       const hash = poseidonHashScalars(message)
-      
+
       // Use hash as a private key
       const publicKey = getPublicKey(hash)
-      
+
       // Verify the public key is valid
       expect(arePointsEqual(publicKey, POINT_AT_INFINITY)).toBe(false) // Should not be infinity for random hash
-      
+
       // Verify deterministic: same message produces same key pair
       const hash2 = poseidonHashScalars(message)
       const publicKey2 = getPublicKey(hash2)
-      
+
       expect(hash).toBe(hash2)
       expect(arePointsEqual(publicKey, publicKey2)).toBe(true)
     })
   })
-}) 
+})

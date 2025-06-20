@@ -1,6 +1,11 @@
 import { CURVE, ProjectivePoint } from "@scure/starknet"
-import { assertStringHex, addHexPrefix, removeHexPrefix, buf2hex } from "./validation"
 import { type Scalar, moduloOrder } from "./scalar"
+import {
+  addHexPrefix,
+  assertStringHex,
+  buf2hex,
+  removeHexPrefix,
+} from "./validation"
 
 export type Point = ProjectivePoint
 export { ProjectivePoint }
@@ -79,4 +84,4 @@ export const hexToPoint = (h: string): Point => {
   }
 
   return ProjectivePoint.fromHex(removeHexPrefix(normalizedHex))
-} 
+}

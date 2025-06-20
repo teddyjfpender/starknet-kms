@@ -1,14 +1,14 @@
 import { concatBytes } from "@noble/hashes/utils"
 import {
+  CURVE_ORDER,
   G,
+  POINT_AT_INFINITY,
   type Point,
   type Scalar,
   hexToPoint,
   moduloOrder,
   randScalar,
   scalarMultiply,
-  CURVE_ORDER,
-  POINT_AT_INFINITY,
 } from "../core/curve"
 import { H } from "./generators"
 import { generateChallenge } from "./transcript"
@@ -22,11 +22,13 @@ import { generateChallenge } from "./transcript"
  * @throws Error if scalar is invalid
  */
 function validateScalar(scalar: Scalar, name: string): void {
-  if (typeof scalar !== 'bigint') {
+  if (typeof scalar !== "bigint") {
     throw new Error(`${name} must be a bigint`)
   }
   if (scalar <= 0n || scalar >= CURVE_ORDER) {
-    throw new Error(`${name} must be in range [1, ${CURVE_ORDER - 1n}], got ${scalar}`)
+    throw new Error(
+      `${name} must be in range [1, ${CURVE_ORDER - 1n}], got ${scalar}`,
+    )
   }
 }
 
@@ -37,11 +39,13 @@ function validateScalar(scalar: Scalar, name: string): void {
  * @throws Error if scalar is invalid
  */
 function validateScalarIncludingZero(scalar: Scalar, name: string): void {
-  if (typeof scalar !== 'bigint') {
+  if (typeof scalar !== "bigint") {
     throw new Error(`${name} must be a bigint`)
   }
   if (scalar < 0n || scalar >= CURVE_ORDER) {
-    throw new Error(`${name} must be in range [0, ${CURVE_ORDER - 1n}], got ${scalar}`)
+    throw new Error(
+      `${name} must be in range [0, ${CURVE_ORDER - 1n}], got ${scalar}`,
+    )
   }
 }
 
@@ -55,15 +59,17 @@ function validatePoint(point: Point, name: string): void {
   if (!point) {
     throw new Error(`${name} cannot be null or undefined`)
   }
-  
+
   if (point.equals(POINT_AT_INFINITY)) {
     throw new Error(`${name} cannot be the point at infinity`)
   }
-  
+
   try {
     point.assertValidity()
   } catch (error) {
-    throw new Error(`${name} is not a valid point on the curve: ${error instanceof Error ? error.message : 'unknown error'}`)
+    throw new Error(
+      `${name} is not a valid point on the curve: ${error instanceof Error ? error.message : "unknown error"}`,
+    )
   }
 }
 
@@ -184,7 +190,7 @@ export function commit(r?: Scalar): {
   nonce: Scalar
 } {
   const nonce = r ?? randScalar()
-  
+
   // Validate the nonce if provided
   if (r !== undefined) {
     validateScalar(r, "nonce r")
@@ -375,7 +381,7 @@ export function encodeProof(proof: Proof): Uint8Array {
   const { P, Q, c, e } = proof
 
   const be = (n: bigint): Uint8Array => {
-    if (n < 0n || n >= (1n << 256n)) {
+    if (n < 0n || n >= 1n << 256n) {
       throw new Error(`BigInt ${n} is out of range for 32-byte encoding`)
     }
 
@@ -385,11 +391,11 @@ export function encodeProof(proof: Proof): Uint8Array {
       arr[31 - i] = Number(num & 0xffn)
       num >>= 8n
     }
-    
+
     if (num !== 0n) {
       throw new Error(`BigInt ${n} is too large for 32-byte encoding`)
     }
-    
+
     return arr
   }
 
@@ -406,7 +412,9 @@ export function encodeProof(proof: Proof): Uint8Array {
       be(e),
     )
   } catch (error) {
-    throw new Error(`Failed to encode proof: ${error instanceof Error ? error.message : 'unknown error'}`)
+    throw new Error(
+      `Failed to encode proof: ${error instanceof Error ? error.message : "unknown error"}`,
+    )
   }
 }
 
@@ -478,6 +486,8 @@ export function decodeProof(bytes: Uint8Array): Proof {
 
     return proof
   } catch (error) {
-    throw new Error(`Failed to decode proof: ${error instanceof Error ? error.message : 'unknown error'}`)
+    throw new Error(
+      `Failed to decode proof: ${error instanceof Error ? error.message : "unknown error"}`,
+    )
   }
 }

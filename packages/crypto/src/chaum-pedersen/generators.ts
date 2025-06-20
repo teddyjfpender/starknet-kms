@@ -1,11 +1,6 @@
 import { sha256 } from "@noble/hashes/sha256"
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils"
-import {
-  G,
-  POINT_AT_INFINITY,
-  type Point,
-  moduloOrder,
-} from "../core/curve"
+import { G, POINT_AT_INFINITY, type Point, moduloOrder } from "../core/curve"
 
 // The secondary generator H is derived from a domain separation tag using SHA-256.
 // This ensures that the discrete logarithm log_G(H) is unknown.

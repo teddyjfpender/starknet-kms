@@ -23,15 +23,13 @@ import {
   proveFS,
   verify,
 } from "../../src/chaum-pedersen" // Imports from main index
-import { type Scalar } from "../../src/core/curve"
+import type { Scalar } from "../../src/core/curve"
+
+import { randScalar } from "../../src/core"
 
 import {
-  randScalar,
-} from "../../src/core"
-
-import {
-  serializePointForTranscript,
   generateChallenge,
+  serializePointForTranscript,
 } from "../../src/chaum-pedersen/transcript"
 
 // Helper to generate a valid scalar for fast-check (1 <= x < CURVE_ORDER)
@@ -64,7 +62,9 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
       })
 
       it("should reject CURVE_ORDER nonce", () => {
-        expect(() => cpCommit(CURVE_ORDER)).toThrow("nonce r must be in range [1")
+        expect(() => cpCommit(CURVE_ORDER)).toThrow(
+          "nonce r must be in range [1",
+        )
       })
 
       it("should reject negative nonce", () => {
@@ -82,11 +82,15 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
       const validC = randScalar()
 
       it("should reject zero secret x", () => {
-        expect(() => cpRespond(0n, validR, validC)).toThrow("secret x must be in range [1")
+        expect(() => cpRespond(0n, validR, validC)).toThrow(
+          "secret x must be in range [1",
+        )
       })
 
       it("should reject zero nonce r", () => {
-        expect(() => cpRespond(validX, 0n, validC)).toThrow("nonce r must be in range [1")
+        expect(() => cpRespond(validX, 0n, validC)).toThrow(
+          "nonce r must be in range [1",
+        )
       })
 
       it("should accept zero challenge c", () => {
@@ -94,13 +98,21 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
       })
 
       it("should reject CURVE_ORDER challenge c", () => {
-        expect(() => cpRespond(validX, validR, CURVE_ORDER)).toThrow("challenge c must be in range [0")
+        expect(() => cpRespond(validX, validR, CURVE_ORDER)).toThrow(
+          "challenge c must be in range [0",
+        )
       })
 
       it("should reject non-bigint inputs", () => {
-        expect(() => cpRespond("invalid" as any, validR, validC)).toThrow("secret x must be a bigint")
-        expect(() => cpRespond(validX, "invalid" as any, validC)).toThrow("nonce r must be a bigint")
-        expect(() => cpRespond(validX, validR, "invalid" as any)).toThrow("challenge c must be a bigint")
+        expect(() => cpRespond("invalid" as any, validR, validC)).toThrow(
+          "secret x must be a bigint",
+        )
+        expect(() => cpRespond(validX, "invalid" as any, validC)).toThrow(
+          "nonce r must be a bigint",
+        )
+        expect(() => cpRespond(validX, validR, "invalid" as any)).toThrow(
+          "challenge c must be a bigint",
+        )
       })
     })
 
@@ -110,11 +122,15 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
       })
 
       it("should reject CURVE_ORDER secret", () => {
-        expect(() => proveFS(CURVE_ORDER)).toThrow("secret x must be in range [1")
+        expect(() => proveFS(CURVE_ORDER)).toThrow(
+          "secret x must be in range [1",
+        )
       })
 
       it("should reject non-bigint secret", () => {
-        expect(() => proveFS("invalid" as any)).toThrow("secret x must be a bigint")
+        expect(() => proveFS("invalid" as any)).toThrow(
+          "secret x must be a bigint",
+        )
       })
     })
 
@@ -139,13 +155,21 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
       })
 
       it("should reject statement with point at infinity", () => {
-        expect(verify({ ...validStmt, U: POINT_AT_INFINITY }, validProof)).toBe(false)
-        expect(verify({ ...validStmt, V: POINT_AT_INFINITY }, validProof)).toBe(false)
+        expect(verify({ ...validStmt, U: POINT_AT_INFINITY }, validProof)).toBe(
+          false,
+        )
+        expect(verify({ ...validStmt, V: POINT_AT_INFINITY }, validProof)).toBe(
+          false,
+        )
       })
 
       it("should reject proof with point at infinity", () => {
-        expect(verify(validStmt, { ...validProof, P: POINT_AT_INFINITY })).toBe(false)
-        expect(verify(validStmt, { ...validProof, Q: POINT_AT_INFINITY })).toBe(false)
+        expect(verify(validStmt, { ...validProof, P: POINT_AT_INFINITY })).toBe(
+          false,
+        )
+        expect(verify(validStmt, { ...validProof, Q: POINT_AT_INFINITY })).toBe(
+          false,
+        )
       })
 
       it("should reject proof with invalid scalars", () => {
@@ -158,26 +182,31 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
 
     describe("encodeProof() validation", () => {
       it("should reject null/undefined proof", () => {
-        expect(() => encodeProof(null as any)).toThrow("Proof cannot be null or undefined")
-        expect(() => encodeProof(undefined as any)).toThrow("Proof cannot be null or undefined")
+        expect(() => encodeProof(null as any)).toThrow(
+          "Proof cannot be null or undefined",
+        )
+        expect(() => encodeProof(undefined as any)).toThrow(
+          "Proof cannot be null or undefined",
+        )
       })
 
       it("should reject proof with invalid points", () => {
         const validProof = proveFS(randScalar()).proof
-        expect(() => encodeProof({ ...validProof, P: POINT_AT_INFINITY })).toThrow("Proof.P cannot be the point at infinity")
+        expect(() =>
+          encodeProof({ ...validProof, P: POINT_AT_INFINITY }),
+        ).toThrow("Proof.P cannot be the point at infinity")
       })
     })
 
     describe("decodeProof() validation", () => {
       it("should validate decoded proof", () => {
-        const originalProof = proveFS(randScalar()).proof
-        const encoded = encodeProof(originalProof)
-        
         // Create invalid encoded data with point at infinity coordinates
         const invalidEncoded = new Uint8Array(192)
         invalidEncoded.fill(0) // All zeros = point at infinity
-        
-        expect(() => decodeProof(invalidEncoded)).toThrow("Failed to decode proof")
+
+        expect(() => decodeProof(invalidEncoded)).toThrow(
+          "Failed to decode proof",
+        )
       })
     })
   })
@@ -185,12 +214,18 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
   describe("Transcript Validation", () => {
     describe("serializePointForTranscript() validation", () => {
       it("should reject null/undefined point", () => {
-        expect(() => serializePointForTranscript(null as any)).toThrow("Point cannot be null or undefined")
-        expect(() => serializePointForTranscript(undefined as any)).toThrow("Point cannot be null or undefined")
+        expect(() => serializePointForTranscript(null as any)).toThrow(
+          "Point cannot be null or undefined",
+        )
+        expect(() => serializePointForTranscript(undefined as any)).toThrow(
+          "Point cannot be null or undefined",
+        )
       })
 
       it("should reject point at infinity", () => {
-        expect(() => serializePointForTranscript(POINT_AT_INFINITY)).toThrow("Point at infinity cannot be serialized")
+        expect(() => serializePointForTranscript(POINT_AT_INFINITY)).toThrow(
+          "Point at infinity cannot be serialized",
+        )
       })
 
       it("should serialize valid points correctly", () => {
@@ -206,11 +241,15 @@ describe("Chaum-Pedersen ZKP Implementation", () => {
 
     describe("generateChallenge() validation", () => {
       it("should reject empty point array", () => {
-        expect(() => generateChallenge()).toThrow("At least one point is required")
+        expect(() => generateChallenge()).toThrow(
+          "At least one point is required",
+        )
       })
 
       it("should reject array with invalid points", () => {
-        expect(() => generateChallenge(POINT_AT_INFINITY)).toThrow("Failed to generate challenge")
+        expect(() => generateChallenge(POINT_AT_INFINITY)).toThrow(
+          "Failed to generate challenge",
+        )
       })
 
       it("should generate consistent challenges", () => {

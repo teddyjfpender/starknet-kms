@@ -1,17 +1,17 @@
-import { describe, it, expect } from "bun:test"
-import { 
-  scalarMultiply, 
-  addPoints, 
-  negatePoint, 
-  arePointsEqual, 
+import { describe, expect, it } from "bun:test"
+import { InvalidHexError } from "../../src/core/errors"
+import {
+  G,
+  POINT_AT_INFINITY,
+  addPoints,
+  arePointsEqual,
   assertPointValidity,
-  pointToHex,
   hexToPoint,
-  G, 
-  POINT_AT_INFINITY 
+  negatePoint,
+  pointToHex,
+  scalarMultiply,
 } from "../../src/core/point"
 import { CURVE_ORDER, randScalar } from "../../src/core/scalar"
-import { InvalidHexError } from "../../src/core/errors"
 
 describe("Point operations", () => {
   describe("Group law verification", () => {
@@ -21,7 +21,7 @@ describe("Point operations", () => {
           G,
           scalarMultiply(2n, G),
           scalarMultiply(randScalar(), G),
-          POINT_AT_INFINITY
+          POINT_AT_INFINITY,
         ]
 
         for (const P of testPoints) {
@@ -41,12 +41,16 @@ describe("Point operations", () => {
 
         for (const P of testPoints) {
           const negP = negatePoint(P)
-          expect(arePointsEqual(addPoints(P, negP), POINT_AT_INFINITY)).toBe(true)
+          expect(arePointsEqual(addPoints(P, negP), POINT_AT_INFINITY)).toBe(
+            true,
+          )
         }
       })
 
       it("-O = O", () => {
-        expect(arePointsEqual(negatePoint(POINT_AT_INFINITY), POINT_AT_INFINITY)).toBe(true)
+        expect(
+          arePointsEqual(negatePoint(POINT_AT_INFINITY), POINT_AT_INFINITY),
+        ).toBe(true)
       })
     })
 
@@ -54,7 +58,7 @@ describe("Point operations", () => {
       it("P + Q = Q + P", () => {
         const P = scalarMultiply(randScalar(), G)
         const Q = scalarMultiply(randScalar(), G)
-        
+
         expect(arePointsEqual(addPoints(P, Q), addPoints(Q, P))).toBe(true)
       })
 
@@ -62,7 +66,7 @@ describe("Point operations", () => {
         for (let i = 0; i < 10; i++) {
           const P = scalarMultiply(randScalar(), G)
           const Q = scalarMultiply(randScalar(), G)
-          
+
           expect(arePointsEqual(addPoints(P, Q), addPoints(Q, P))).toBe(true)
         }
       })
@@ -73,14 +77,14 @@ describe("Point operations", () => {
         const a = randScalar()
         const b = randScalar()
         const c = randScalar()
-        
+
         const A = scalarMultiply(a, G)
         const B = scalarMultiply(b, G)
         const C = scalarMultiply(c, G)
-        
+
         const left = addPoints(addPoints(A, B), C)
         const right = addPoints(A, addPoints(B, C))
-        
+
         expect(arePointsEqual(left, right)).toBe(true)
       })
 
@@ -89,10 +93,10 @@ describe("Point operations", () => {
           const A = scalarMultiply(randScalar(), G)
           const B = scalarMultiply(randScalar(), G)
           const C = scalarMultiply(randScalar(), G)
-          
+
           const left = addPoints(addPoints(A, B), C)
           const right = addPoints(A, addPoints(B, C))
-          
+
           expect(arePointsEqual(left, right)).toBe(true)
         }
       })
@@ -101,11 +105,15 @@ describe("Point operations", () => {
 
   describe("scalarMultiply edge cases", () => {
     it("0 * G = O", () => {
-      expect(arePointsEqual(scalarMultiply(0n, G), POINT_AT_INFINITY)).toBe(true)
+      expect(arePointsEqual(scalarMultiply(0n, G), POINT_AT_INFINITY)).toBe(
+        true,
+      )
     })
 
     it("n * G = O (where n is curve order)", () => {
-      expect(arePointsEqual(scalarMultiply(CURVE_ORDER, G), POINT_AT_INFINITY)).toBe(true)
+      expect(
+        arePointsEqual(scalarMultiply(CURVE_ORDER, G), POINT_AT_INFINITY),
+      ).toBe(true)
     })
 
     it("1 * G = G", () => {
@@ -114,9 +122,14 @@ describe("Point operations", () => {
 
     it("k * O = O for any scalar k", () => {
       const testScalars = [0n, 1n, 2n, CURVE_ORDER - 1n, randScalar()]
-      
+
       for (const k of testScalars) {
-        expect(arePointsEqual(scalarMultiply(k, POINT_AT_INFINITY), POINT_AT_INFINITY)).toBe(true)
+        expect(
+          arePointsEqual(
+            scalarMultiply(k, POINT_AT_INFINITY),
+            POINT_AT_INFINITY,
+          ),
+        ).toBe(true)
       }
     })
 
@@ -134,7 +147,7 @@ describe("Point operations", () => {
           G,
           scalarMultiply(2n, G),
           scalarMultiply(randScalar(), G),
-          POINT_AT_INFINITY
+          POINT_AT_INFINITY,
         ]
 
         for (const P of testPoints) {
@@ -149,7 +162,7 @@ describe("Point operations", () => {
           G,
           scalarMultiply(2n, G),
           scalarMultiply(randScalar(), G),
-          POINT_AT_INFINITY
+          POINT_AT_INFINITY,
         ]
 
         for (const P of testPoints) {
@@ -162,14 +175,14 @@ describe("Point operations", () => {
       it("works with random points", () => {
         for (let i = 0; i < 10; i++) {
           const P = scalarMultiply(randScalar(), G)
-          
+
           // Test both compressed and uncompressed
           const compressedHex = pointToHex(P, true)
           const uncompressedHex = pointToHex(P, false)
-          
+
           const recoveredCompressed = hexToPoint(compressedHex)
           const recoveredUncompressed = hexToPoint(uncompressedHex)
-          
+
           expect(arePointsEqual(P, recoveredCompressed)).toBe(true)
           expect(arePointsEqual(P, recoveredUncompressed)).toBe(true)
         }
@@ -212,7 +225,7 @@ describe("Point operations", () => {
       })
 
       it("rejects overly long hex strings", () => {
-        const longHex = "0x" + "1".repeat(131) // 131 chars > 130 limit
+        const longHex = `0x${"1".repeat(131)}` // 131 chars > 130 limit
         expect(() => hexToPoint(longHex)).toThrow(InvalidHexError)
       })
     })
@@ -224,7 +237,7 @@ describe("Point operations", () => {
         G,
         scalarMultiply(2n, G),
         scalarMultiply(randScalar(), G),
-        POINT_AT_INFINITY
+        POINT_AT_INFINITY,
       ]
 
       for (const P of validPoints) {
@@ -235,11 +248,11 @@ describe("Point operations", () => {
     it("point equality works correctly", () => {
       const P = scalarMultiply(randScalar(), G)
       const Q = scalarMultiply(randScalar(), G)
-      
+
       expect(arePointsEqual(P, P)).toBe(true)
       expect(arePointsEqual(Q, Q)).toBe(true)
       expect(arePointsEqual(POINT_AT_INFINITY, POINT_AT_INFINITY)).toBe(true)
-      
+
       // Different points should not be equal (with very high probability)
       expect(arePointsEqual(P, Q)).toBe(false)
     })
@@ -249,21 +262,21 @@ describe("Point operations", () => {
     it("k * (m * G) = (k * m) * G", () => {
       const k = randScalar()
       const m = randScalar()
-      
+
       const left = scalarMultiply(k, scalarMultiply(m, G))
       const right = scalarMultiply((k * m) % CURVE_ORDER, G)
-      
+
       expect(arePointsEqual(left, right)).toBe(true)
     })
 
     it("(k + m) * G = k * G + m * G", () => {
       const k = randScalar()
       const m = randScalar()
-      
+
       const left = scalarMultiply((k + m) % CURVE_ORDER, G)
       const right = addPoints(scalarMultiply(k, G), scalarMultiply(m, G))
-      
+
       expect(arePointsEqual(left, right)).toBe(true)
     })
   })
-}) 
+})

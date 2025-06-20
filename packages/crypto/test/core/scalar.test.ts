@@ -1,6 +1,12 @@
-import { describe, it, expect } from "bun:test"
-import { moduloOrder, randScalar, bigIntToHex, hexToBigInt, CURVE_ORDER } from "../../src/core/scalar"
+import { describe, expect, it } from "bun:test"
 import { InvalidHexError } from "../../src/core/errors"
+import {
+  CURVE_ORDER,
+  bigIntToHex,
+  hexToBigInt,
+  moduloOrder,
+  randScalar,
+} from "../../src/core/scalar"
 
 describe("Scalar operations", () => {
   describe("moduloOrder", () => {
@@ -20,9 +26,11 @@ describe("Scalar operations", () => {
     it("handles positive and negative values", () => {
       const positiveValue = 123456789n
       const negativeValue = -123456789n
-      
+
       expect(moduloOrder(positiveValue)).toBe(positiveValue % CURVE_ORDER)
-      expect(moduloOrder(negativeValue)).toBe(((negativeValue % CURVE_ORDER) + CURVE_ORDER) % CURVE_ORDER)
+      expect(moduloOrder(negativeValue)).toBe(
+        ((negativeValue % CURVE_ORDER) + CURVE_ORDER) % CURVE_ORDER,
+      )
     })
   })
 
@@ -107,7 +115,7 @@ describe("Scalar operations", () => {
     })
 
     it("rejects overly long hex strings", () => {
-      const longHex = "0x" + "1".repeat(65) // 65 chars > 64 limit
+      const longHex = `0x${"1".repeat(65)}` // 65 chars > 64 limit
       expect(() => hexToBigInt(longHex)).toThrow(InvalidHexError)
     })
 
@@ -128,7 +136,7 @@ describe("Scalar operations", () => {
 
     it("produces valid hex strings", () => {
       const testValues = [0n, 1n, 15n, 16n, 255n, 256n, BigInt("0xdeadbeef")]
-      
+
       for (const value of testValues) {
         const hex = bigIntToHex(value)
         expect(hex).toMatch(/^0x[0-9a-f]+$/i)
@@ -136,4 +144,4 @@ describe("Scalar operations", () => {
       }
     })
   })
-}) 
+})

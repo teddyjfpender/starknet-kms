@@ -17,4 +17,4 @@ export class InvalidPointError extends Error {
     super(message)
     this.name = "InvalidPointError"
   }
-} 
+}

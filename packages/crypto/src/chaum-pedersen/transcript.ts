@@ -1,8 +1,4 @@
-import {
-  type Point,
-  type Scalar,
-  POINT_AT_INFINITY,
-} from "../core/curve"
+import { POINT_AT_INFINITY, type Point, type Scalar } from "../core/curve"
 import { poseidonHashScalars } from "../core/hash"
 
 /**
@@ -24,25 +20,31 @@ import { poseidonHashScalars } from "../core/hash"
  */
 export function serializePointForTranscript(P: Point): bigint[] {
   if (!P) {
-    throw new Error("Point cannot be null or undefined for transcript serialization")
+    throw new Error(
+      "Point cannot be null or undefined for transcript serialization",
+    )
   }
-  
+
   if (P.equals(POINT_AT_INFINITY)) {
     throw new Error("Point at infinity cannot be serialized for transcript")
   }
-  
+
   try {
     P.assertValidity()
   } catch (error) {
-    throw new Error(`Invalid point for transcript serialization: ${error instanceof Error ? error.message : 'unknown error'}`)
+    throw new Error(
+      `Invalid point for transcript serialization: ${error instanceof Error ? error.message : "unknown error"}`,
+    )
   }
-  
+
   try {
     const PAffine = P.toAffine() // Converts to affine { x, y }
     // Standard Starknet serialization for Poseidon hashing involves x and y-parity.
     return [PAffine.x, PAffine.y & 1n]
   } catch (error) {
-    throw new Error(`Failed to convert point to affine coordinates: ${error instanceof Error ? error.message : 'unknown error'}`)
+    throw new Error(
+      `Failed to convert point to affine coordinates: ${error instanceof Error ? error.message : "unknown error"}`,
+    )
   }
 }
 
@@ -75,10 +77,12 @@ export function generateChallenge(...points: Point[]): Scalar {
   if (points.length === 0) {
     throw new Error("At least one point is required for challenge generation")
   }
-  
+
   try {
     // Flatten the serialized representation of all points into a single array of bigints.
-    const serializedInputs: bigint[] = points.flatMap(serializePointForTranscript)
+    const serializedInputs: bigint[] = points.flatMap(
+      serializePointForTranscript,
+    )
 
     if (serializedInputs.length === 0) {
       throw new Error("Internal error: no serialized inputs generated")
@@ -89,6 +93,8 @@ export function generateChallenge(...points: Point[]): Scalar {
     // ensures the result is correctly reduced modulo CURVE_ORDER.
     return poseidonHashScalars(serializedInputs)
   } catch (error) {
-    throw new Error(`Failed to generate challenge: ${error instanceof Error ? error.message : 'unknown error'}`)
+    throw new Error(
+      `Failed to generate challenge: ${error instanceof Error ? error.message : "unknown error"}`,
+    )
   }
 }

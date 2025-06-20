@@ -1,16 +1,16 @@
 import { beforeAll, describe, expect, it } from "bun:test"
 import * as fc from "fast-check"
-import { num } from "starknet" 
+import { num } from "starknet"
 import {
-  POINT_AT_INFINITY as CORE_POINT_AT_INFINITY, 
+  POINT_AT_INFINITY as CORE_POINT_AT_INFINITY,
   CURVE_ORDER,
-  pointToHex,
+  POINT_AT_INFINITY_HEX_UNCOMPRESSED,
   checkStealthAddressOwnershipStarknet,
   createStealthAddressStarknet,
   deriveStealthPrivateKeyStarknet,
-  POINT_AT_INFINITY_HEX_UNCOMPRESSED, 
   generateRandomScalarStarknet,
   getPublicKeyStarknet,
+  pointToHex,
 } from "../../src"
 
 // Helper for fast-check to generate valid Starknet key pairs (hex strings)

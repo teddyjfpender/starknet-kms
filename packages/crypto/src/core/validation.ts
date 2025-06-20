@@ -34,7 +34,9 @@ export function assertStringHex(h: unknown, maxLen: number): string {
 
   // Check for reasonable length
   if (hexPart.length > maxLen) {
-    throw new InvalidHexError(`Hex string too long: ${hexPart.length} > ${maxLen}`)
+    throw new InvalidHexError(
+      `Hex string too long: ${hexPart.length} > ${maxLen}`,
+    )
   }
 
   return normalizedHex
@@ -43,7 +45,8 @@ export function assertStringHex(h: unknown, maxLen: number): string {
 /**
  * Adds hex prefix if not present
  */
-export const addHexPrefix = (h: string): string => (h.startsWith("0x") ? h : `0x${h}`)
+export const addHexPrefix = (h: string): string =>
+  h.startsWith("0x") ? h : `0x${h}`
 
 /**
  * Removes hex prefix if present
@@ -54,4 +57,4 @@ export const removeHexPrefix = (h: string): string => h.replace(/^0x/i, "")
  * Converts buffer to hex string
  */
 export const buf2hex = (b: Uint8Array): string =>
-  Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("") 
+  Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("")

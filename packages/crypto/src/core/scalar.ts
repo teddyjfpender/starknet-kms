@@ -1,6 +1,6 @@
 import { bytesToHex } from "@noble/hashes/utils"
 import { CURVE, utils as starkUtils } from "@scure/starknet"
-import { assertStringHex, addHexPrefix } from "./validation"
+import { addHexPrefix, assertStringHex } from "./validation"
 
 export type Scalar = bigint
 
@@ -43,4 +43,4 @@ export const hexToBigInt = (h: string): Scalar => {
   // Scalars should be at most 64 hex chars (256 bits)
   const normalizedHex = assertStringHex(h, 64)
   return BigInt(normalizedHex)
-} 
+}

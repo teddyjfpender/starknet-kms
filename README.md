@@ -61,7 +61,7 @@ This project is organized as a monorepo with the following packages:
 ## Documentation
 
 - [Contributor Guide](./docs/AGENTS.md) - Guidelines for contributors and development practices
-- [Chaum-Pedersen ZKP Specification](./docs/chaum-pedersen.md) - Implementation details for zero-knowledge proofs
+- [Chaum-Pedersen ZKP Documentation](./packages/crypto/src/chaum-pedersen/) - Comprehensive zero-knowledge proof implementation guide
 
 ## Scripts
 

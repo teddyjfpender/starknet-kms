@@ -5,9 +5,21 @@ export * from "./scalar"
 export * from "./point"
 export * from "./hash"
 
+import {
+  G,
+  POINT_AT_INFINITY,
+  PRIME,
+  type Point,
+  addPoints,
+  arePointsEqual,
+  assertPointValidity,
+  hexToPoint,
+  negatePoint,
+  pointToHex,
+  scalarMultiply,
+} from "./point"
 // Import what we need for high-level helpers
-import { type Scalar, moduloOrder, CURVE_ORDER } from "./scalar"
-import { type Point, G, POINT_AT_INFINITY, scalarMultiply, PRIME, addPoints, negatePoint, arePointsEqual, assertPointValidity, pointToHex, hexToPoint } from "./point"
+import { CURVE_ORDER, type Scalar, moduloOrder } from "./scalar"
 import { bigIntToHex, hexToBigInt, randScalar } from "./scalar"
 
 /* --------------------------- high-level helpers --------------------------- */
@@ -33,20 +45,20 @@ export interface Curve<CPoint, CScalar> {
   readonly prime: CScalar
   readonly base: CPoint
   readonly zero: CPoint
-  
+
   // Core operations
   add(P: CPoint, Q: CPoint): CPoint
   multiply(k: CScalar, P: CPoint): CPoint
   negate(P: CPoint): CPoint
   equals(P: CPoint, Q: CPoint): boolean
   isValid(P: CPoint): boolean
-  
+
   // Conversions
   pointToHex(P: CPoint, compressed?: boolean): string
   hexToPoint(h: string): CPoint
   scalarToHex(k: CScalar): string
   hexToScalar(h: string): CScalar
-  
+
   // High-level operations
   getPublicKey(priv: CScalar): CPoint
   randScalar(): CScalar
@@ -58,7 +70,7 @@ export const StarkCurve: Curve<Point, Scalar> = {
   prime: PRIME,
   base: G,
   zero: POINT_AT_INFINITY,
-  
+
   add: addPoints,
   multiply: scalarMultiply,
   negate: negatePoint,
@@ -71,12 +83,12 @@ export const StarkCurve: Curve<Point, Scalar> = {
       return false
     }
   },
-  
+
   pointToHex,
   hexToPoint,
   scalarToHex: bigIntToHex,
   hexToScalar: hexToBigInt,
-  
+
   getPublicKey,
   randScalar,
 }

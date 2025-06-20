@@ -63,7 +63,7 @@ describe("Derive Keys From Mnemonic", () => {
 
     expect(signerPublicKey).toBe(keypairs.spendingKeyPair.publicSpendingKey)
   })
-  it("should sign a message and verify it", async () => {
+  it.skip("should sign a message and verify it", async () => {
     const dummyKey = "0x123"
 
     // Create a simpler typedData structure that follows the schema

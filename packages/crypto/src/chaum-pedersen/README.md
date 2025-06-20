@@ -56,11 +56,11 @@ graph TD
     M --> O["Valid Proof ✓"]
     N --> O
     
-    style A fill:#ff9999
-    style E fill:#ff9999
-    style D fill:#99ccff
-    style K fill:#99ff99
-    style O fill:#99ff99
+    style A fill:#d32f2f,color:#fff
+    style E fill:#d32f2f,color:#fff
+    style D fill:#1976d2,color:#fff
+    style K fill:#388e3c,color:#fff
+    style O fill:#388e3c,color:#fff
 ```
 
 ### Phase 1: The Setup (Red Nodes) 🔴

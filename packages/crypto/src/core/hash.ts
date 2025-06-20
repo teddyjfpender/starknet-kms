@@ -1,5 +1,5 @@
 import { poseidonHashMany } from "@scure/starknet"
-import { type Scalar, moduloOrder, CURVE_ORDER } from "./scalar"
+import { CURVE_ORDER, type Scalar, moduloOrder } from "./scalar"
 
 /**
  * Poseidon hash wrapper for scalars
@@ -7,4 +7,4 @@ import { type Scalar, moduloOrder, CURVE_ORDER } from "./scalar"
  * and the result is also reduced modulo the curve order
  */
 export const poseidonHashScalars = (xs: Scalar[]): Scalar =>
-  poseidonHashMany(xs.map(moduloOrder)) % CURVE_ORDER 
+  poseidonHashMany(xs.map(moduloOrder)) % CURVE_ORDER
