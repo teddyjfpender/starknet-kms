@@ -3,12 +3,17 @@
 # Build artifacts
 graph.pdf
 
+# Turbo
+.turbo/
+
 # IDE
 .idea
 
 # Build outputs
 dist
 build
+dist/
+node_modules/
 
 # Dependencies
 node_modules

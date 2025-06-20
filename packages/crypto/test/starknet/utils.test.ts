@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test"
 import { ec, encode, num } from "starknet" // For STARKNET_CURVE, CURVE_ORDER, and some hex utils
-import { CURVE_ORDER as CORE_CURVE_ORDER } from "../../src/elliptic-curve/core/curve" // For CURVE_ORDER constant
+import { CURVE_ORDER as CORE_CURVE_ORDER } from "../../src/core/curve" // For CURVE_ORDER constant
 import {
   POINT_AT_INFINITY_HEX_UNCOMPRESSED as EXPORTED_POINT_AT_INFINITY_HEX,
   addPointsStarknet,
@@ -8,7 +8,7 @@ import {
   getBasePointStarknet,
   getPublicKeyStarknet,
   scalarMultiplyStarknet,
-} from "../../src/elliptic-curve/starknet-curve" // To be tested
+} from "../../src/starknet"
 
 const STARKNET_CURVE = ec.starkCurve // Used for some direct comparisons or underlying objects
 // Ensure CURVE_ORDER used in tests is the one from core/curve.ts, which starknet-curve.ts relies on.

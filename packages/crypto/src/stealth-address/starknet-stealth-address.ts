@@ -4,7 +4,7 @@ import {
   generateRandomScalarStarknet,
   getPublicKeyStarknet,
   scalarMultiplyStarknet,
-} from "./starknet-curve"
+} from "../starknet"
 
 const STARKNET_CURVE = ec.starkCurve
 const CURVE_ORDER = STARKNET_CURVE.CURVE.n

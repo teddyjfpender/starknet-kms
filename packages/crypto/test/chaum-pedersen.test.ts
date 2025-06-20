@@ -6,11 +6,11 @@ import {
   POINT_AT_INFINITY,
   type Point,
   moduloOrder,
-} from "../../src/elliptic-curve/core/curve"
+} from "../src/core/curve"
 
 import {
   H, // Ensured import from generators
-} from "../../src/elliptic-curve/chaum-pedersen/generators"
+} from "../src/chaum-pedersen/generators"
 
 import {
   type Proof,
@@ -24,7 +24,7 @@ import {
   proveFS,
   randScalar, // Already from core/curve via re-export in chaum-pedersen index
   verify,
-} from "../../src/elliptic-curve/chaum-pedersen" // Imports from main index
+} from "../src/chaum-pedersen" // Imports from main index
 
 // Helper to generate a valid scalar for fast-check (1 <= x < CURVE_ORDER)
 const fcScalar = fc.bigInt(1n, CURVE_ORDER - 1n)

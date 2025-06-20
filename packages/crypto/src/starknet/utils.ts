@@ -11,7 +11,7 @@ import {
   // Point as CorePoint,
   randScalar as coreRandScalar,
   scalarMultiply as coreScalarMultiply,
-} from "./core/curve"
+} from "../core/curve"
 
 // Strict validation functions for the API layer
 function validateStrictHex(h: string, context: string): void {

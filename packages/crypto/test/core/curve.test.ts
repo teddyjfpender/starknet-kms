@@ -27,7 +27,7 @@ import {
   poseidonHashScalars,
   randScalar,
   scalarMultiply,
-} from "../../../src/elliptic-curve/core/curve"
+} from "../../src/core/curve"
 
 describe("STARK Curve Core Utilities (core/curve.ts)", () => {
   describe("Constants", () => {

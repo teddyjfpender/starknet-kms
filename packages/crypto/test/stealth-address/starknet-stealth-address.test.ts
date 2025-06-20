@@ -1,21 +1,17 @@
 import { beforeAll, describe, expect, it } from "bun:test"
 import * as fc from "fast-check"
-import { num } from "starknet" // For mocking parts of it, like hash.starknetKeccak
+import { num } from "starknet" 
 import {
-  POINT_AT_INFINITY as CORE_POINT_AT_INFINITY, // Renamed to avoid clash
+  POINT_AT_INFINITY as CORE_POINT_AT_INFINITY, 
   CURVE_ORDER,
   pointToHex,
-} from "../../src/elliptic-curve/core/curve"
-import {
-  POINT_AT_INFINITY_HEX_UNCOMPRESSED, // Import from starknet-curve
-  generateRandomScalarStarknet,
-  getPublicKeyStarknet,
-} from "../../src/elliptic-curve/starknet-curve"
-import {
   checkStealthAddressOwnershipStarknet,
   createStealthAddressStarknet,
   deriveStealthPrivateKeyStarknet,
-} from "../../src/elliptic-curve/starknet-stealth"
+  POINT_AT_INFINITY_HEX_UNCOMPRESSED, 
+  generateRandomScalarStarknet,
+  getPublicKeyStarknet,
+} from "../../src"
 
 // Helper for fast-check to generate valid StarkNet key pairs (hex strings)
 const fcStarknetKeyPair = fc
