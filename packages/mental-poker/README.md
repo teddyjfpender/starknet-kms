@@ -1,16 +1,31 @@
 # Mental Poker Protocol - TypeScript Implementation
 
-A complete 1:1 port of the Rust `@barnett-smart-card-protocol` implementing the Barnett-Smart mental poker protocol with zero-knowledge proofs.
+A TypeScript port of the Rust `@barnett-smart-card-protocol` implementing the Barnett-Smart mental poker protocol with zero-knowledge proofs.
 
-## 🎉 Status: **FULLY FUNCTIONAL**
+## ⚠️ Status: **EXPERIMENTAL - CRITICAL SECURITY ISSUES REMAIN**
 
-The core mental poker protocol is now **completely operational** with all cryptographic operations working correctly:
+**IMPORTANT**: Following a security audit, while some improvements have been made, critical vulnerabilities remain unresolved:
 
 - ✅ **Zero-Knowledge Proofs**: All Chaum-Pedersen proofs verify successfully
 - ✅ **ElGamal Encryption**: Complete card masking/unmasking cycle
 - ✅ **Multi-Party Operations**: Secure key generation and aggregation
 - ✅ **Card Operations**: Mask, remask, reveal, and unmask with proofs
 - ✅ **API Compatibility**: 100% match with Rust implementation
+- ❌ **Shuffle Proofs**: Verification is still a simplified structural check - NOT cryptographically sound
+- ✅ **Secure Parameter Generation**: Cryptographically sound Pedersen commitment parameters
+- ⚠️ **Documentation Corrected**: Now accurately reflects security limitations
+
+## 🚨 CRITICAL SECURITY NOTICE
+
+**NOT SUITABLE FOR PRODUCTION USE** - This implementation has critical security vulnerabilities:
+
+- **INCOMPLETE SHUFFLE VERIFICATION**: The shuffle proof verification is still a simplified structural check that does NOT validate the permutation polynomial - this is a critical security vulnerability
+- **Custom ZK Proofs**: The masking, reveal, and key ownership proofs are custom implementations requiring formal security review
+- **Modular Inverse**: Uses custom implementation that lacks constant-time guarantees and needs side-channel review
+
+**The implementation should be considered EXPERIMENTAL until these issues are resolved.**
+
+See [PROGRESS.md](./PROGRESS.md) and [AUDIT-RESPONSE.md](./AUDIT-RESPONSE.md) for detailed security status.
 
 ## Features
 
