@@ -40,11 +40,11 @@ graph LR
     C --> E["Send (P,Q) to Verifier"]
     D --> E
     
-    style A fill:#ff9999
-    style B fill:#ffcc99
-    style C fill:#99ccff
-    style D fill:#99ccff
-    style E fill:#99ff99
+    style A fill:#d32f2f,color:#fff
+    style B fill:#f57c00,color:#fff
+    style C fill:#1976d2,color:#fff
+    style D fill:#1976d2,color:#fff
+    style E fill:#388e3c,color:#fff
 ```
 
 **Why this works:** The random nonce `r` acts like a cryptographic "magic trick" - it hides the real secret `x` behind a curtain of randomness. The verifier sees `P` and `Q`, but these points reveal nothing about `x` because they're generated with the unknown `r`.
@@ -60,9 +60,9 @@ graph LR
     A["P, Q, U, V"] --> B["Hash Function"]
     B --> C["c = Hash(P, Q, U, V)"]
     
-    style A fill:#99ccff
-    style B fill:#ffcc99
-    style C fill:#ff9999
+    style A fill:#1976d2,color:#fff
+    style B fill:#f57c00,color:#fff
+    style C fill:#d32f2f,color:#fff
 ```
 
 **The genius move:** By hashing all the public information together, we create a challenge `c` that:
@@ -83,11 +83,11 @@ graph LR
     C[Challenge c] --> D
     D --> E["Send e to Verifier"]
     
-    style A fill:#ff9999
-    style B fill:#ffcc99
-    style C fill:#99ccff
-    style D fill:#ccffcc
-    style E fill:#99ff99
+    style A fill:#d32f2f,color:#fff
+    style B fill:#f57c00,color:#fff
+    style C fill:#1976d2,color:#fff
+    style D fill:#388e3c,color:#fff
+    style E fill:#388e3c,color:#fff
 ```
 
 **The mathematical magic:** The response `e = (r + c·x) mod n` perfectly balances three forces:

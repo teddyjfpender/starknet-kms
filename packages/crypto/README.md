@@ -10,7 +10,7 @@ Welcome to the `@starkms/crypto` package! This library provides a suite of robus
     *   **Interactive & Non-Interactive Modes:** Supports both:
         *   **Interactive Protocol:** `commit`, `respond` functions for a step-by-step proof generation process.
         *   **Non-Interactive (Fiat-Shamir) Protocol:** `proveFS` and `verify` functions for generating and verifying proofs without direct interaction, using a cryptographic hash function.
-    *   **Secure Secondary Generator `H`:** The point `H` is deterministically derived using `H = hG` where `h = SHA256("starkex.chaum-pedersen.H.v1") % CURVE_ORDER`. This ensures its discrete logarithm relative to `G` is unknown, a critical security requirement.
+    *   **Secure Secondary Generator `H`:** The point `H` is deterministically derived using `H = hG` where `h = SHA256("stark.chaum-pedersen.H.v1") % CURVE_ORDER`. This ensures its discrete logarithm relative to `G` is unknown, a critical security requirement.
     *   **Poseidon Hash for Fiat-Shamir:** Utilizes the Poseidon hash function (via `poseidonHashScalars` from `core/curve.ts`) for generating the challenge in the Fiat-Shamir transformation, aligning with Starknet ecosystem standards.
 *   **Core Elliptic Curve Utilities (`core/curve.ts` & `starknet-curve.ts`):**
     *   Provides foundational elements for STARK curve operations, including `Scalar` (bigint) and `Point` types, and robust arithmetic functions.
@@ -162,7 +162,7 @@ The primary Chaum-Pedersen functionalities are typically exported from `@starkms
 
 ### Core Elliptic Curve Elements (from `core/curve.ts`):
 *   `G`: The standard base point (generator) of the STARK curve.
-*   `H`: The secondary generator point, securely derived as `hG` where `h = SHA256("starkex.chaum-pedersen.H.v1") % CURVE_ORDER`.
+*   `H`: The secondary generator point, securely derived as `hG` where `h = SHA256("stark.chaum-pedersen.H.v1") % CURVE_ORDER`.
 *   `CURVE_ORDER`: The order `n` of the STARK curve's base field.
 *   `ProjectivePoint`: The class representing elliptic curve points from `@scure/starknet`.
 
@@ -173,7 +173,7 @@ The security of the Chaum-Pedersen protocol implementation hinges on several sta
 2.  **Cryptographic Hash Function Properties:** The Poseidon hash function, used for the Fiat-Shamir transformation to create non-interactive proofs, is assumed to behave like a random oracle. Its resistance to preimage and collision attacks is crucial.
 3.  **Secure Generator Parameters:**
     *   `G` is the standard, well-vetted base point of the STARK curve.
-    *   `H` is generated using a "nothing-up-my-sleeve" number derived from the SHA256 hash of a domain separation tag (`"starkex.chaum-pedersen.H.v1"`). This method ensures that the discrete logarithm of `H` with respect to `G` (`log_G(H)`) is unknown and intractable to compute.
+    *   `H` is generated using a "nothing-up-my-sleeve" number derived from the SHA256 hash of a domain separation tag (`"stark.chaum-pedersen.H.v1"`). This method ensures that the discrete logarithm of `H` with respect to `G` (`log_G(H)`) is unknown and intractable to compute.
 4.  **Nonce Security:** The random nonce `r` used in the commitment phase (`P=rG, Q=rH`) must be:
     *   Chosen uniformly at random from the range `[1, CURVE_ORDER-1]`.
     *   Kept secret by the prover until the response phase (in interactive scenarios).

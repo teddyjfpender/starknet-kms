@@ -4,9 +4,9 @@ import { G, POINT_AT_INFINITY, type Point, moduloOrder } from "../core/curve"
 
 // The secondary generator H is derived from a domain separation tag using SHA-256.
 // This ensures that the discrete logarithm log_G(H) is unknown.
-// H = h * G, where h = SHA256("starkex.chaum-pedersen.H.v1") % CURVE_ORDER.
+// H = h * G, where h = SHA256("stark.chaum-pedersen.H.v1") % CURVE_ORDER.
 
-const domainTag = "starkex.chaum-pedersen.H.v1"
+const domainTag = "stark.chaum-pedersen.H.v1"
 const hashedDomainTag = sha256(utf8ToBytes(domainTag)) // Output is Uint8Array
 const h_scalar_bigint = BigInt(`0x${bytesToHex(hashedDomainTag)}`)
 

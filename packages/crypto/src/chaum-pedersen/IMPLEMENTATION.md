@@ -214,7 +214,7 @@ export function respond(x: Scalar, r: Scalar, c: Scalar): Scalar {
 The secondary generator H is derived deterministically:
 
 ```typescript
-const domainTag = "starkex.chaum-pedersen.H.v1"
+const domainTag = "stark.chaum-pedersen.H.v1"
 const hashedDomainTag = sha256(utf8ToBytes(domainTag))
 const h_scalar_bigint = BigInt(`0x${bytesToHex(hashedDomainTag)}`)
 const h = moduloOrder(h_scalar_bigint)
