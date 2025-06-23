@@ -1,6 +1,7 @@
 import {
   G,
   POINT_AT_INFINITY,
+  PRIME,
   type Point,
   type Scalar,
   addPoints,
@@ -17,12 +18,13 @@ import {
   proveBayerGrothShuffle,
   verifyBayerGrothShuffle,
 } from "./bayer-groth-shuffle"
-import { type CardEncoding, getPlayingCard, getPointKey } from "./card-encoding"
+import { type CardEncoding, getPlayingCard, getPointKey, getCardIndex } from "./card-encoding"
 import { generatePedersenCommitKey } from "./pedersen-commitment"
 import { BaseBarnettSmartProtocol } from "./protocol"
 import type {
   AggregatePublicKey,
   Card,
+  CardIndex,
   DeckSize,
   MaskedCard,
   Parameters,
@@ -205,8 +207,9 @@ export class DLCards extends BaseBarnettSmartProtocol {
     }
 
     // Generate Pedersen commitment key for Bayer-Groth shuffle proofs
-    // We need enough generators for the maximum polynomial degree (deck size)
-    const pedersenKey = generatePedersenCommitKey(m)
+    // We need enough generators for the maximum polynomial degree (deck size squared for matrix commitments)
+    const maxGenerators = Math.max(m * m + m + 10, 64) // Ensure sufficient generators for all commitments
+    const pedersenKey = generatePedersenCommitKey(maxGenerators)
 
     return {
       m,
@@ -256,11 +259,7 @@ export class DLCards extends BaseBarnettSmartProtocol {
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("")}`,
     )
-    const playerInfoScalar =
-      playerInfoHash %
-      BigInt(
-        "0x800000000000011000000000000000000000000000000000000000000000001",
-      ) // STARK curve order
+    const playerInfoScalar = playerInfoHash % PRIME
     const playerInfoPoint = scalarMultiply(playerInfoScalar, pp.generators.H)
     const challenge = generateChallenge(
       commitment,
@@ -294,11 +293,7 @@ export class DLCards extends BaseBarnettSmartProtocol {
           .map((b) => b.toString(16).padStart(2, "0"))
           .join("")}`,
       )
-      const playerInfoScalar =
-        playerInfoHash %
-        BigInt(
-          "0x800000000000011000000000000000000000000000000000000000000000001",
-        ) // STARK curve order
+      const playerInfoScalar = playerInfoHash % PRIME
       const playerInfoPoint = scalarMultiply(playerInfoScalar, pp.generators.H)
       const expectedChallenge = generateChallenge(
         proof.commitment,
@@ -370,6 +365,21 @@ export class DLCards extends BaseBarnettSmartProtocol {
   ): Promise<[MaskedCard, ZKProofMasking]> {
     this.validateParameters(pp)
 
+    // Validate inputs
+    if (originalCard.index < 0) {
+      throw new MentalPokerError(
+        `Invalid card index: ${originalCard.index}`,
+        MentalPokerErrorCode.INVALID_CARD_INDEX,
+      )
+    }
+
+    if (alpha < 0n) {
+      throw new MentalPokerError(
+        `Invalid masking factor: ${alpha}`,
+        MentalPokerErrorCode.CRYPTOGRAPHIC_ERROR,
+      )
+    }
+
     // ElGamal encryption: (c1, c2) = (alpha*G, card + alpha*sharedKey)
     const c1 = scalarMultiply(alpha, pp.generators.G)
     const c2 = addPoints(
@@ -377,22 +387,17 @@ export class DLCards extends BaseBarnettSmartProtocol {
       scalarMultiply(alpha, sharedKey.point),
     )
 
+    // Create masked card
     const maskedCard: MaskedCard = {
-      ciphertext: c2,
       randomness: c1,
+      ciphertext: c2,
     }
 
-    // Generate custom Chaum-Pedersen proof for masking
+    // Generate zero-knowledge proof of correct masking
     const c2MinusCard = addPoints(c2, negatePoint(originalCard.point))
-    const zkProof = proveMasking(
-      alpha,
-      pp.generators.G,
-      sharedKey.point,
-      c1,
-      c2MinusCard,
-    )
+    const proof = proveMasking(alpha, pp.generators.G, sharedKey.point, c1, c2MinusCard)
 
-    return [maskedCard, zkProof]
+    return [maskedCard, proof]
   }
 
   async verifyMask(
@@ -534,17 +539,15 @@ export class DLCards extends BaseBarnettSmartProtocol {
   ): Promise<Card> {
     this.validateParameters(pp)
 
-    if (decryptionKey.length === 0) {
+    // Validate that we have tokens from all players
+    if (decryptionKey.length !== pp.n) {
       throw new MentalPokerError(
-        "No reveal tokens provided",
+        `Insufficient reveal tokens: expected ${pp.n}, got ${decryptionKey.length}`,
         MentalPokerErrorCode.INSUFFICIENT_REVEAL_TOKENS,
       )
     }
 
-    // The Rust implementation doesn't require all n players, just the ones who provide tokens
-    // This allows for partial reveals in some game scenarios
-
-    // Verify all reveal token proofs
+    // Verify all reveal tokens and proofs
     for (const [token, proof, pk] of decryptionKey) {
       const isValid = await this.verifyReveal(pp, pk, token, maskedCard, proof)
       if (!isValid) {
@@ -555,35 +558,30 @@ export class DLCards extends BaseBarnettSmartProtocol {
       }
     }
 
-    // Aggregate all reveal tokens: sum(token_i) = sum(sk_i * c1) = aggregateSK * c1
+    // Aggregate all reveal tokens: aggregateToken = sum(token_i)
     let aggregateToken = POINT_AT_INFINITY
     for (const [token] of decryptionKey) {
       aggregateToken = addPoints(aggregateToken, token.token)
     }
 
     // Decrypt: card = c2 - aggregateToken
-    const cardPoint = addPoints(
-      maskedCard.ciphertext,
-      negatePoint(aggregateToken),
-    )
+    const cardPoint = addPoints(maskedCard.ciphertext, negatePoint(aggregateToken))
 
-    // Determine card index using encoding if provided
-    let cardIndex = 0
+    // Try to find the card index if encoding is provided
+    let cardIndex: CardIndex = 0 as CardIndex
     if (cardEncoding) {
       const playingCard = getPlayingCard(cardEncoding, cardPoint)
       if (playingCard) {
-        const encodedIndex = cardEncoding.cardToIndex.get(
-          getPointKey(cardPoint),
-        )
-        if (encodedIndex !== undefined) {
-          cardIndex = encodedIndex
+        const index = getCardIndex(cardEncoding, playingCard)
+        if (index !== undefined) {
+          cardIndex = index
         }
       }
     }
 
     return {
       point: cardPoint,
-      index: cardIndex as any, // Cast to CardIndex - will be properly typed when we update the interface
+      index: cardIndex,
     }
   }
 

@@ -1,0 +1,251 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Test vectors for ElGamal and masking primitives in mental poker",
+    "total_vectors": 2,
+    "generation_timestamp": "2025-06-21T20:45:13.586Z"
+  },
+  "curve_info": {
+    "name": "Starknet Curve",
+    "field_modulus": "0x800000000000011000000000000000000000000000000000000000000000001",
+    "curve_order": "0x800000000000010ffffffffffffffffb781126dcae7b2321e66a241adc64d2f"
+  },
+  "test_vectors": [
+    {
+      "test_name": "primitive_test_0",
+      "seed": [
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42,
+        42
+      ],
+      "elgamal_test": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "secret_key": "0x22a2a2a2a2a29d52a2a2a2a2a2a2a2b94a4ce0533a3af2f9228fee1c54aa83f",
+        "public_key": "0x04066e17c3f8c01ba43541c3bf12e70f54dabf346921a7920da3525e9afbfd74e701feb8f30c3782889f885e9f1260389f3c347b38a2d27c30ad4fdd1d29e7a5be",
+        "plaintext": "0x04022fb535e9d2ebb124c6b66ced6c7d81363e31e9e257864b9213b5c56e73a89e04b137a4efa7dfc5482c33f2a6fe7f289fbf4b0cd0797cd02951dbd52be6d468",
+        "randomness": "0x22a2a2a2a2a29d52a2a2a2a2a2a2a2b94a4ce0533a3af2f9228fee1c54aa89f",
+        "ciphertext": {
+          "c1": "0x0400606582d0adcd6520b977ce574298e0df2044d5a8a1126284ede43e334449d7030de5c5637e6fbb9042911935e834d5fd9b9dd58ba2cab42773b2a6cb934079",
+          "c2": "0x040003b0565e2c73dc103a32b26b34944950f79c2dde83f75cd4686865e5648bcb0308f063e51c9a7101da2d3eba283f84fe55390abc5094b650ca7c796449b552"
+        },
+        "encryption_proof": {
+          "commitment": "0x0405fbb657e237cabec733138aafd8aa7627c74cc56c1e377448d1918e11e26e930393d0bc783efd6809b09b8dc30c9f454051c130a62b8af0ff3a4e8655775e82",
+          "challenge": "0x2e143236d0010e228c4bcd50a3b4e7fa678b596b64c7ac8deffbfe8ed40c8a0",
+          "response": "0x3b7ffaebc2b8579d97f9305af69a1ae796460b675ab93fe5c9b069d03661b67"
+        }
+      },
+      "masking_test": {
+        "original_card": "0x04022fb535e9d2ebb124c6b66ced6c7d81363e31e9e257864b9213b5c56e73a89e04b137a4efa7dfc5482c33f2a6fe7f289fbf4b0cd0797cd02951dbd52be6d468",
+        "masked_card": {
+          "c1": "0x04004fbb3d5ea64b84bdcbaa2f081539aa6b0d7595787c5c1efff76807d9086a6f02976a44e16691ab51145b4223f5ee57e4b66cc54d1c694a273714b65009b8a5",
+          "c2": "0x0405df4bba4a43fb5a346bb7601f9a96c1d3d5bc0fca98afd33d949e4c19a2938901e68087c2948e3c82a3b671503e150ee5add39a9d547db91a52ecad01322e84"
+        },
+        "masking_factor": "0x22a2a2a2a2a29d52a2a2a2a2a2a2a2b94a4ce0533a3af2f9228fee1c54aa8bf",
+        "masking_proof": {
+          "commitment": "0x0401d14d909e4396b294e25f75ad64ec86181c85ab74499b315f7458414b9a781e06e894dc4782fa414f9bd34c724179b86f8d9b02c88fe3d72478cdc913ecd3bf",
+          "challenge": "0x780ee799497f13fe5316c5c967fa9de69329b37b49a0f6a4336d2e6c50aef08",
+          "response": "0x15d6dd04728e8950aeaae6fc54475ad195fe9c76a0730448bc612621ca94030"
+        },
+        "verification_result": true
+      },
+      "remasking_test": {
+        "original_masked": {
+          "c1": "0x04004fbb3d5ea64b84bdcbaa2f081539aa6b0d7595787c5c1efff76807d9086a6f02976a44e16691ab51145b4223f5ee57e4b66cc54d1c694a273714b65009b8a5",
+          "c2": "0x0405df4bba4a43fb5a346bb7601f9a96c1d3d5bc0fca98afd33d949e4c19a2938901e68087c2948e3c82a3b671503e150ee5add39a9d547db91a52ecad01322e84"
+        },
+        "additional_masking_factor": "0x22a2a2a2a2a29d52a2a2a2a2a2a2a2b94a4ce0533a3af2f9228fee1c54aa8df",
+        "remasked_card": {
+          "c1": "0x040789dcfa135f82b44472497464cf2f2a047bd534de1b7f6dc948b642e4a09be6041811cfb3ad194851eb7067568f9a0a0ef9439cbfe26ea05fa36a227360e90e",
+          "c2": "0x040685c2636ec0b028bb1d9b7712b021607285c2830ea2974153416ad2a2ffae74064a372280051690722f8e4fed2bcc47d0518901b4e1231e75b539ab88633db9"
+        },
+        "remasking_proof": {
+          "commitment": "0x040019e524c160fccc8ea975f68335ac18be5d3af9197e347f06ea1f5d31b3daf403f7dfa9902e0c43ac39a503ae092c276ebdce154f6b3099ca52a8af6217f8fc",
+          "challenge": "0x4bd1541a53458f357c629f43b41531cdec170634ae5df7753106cf82433282d",
+          "response": "0x515d197074a9704aa0091d3dca15e5c93c16bea3c14dc00a15d436ef9c3a1cc"
+        },
+        "verification_result": true
+      },
+      "reveal_test": {
+        "masked_card": {
+          "c1": "0x04004fbb3d5ea64b84bdcbaa2f081539aa6b0d7595787c5c1efff76807d9086a6f02976a44e16691ab51145b4223f5ee57e4b66cc54d1c694a273714b65009b8a5",
+          "c2": "0x0405df4bba4a43fb5a346bb7601f9a96c1d3d5bc0fca98afd33d949e4c19a2938901e68087c2948e3c82a3b671503e150ee5add39a9d547db91a52ecad01322e84"
+        },
+        "player_secret_keys": [
+          "0x22a2a2a2a2a29d52a2a2a2a2a2a2a2b94a4ce0533a3af2f9228fee1c54aa83f",
+          "0x22a2a2a2a2a29d52a2a2a2a2a2a2a2b94a4ce0533a3af2f9228fee1c54aa85f",
+          "0x22a2a2a2a2a29d52a2a2a2a2a2a2a2b94a4ce0533a3af2f9228fee1c54aa87f"
+        ],
+        "reveal_tokens": [
+          "0x040152069eb640fe32d8f8c96cfad6ea74ec39ec4febf912a5618bf5a43c9876b5049a2b0e979edb2d6521dcbb72d4b7a426281fc50adc1f1ab55cf145a1796219",
+          "0x04066ccb2a4182fe6f110b82637b8859de4fe928934389593fddf2085c499c1cd60781dd1cdfd2c6d4499217dd7f12131bebedcd5ed5b60cee1d86e7a86caa3539",
+          "0x04064e31702f358522c3e4f7ec2ad8d14e852d9ad4dfc084971872a139ad791df904b0c151d06ec984750d2adee6ff1d2e0c60d551e1fa854f1566658c66f6bc90"
+        ],
+        "reveal_proofs": [
+          {
+            "commitment": "0x04041b98cfb14e9ea5def8a319deda0eb7df61a07ed29501017ae6d565f2841c5803d0b2767aaa0d22f3797bcedc95c8d347c0ec09f61b11fdb41bae64740ef9dc",
+            "challenge": "0x6d0852fa306afa716bb3cd34b38484083650b9bcf2aa352f5261efcc3f6d521",
+            "response": "0x89617a9f46391d781e18f3d12ca37cbf68a4242306495e41d0a68311d6c5ff"
+          },
+          {
+            "commitment": "0x0407a1dd52a956ab1b0abebdcd26b34062404d05f8e29e2e5d05b4fb99a6a304ff01a8df013598f0bb5af88e72fa40f9eb54236ab1e0a40016cd440214151e6394",
+            "challenge": "0x6bd20428977f08bfec0b8f54fe5b5a1c5e30e300371fe12417465a7d1127376",
+            "response": "0xd4f5204b7e964422ae4c01b71cf052808dbc7b780f0686d3cc31a693af280"
+          },
+          {
+            "commitment": "0x04070f33ca78d8dd479ad3b9a313e1708d65ca775a98f4c3f189c692b5ade53a920758a95fc2eb4b9995fd68a7c266bf277b551a1957e1465f0c7ad800681a447d",
+            "challenge": "0xc871a2adbf4605489a948ce84cad304d5fe8c513b591309ab0222d2e351472",
+            "response": "0x3e4c9dfaa7416d59ee5808bf3f8c5bece1776ed1975b4182d4926e55c139480"
+          }
+        ],
+        "unmasked_card": "0x04022fb535e9d2ebb124c6b66ced6c7d81363e31e9e257864b9213b5c56e73a89e04b137a4efa7dfc5482c33f2a6fe7f289fbf4b0cd0797cd02951dbd52be6d468"
+      }
+    },
+    {
+      "test_name": "primitive_test_1",
+      "seed": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "elgamal_test": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "secret_key": "0x1f1e1d1c1b19d51817161514131212320ac455e06c41408e6c7cfe4ce9cd45",
+        "public_key": "0x04051d98027e1287499d75e26182903c4fbaf5f120e9412b8ad86a42de20497a3401cf7c5df82919d2a42f697946dfe9e1d90c64712ec1322321ca83dce569d5a9",
+        "plaintext": "0x04012290477ef31b5efc345c361635069b72066daa4ab647e70a91c3cc5940c275018b66fb24de1d0e5ea2531c8d6b225e5f2cb8a90583a99fbdecfe04a1e23352",
+        "randomness": "0x1f1e1d1c1b19d51817161514131212320ac455e06c41408e6c7cfe4ce9cda5",
+        "ciphertext": {
+          "c1": "0x04060a185c3ced7c6e6856fefe7c7ec06f6330b21a07c38d018b1bcaa15ab3e68c062102e76fd31c0192031c7f75de10ec89ca2c73441233e92567d4184714a097",
+          "c2": "0x0405a5f32e5462508f0691e181df50125ea340387370c79b456d289f95a6ac148d01f3962e204213efaa6942837543e051ee296a9845cb3532d3beb8785815cee1"
+        },
+        "encryption_proof": {
+          "commitment": "0x04030a1e3529ba4fd9c1c02af13de23fc4a77e35a1527c3f359b2886a8ce63caab02b25a12ccb4a77dd6e94049657834872dbe2acca58114a9e64c1d175c1e9c9b",
+          "challenge": "0xb09beadee07aa8e94b2666dbd3140a6b2736a6aa966080013a2f7d61b0c535",
+          "response": "0x6fa01736957f44ac82fd77dd1054efadb2884cd45aba8973d84e9464f128eb1"
+        }
+      },
+      "masking_test": {
+        "original_card": "0x04012290477ef31b5efc345c361635069b72066daa4ab647e70a91c3cc5940c275018b66fb24de1d0e5ea2531c8d6b225e5f2cb8a90583a99fbdecfe04a1e23352",
+        "masked_card": {
+          "c1": "0x04029c6e9d7f6b7f96f1338b28242ccc03486334610371219513e6e8f7911bf03003d442893d715666b75914052ba7ce4187f5f735ebbc1588fa9c3bd34c2d00dd",
+          "c2": "0x0406e5dd08d9324ca402be9a34fd068b39e315e73d984276138788e060dec7304d057c38025ee76bc3b80325575dd3e6a2bd75b221941fb2001c321aefb5fe8fd4"
+        },
+        "masking_factor": "0x1f1e1d1c1b19d51817161514131212320ac455e06c41408e6c7cfe4ce9cdc5",
+        "masking_proof": {
+          "commitment": "0x0407798c2b3d407786fe4a5f88eaa99a8874bf705705eb5dbec41ec5a1224f7d9e02c75ed990c01c45ece98d7da385bc19c0a6111d873c0e0ef72c65ff92cc5de8",
+          "challenge": "0x23fc7721f14a3399de5036b366cb018d753e7a43ccb89a107889bfe8d1fb9e5",
+          "response": "0x15af572f335d0f7335c2c42b8513213e4c72fb3de892871f89f60d68f54e5d5"
+        },
+        "verification_result": true
+      },
+      "remasking_test": {
+        "original_masked": {
+          "c1": "0x04029c6e9d7f6b7f96f1338b28242ccc03486334610371219513e6e8f7911bf03003d442893d715666b75914052ba7ce4187f5f735ebbc1588fa9c3bd34c2d00dd",
+          "c2": "0x0406e5dd08d9324ca402be9a34fd068b39e315e73d984276138788e060dec7304d057c38025ee76bc3b80325575dd3e6a2bd75b221941fb2001c321aefb5fe8fd4"
+        },
+        "additional_masking_factor": "0x1f1e1d1c1b19d51817161514131212320ac455e06c41408e6c7cfe4ce9cde5",
+        "remasked_card": {
+          "c1": "0x0404d326771fcff3b1d4dd49e5c2875caae575c37e145a34498bb34d009b2c07f6054207dedd5fd1f7968284783d0acdb53f2397c3174bab41aed2130bace7bec5",
+          "c2": "0x0402ad65f0959ad4fc5a70f7602e081b961622f2046cc1aba45a9fcaa0f8f63eb407a73a3889ee2b11b0351ac0f1aa4632ae0c643be315db69d98dd5a0331cde46"
+        },
+        "remasking_proof": {
+          "commitment": "0x0406ae8fbbf75d66e641bc0dfe9b59b9455cee2243217f720c437b3c2e00cf53cb05de9aca57ef1ad032be547f743cf87215cbbc7dacd7ffd5d8f9a55422050e15",
+          "challenge": "0x3c025400904b5163f266fe65d1f12db2b296f35547cec0165a68a78fb17277b",
+          "response": "0x471844a536ae339a165ca086c41e9c1b85efd2ed13bda9b8873fb4597bb52eb"
+        },
+        "verification_result": true
+      },
+      "reveal_test": {
+        "masked_card": {
+          "c1": "0x04029c6e9d7f6b7f96f1338b28242ccc03486334610371219513e6e8f7911bf03003d442893d715666b75914052ba7ce4187f5f735ebbc1588fa9c3bd34c2d00dd",
+          "c2": "0x0406e5dd08d9324ca402be9a34fd068b39e315e73d984276138788e060dec7304d057c38025ee76bc3b80325575dd3e6a2bd75b221941fb2001c321aefb5fe8fd4"
+        },
+        "player_secret_keys": [
+          "0x1f1e1d1c1b19d51817161514131212320ac455e06c41408e6c7cfe4ce9cd45",
+          "0x1f1e1d1c1b19d51817161514131212320ac455e06c41408e6c7cfe4ce9cd65",
+          "0x1f1e1d1c1b19d51817161514131212320ac455e06c41408e6c7cfe4ce9cd85"
+        ],
+        "reveal_tokens": [
+          "0x0407c133a078ea5cca71c8e26a82e3ec7b65fd5efadabafb62d39c23382cdbb283059f1b8fc54c283ff31432560b662e4e90d327ccbed1fca306580ccae62a8913",
+          "0x040100dcbd48aac1cf1c0f661e8858f0b8ce67bbbbc597adccb5d232e1e12d10cd078074cfca3f8add8023c7e38348a9768a95af4835a206bc7fc8b0b57f4b1afd",
+          "0x04028f3784f6bf0b722a7a029892be01d0a3f1cea103071005eca79f288c31d9fd062667dd41183fadd41b84a655458cb6a7281a0952be70cb68fd328e3651abea"
+        ],
+        "reveal_proofs": [
+          {
+            "commitment": "0x04021068f5ef905c9d4b5af4a78d95d62141ec8d7461445ee252968dc990eb1def02714bfe3a9b2cee69facd8688579802f568f7ba92004cc3cd836814d07dcd2a",
+            "challenge": "0x439136c46916f11c001b7d44ac4fe236e5c9a9c23c6bd0f9dc66d0c47975bbb",
+            "response": "0x105360d999825c4396a35282dae6dd29c2b709d263c4fd87afcd0d300914b4"
+          },
+          {
+            "commitment": "0x040130d8fc2e326413b09a5649454252234f9f9b2682961fedaf8a8af448e7cbaf01aae17dafac44c0c4e4b026ab7fd93ad9195dcb529ba3b0ec987289175fae24",
+            "challenge": "0x25b141de400edf0918c7aa85703ef131e66f606ddc16f952edc5d71b98dcdd8",
+            "response": "0x5a18b736a6eaef43b42c052490f6fdda56870fc0043899ade42b3fe4926ff65"
+          },
+          {
+            "commitment": "0x04006ef54239fbbfa40b45aab5a9a7ba2feb4bf26645bc68d510892b24ce2ef4f9075a9ad96eddec249b9f052a6252a6b3d18d0885bdbd6c241a45bfa764104ebc",
+            "challenge": "0x19fd57f9599b98ece111c95bccec953a0d4f2298db0ae9ac3279bed0273e131",
+            "response": "0x7dcab1b3b8296bb27a5b9248a089291e3038a10fd0aad8ef2dd1248c7b0dbef"
+          }
+        ],
+        "unmasked_card": "0x04012290477ef31b5efc345c361635069b72066daa4ab647e70a91c3cc5940c275018b66fb24de1d0e5ea2531c8d6b225e5f2cb8a90583a99fbdecfe04a1e23352"
+      }
+    }
+  ]
+}

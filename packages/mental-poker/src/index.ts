@@ -52,3 +52,24 @@ export {
   getPlayingCard,
   validateEncoding,
 } from "./card-encoding"
+
+// Advanced security features
+export type { SecurityEvent } from "./advanced-security"
+export {
+  AdvancedSecurity,
+  SecurityEventType,
+  SecuritySeverity,
+} from "./advanced-security"
+
+// Export all public APIs
+export * from "./discrete-log-cards"
+export * from "./types"
+export * from "./card-encoding"
+export * from "./advanced-security"
+
+// Export new primitives
+export * from "./primitives/elgamal"
+export * from "./primitives/masking"
+
+// Re-export the main protocol class for convenience
+export { DLCards as MentalPoker } from "./discrete-log-cards"

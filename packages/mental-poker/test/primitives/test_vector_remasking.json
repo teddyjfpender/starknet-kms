@@ -1,0 +1,203 @@
+{
+  "protocol_info": {
+    "name": "Barnett-Smart Mental Poker - Remasking",
+    "version": "1.0.0",
+    "description": "Test vectors for remasking operations in the Barnett-Smart protocol"
+  },
+  "curve_info": {
+    "name": "Starknet Curve",
+    "field_modulus": "0x800000000000011000000000000000000000000000000000000000000000001",
+    "curve_order": "0x800000000000010ffffffffffffffffb781126dcae7b2321e66a241adc64d2f"
+  },
+  "test_vectors": [
+    {
+      "test_name": "Remasking Test 1",
+      "seed": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73
+      ],
+      "setup": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "num_players": 3,
+        "player_secret_keys": [
+          "0x1484746454442a941403f3e3d3c3b3cc5ae915a130eef6f1f947adf11337483",
+          "0x1484746454442a941403f3e3d3c3b3cc5ae915a130eef6f1f947adf113374a3",
+          "0x1484746454442a941403f3e3d3c3b3cc5ae915a130eef6f1f947adf113374c3"
+        ],
+        "aggregate_public_key": "0x040631e98638b07cb56abefc212c11d1199987bdb35fed2c42bc950dabc624485704bfb6fdfa2b75fb3dde8eb054a1299f027397d5770f74ab9d9f1471cf18c441"
+      },
+      "original_masked_card": {
+        "c1": "0x04037d7ba780508d0a89d3b59e75b41bbe9383a0913ac2912b74c9ada49e5c8dd2019ccf995a09113efc7623a350f5d6c88cf0c65d40cda1b8dfb03243977ada5e",
+        "c2": "0x0404955cbb707120f19a0a1feacb9915e7a4a99c02f34bfd1a96040ec71ac6485006340e17045a6f9d1ce4dfdb9977c16d3dd262d76bf925eb6e72836e379711ea"
+      },
+      "remasking_factor": "0x1484746454442a941403f3e3d3c3b3cc5ae915a130eef6f1f947adf11337503",
+      "expected_remasked_card": {
+        "c1": "0x04046b0f8aaadeb73721ae1ae3308c280fe576e41bf22793ddf04458a76ce0de0f063ac1aafc17a29f2e1b88946bfc82efb7e65fc17f671947ac667bccb95fbe74",
+        "c2": "0x040630a78ac7727cc682ab3d8806e9c2f4b632f1d7914994e4d0074b6841fab30e05040fcbb255482e565bf274eb7ec4a56b6f4a7e8730e885a3a8f66e23a43ed7"
+      },
+      "remasking_proof": {
+        "commitment_g": "0x0404165f41ff098950d8a7e9c0d963a833201b568bff5d648f410bf0cc1354fa3d0649ca394344d496b1db6421ae62b069f641204808e8e96901e85f2a652e7ac2",
+        "commitment_h": "0x04040a6718045aa38fb11fdc8bca692f74ce1cc0ea3298547cf03ec64f5579791107bb536851e060258e0a1f262a156cfdd71d04d2e87d1a5c814de265e19c8e7a",
+        "challenge": "0x6e5e44f16fae893f505192098d830e5d887d418f25a137499557fe0c9cf87ea",
+        "response": "0x6b0ea9a3ab341a2480f504b7cc35c9c152a22ff542dac8ddc5c38610d73a437"
+      },
+      "verification_result": true
+    },
+    {
+      "test_name": "Remasking Test 2",
+      "seed": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "setup": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "num_players": 3,
+        "player_secret_keys": [
+          "0x71e1d1c1b1a18e51716151413121110e88ad5c2aa52f271abd21e3ef9af1973",
+          "0x71e1d1c1b1a18e51716151413121110e88ad5c2aa52f271abd21e3ef9af1993",
+          "0x71e1d1c1b1a18e51716151413121110e88ad5c2aa52f271abd21e3ef9af19b3"
+        ],
+        "aggregate_public_key": "0x0404cc1e946be106066721c0c0f9dc884d66ebec66b442e7aa08543170269108d205be86e9424fe5522b9c2a8ea3c96abf50147d65085d4f0949bbfe05dfb59183"
+      },
+      "original_masked_card": {
+        "c1": "0x040791617c4bc7930cdb69e8ce4d107021753f289932ff3533c0a22ce47ba69afb02b36f7a1914920c829cf1499f99047059be2b01afd5e0d64e077ba68a7f6b90",
+        "c2": "0x0406039b07cfac77243ca7c2fcfd0915f8adf279c18ffbc66e9f95d91ef3cf550503334e9557d3f264f21a4cf655eed3ec284ebb0073fd5bc82d882750a9ffa767"
+      },
+      "remasking_factor": "0x71e1d1c1b1a18e51716151413121110e88ad5c2aa52f271abd21e3ef9af19f3",
+      "expected_remasked_card": {
+        "c1": "0x0401e5c15fcac02e1cae98a24078b91045af698bd22d5192c0d3c42169246dfb28027a8f22b2ae0f4e69e6bbb061e7abb4e406ca95023665e33a1c2e361ed402dc",
+        "c2": "0x0405f059b8702b4b2849039764b4b1fbe70d16d1279d46c248d20a814df834481203379b624ea9b356bd75904ad15e5f6ff84e4437768ce951a2bfbf56d18644af"
+      },
+      "remasking_proof": {
+        "commitment_g": "0x0403ed843ef0d086eae68b251776453c28277f24d2e41f62e9805437a06791af34070d0ab7709361b324ce25c5a50ece31227981ebfdda5833b328479efce36133",
+        "commitment_h": "0x04041de77724d4aa8077eaebec6c3d104f8afd23ece07cc46c83ff485794de150e074c0a0a1cba09cfad05a2cd78f8f9b1b43add66b7ce162b454f9f59072b5792",
+        "challenge": "0x18731878f75fb63f9325cb5cd7ca863fd4fcd9f6349f898e41416e17108d9e6",
+        "response": "0x51987810093a20335b2cd0efde8dbb44a2f0e910bf4c9b93dce0c4bbc9e9d7e"
+      },
+      "verification_result": true
+    },
+    {
+      "test_name": "Remasking Test 3",
+      "seed": [
+        100,
+        102,
+        104,
+        106,
+        108,
+        110,
+        112,
+        114,
+        116,
+        118,
+        120,
+        122,
+        124,
+        126,
+        128,
+        130,
+        132,
+        134,
+        136,
+        138,
+        140,
+        142,
+        144,
+        146,
+        148,
+        150,
+        152,
+        154,
+        156,
+        158,
+        160,
+        162
+      ],
+      "setup": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "num_players": 3,
+        "player_secret_keys": [
+          "0x2a09e9c9a98954092908e8c8a88868a2c6b0de8a05e8a8a126bc14ad6ea5eb8",
+          "0x2a09e9c9a98954092908e8c8a88868a2c6b0de8a05e8a8a126bc14ad6ea5ed8",
+          "0x2a09e9c9a98954092908e8c8a88868a2c6b0de8a05e8a8a126bc14ad6ea5ef8"
+        ],
+        "aggregate_public_key": "0x040097db3e7aba28fabb4f9ac82f6765e28263171feda98b4eb3116426557ae13800687629df3f9a3acd9f8144b16e78f71fe2d956ad6a8f561ec8839736bef2fb"
+      },
+      "original_masked_card": {
+        "c1": "0x04024b77bd60b640411f963bf2cdae061294eb8a5c0d853932012cad85c3a5cf3007439e07591df2cc79554f5f89a0b8740b61dc8acb086969ebe5175b7c2314a8",
+        "c2": "0x040777e90dd9c6fe862e631e6ed15fd31c6287eb56b9bc790ca424cad34a7e4b00054d14de040bbfad49a3cac5745f3e1b662064e588a3cccf725a59e9a028022e"
+      },
+      "remasking_factor": "0x2a09e9c9a98954092908e8c8a88868a2c6b0de8a05e8a8a126bc14ad6ea5f38",
+      "expected_remasked_card": {
+        "c1": "0x04043f2f3fe87faa8e27f9d63ce99149bfe7f44da999f91e21ea3f125bad333c5e062ca1b7a950ca19ab774ee9aba9b0b4a7c728b2a920b7702870ed6b73e7e957",
+        "c2": "0x0400edc52f6be1fdf4440a059034e018cbcac5200f14093ef62b9dd9ccc112fe2105dc086d60156b50f50af60019099479f306c33d2db3d7bdd2a36602760d4b2b"
+      },
+      "remasking_proof": {
+        "commitment_g": "0x0406e120a6d77918bb85c747af47d890859a9215b6e60af5b0c80c05be3856fe9200148095c169387eeb7faac13ba1fa581d2bf49f15cd97f5bd4d5feb42ab42e6",
+        "commitment_h": "0x04036d888c19a007edbd2dc75b5ba5eb2f9f2b160c44d10f4175d4f6fd5c3c896e019d3c09bc26f4e84e84d41a2cc6338842f8677fc0da1ad6ff85e6ace08a1732",
+        "challenge": "0x100fea3f3aa8433f9a39f7d3ece6d5e3ebb8d2988b3406a8951451d46d1f5c7",
+        "response": "0x4c464d9b7e4b96a46dd34e06c39d56ea44c6a9f64cfffbbd923b4a3dc884aab"
+      },
+      "verification_result": true
+    }
+  ]
+}
