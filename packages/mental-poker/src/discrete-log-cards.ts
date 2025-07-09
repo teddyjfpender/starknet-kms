@@ -18,7 +18,11 @@ import {
   proveBayerGrothShuffle,
   verifyBayerGrothShuffle,
 } from "./bayer-groth-shuffle"
-import { type CardEncoding, getPlayingCard, getCardIndex } from "./card-encoding"
+import {
+  type CardEncoding,
+  getCardIndex,
+  getPlayingCard,
+} from "./card-encoding"
 import { generatePedersenCommitKey } from "./pedersen-commitment"
 import { BaseBarnettSmartProtocol } from "./protocol"
 import type {
@@ -395,7 +399,13 @@ export class DLCards extends BaseBarnettSmartProtocol {
 
     // Generate zero-knowledge proof of correct masking
     const c2MinusCard = addPoints(c2, negatePoint(originalCard.point))
-    const proof = proveMasking(alpha, pp.generators.G, sharedKey.point, c1, c2MinusCard)
+    const proof = proveMasking(
+      alpha,
+      pp.generators.G,
+      sharedKey.point,
+      c1,
+      c2MinusCard,
+    )
 
     return [maskedCard, proof]
   }
@@ -565,7 +575,10 @@ export class DLCards extends BaseBarnettSmartProtocol {
     }
 
     // Decrypt: card = c2 - aggregateToken
-    const cardPoint = addPoints(maskedCard.ciphertext, negatePoint(aggregateToken))
+    const cardPoint = addPoints(
+      maskedCard.ciphertext,
+      negatePoint(aggregateToken),
+    )
 
     // Try to find the card index if encoding is provided
     let cardIndex: CardIndex = 0 as CardIndex

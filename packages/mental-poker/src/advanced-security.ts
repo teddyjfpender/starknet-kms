@@ -1,14 +1,14 @@
 import {
+  CURVE_ORDER,
   type Point,
   type Scalar,
-  CURVE_ORDER,
-  randScalar,
-  scalarMultiply,
   addPoints,
   moduloOrder,
   poseidonHashScalars,
+  randScalar,
+  scalarMultiply,
 } from "@starkms/crypto"
-import { secureModularInverse, validateScalar, constantTimeScalarEqual } from "./crypto-utils"
+import { secureModularInverse, validateScalar } from "./crypto-utils"
 import { MentalPokerError, MentalPokerErrorCode } from "./types"
 
 /**
@@ -90,7 +90,10 @@ export class AdvancedSecurity {
     }
 
     // In production, this would be sent to a secure logging service
-    if (severity === SecuritySeverity.CRITICAL || severity === SecuritySeverity.HIGH) {
+    if (
+      severity === SecuritySeverity.CRITICAL ||
+      severity === SecuritySeverity.HIGH
+    ) {
       console.warn("Security Event:", JSON.stringify(event, null, 2))
     }
   }
@@ -98,7 +101,7 @@ export class AdvancedSecurity {
   /**
    * Enhanced proof verification with security monitoring
    */
-  public async verifyProofWithSecurity<T>(
+  public async verifyProofWithSecurity(
     verificationFunction: () => Promise<boolean>,
     proofType: string,
     clientId?: string,
@@ -111,7 +114,8 @@ export class AdvancedSecurity {
       const duration = endTime - startTime
 
       // Monitor for timing anomalies
-      if (duration > 1000) { // More than 1 second is suspicious
+      if (duration > 1000) {
+        // More than 1 second is suspicious
         this.logSecurityEvent(
           SecurityEventType.SUSPICIOUS_TIMING_DETECTED,
           SecuritySeverity.MEDIUM,
@@ -154,7 +158,10 @@ export class AdvancedSecurity {
   /**
    * Rate limiting for proof operations
    */
-  public checkRateLimit(clientId: string, maxOperationsPerMinute: number = 100): boolean {
+  public checkRateLimit(
+    clientId: string,
+    maxOperationsPerMinute = 100,
+  ): boolean {
     const now = Date.now()
     const windowStart = now - 60000 // 1 minute window
 
@@ -210,7 +217,11 @@ export class AdvancedSecurity {
           break
 
         case "point":
-          if (!input || typeof input.x !== "bigint" || typeof input.y !== "bigint") {
+          if (
+            !input ||
+            typeof input.x !== "bigint" ||
+            typeof input.y !== "bigint"
+          ) {
             throw new Error("Invalid point structure")
           }
           // Additional point validation would go here
@@ -251,7 +262,7 @@ export class AdvancedSecurity {
   public generateSecureRandom(): Scalar {
     // Generate multiple random values to increase entropy
     const randoms = Array.from({ length: 4 }, () => randScalar())
-    
+
     // Combine them using cryptographic operations
     let result = randoms[0]!
     for (let i = 1; i < randoms.length; i++) {
@@ -291,11 +302,13 @@ export class AdvancedSecurity {
 
       switch (operation) {
         case "add":
-          if (b === undefined) throw new Error("Second operand required for addition")
+          if (b === undefined)
+            throw new Error("Second operand required for addition")
           return moduloOrder(a + b)
 
         case "mul":
-          if (b === undefined) throw new Error("Second operand required for multiplication")
+          if (b === undefined)
+            throw new Error("Second operand required for multiplication")
           return moduloOrder(a * b)
 
         case "inv":
@@ -326,12 +339,12 @@ export class AdvancedSecurity {
    */
   public constantTimeVerification(
     verifyFunction: () => boolean,
-    expectedDuration: number = 10, // Expected duration in ms
+    expectedDuration = 10, // Expected duration in ms
   ): boolean {
     const startTime = performance.now()
-    
+
     const result = verifyFunction()
-    
+
     const endTime = performance.now()
     const actualDuration = endTime - startTime
 
@@ -362,7 +375,8 @@ export class AdvancedSecurity {
 
     for (const event of this.auditLog) {
       eventsByType[event.eventType] = (eventsByType[event.eventType] || 0) + 1
-      eventsBySeverity[event.severity] = (eventsBySeverity[event.severity] || 0) + 1
+      eventsBySeverity[event.severity] =
+        (eventsBySeverity[event.severity] || 0) + 1
     }
 
     const recentEvents = this.auditLog
@@ -429,7 +443,11 @@ export class AdvancedSecurity {
   ): Point {
     try {
       // Validate inputs
-      if (!pointA || typeof pointA.x !== "bigint" || typeof pointA.y !== "bigint") {
+      if (
+        !pointA ||
+        typeof pointA.x !== "bigint" ||
+        typeof pointA.y !== "bigint"
+      ) {
         throw new Error("Invalid point A")
       }
 
@@ -438,7 +456,11 @@ export class AdvancedSecurity {
           if (typeof pointBOrScalar === "bigint") {
             throw new Error("Point addition requires two points")
           }
-          if (!pointBOrScalar || typeof pointBOrScalar.x !== "bigint" || typeof pointBOrScalar.y !== "bigint") {
+          if (
+            !pointBOrScalar ||
+            typeof pointBOrScalar.x !== "bigint" ||
+            typeof pointBOrScalar.y !== "bigint"
+          ) {
             throw new Error("Invalid point B")
           }
           return addPoints(pointA, pointBOrScalar)
@@ -469,4 +491,4 @@ export class AdvancedSecurity {
       )
     }
   }
-} 
+}

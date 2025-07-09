@@ -1,5 +1,4 @@
 import {
-  CURVE_ORDER,
   type Point,
   type Scalar,
   addPoints,
@@ -7,10 +6,9 @@ import {
   poseidonHashScalars,
   randScalar,
   scalarMultiply,
-  negatePoint,
 } from "@starkms/crypto"
 import type { PedersenCommitKey } from "./pedersen-commitment"
-import { createPermutationPolynomial, evaluatePolynomial, multiplyPolynomials } from "./polynomial"
+import { createPermutationPolynomial, evaluatePolynomial } from "./polynomial"
 import {
   type MaskedCard,
   MentalPokerError,
@@ -48,24 +46,13 @@ export interface ShuffleWitness {
 }
 
 /**
- * Enhanced commitment structure for Bayer-Groth proofs
- */
-interface BayerGrothCommitment {
-  readonly polyCommitments: readonly Point[]
-  readonly maskingCommitments: readonly Point[]
-  readonly permutationMatrix: readonly Point[][]
-  readonly challenge: Scalar
-  readonly responses: readonly Scalar[]
-}
-
-/**
  * Generate a simplified shuffle proof when we don't have enough Pedersen generators
  * This still provides cryptographic security through Schnorr-style proofs
  */
 function generateSimplifiedShuffleProof(
   originalDeck: readonly MaskedCard[],
   shuffledDeck: readonly MaskedCard[],
-  permutation: Permutation,
+  _permutation: Permutation,
   maskingFactors: readonly Scalar[],
   generators: { G: Point; H: Point },
 ): ZKProofShuffle {
@@ -104,7 +91,9 @@ function generateSimplifiedShuffleProof(
   // Generate responses
   const responses: Scalar[] = []
   for (let i = 0; i < n; i++) {
-    const response = moduloOrder(randomness[i]! + challenge * maskingFactors[i]!)
+    const response = moduloOrder(
+      randomness[i]! + challenge * maskingFactors[i]!,
+    )
     responses.push(response)
   }
 
@@ -120,7 +109,7 @@ function generateSimplifiedShuffleProof(
 
 /**
  * Generate a cryptographically sound Bayer-Groth shuffle proof
- * 
+ *
  * This implements the full Bayer-Groth protocol with:
  * - Proper polynomial commitment scheme
  * - Permutation matrix commitments
@@ -143,7 +132,8 @@ export function proveBayerGrothShuffle(
 
   // Check if we have enough generators for full Bayer-Groth
   const needsGenerators = Math.min(n + 10, 20) // Limit for performance
-  const hasEnoughGenerators = parameters.pedersenKey.generators.length >= needsGenerators
+  const hasEnoughGenerators =
+    parameters.pedersenKey.generators.length >= needsGenerators
 
   if (!hasEnoughGenerators) {
     // Fall back to simplified but secure shuffle proof
@@ -152,16 +142,18 @@ export function proveBayerGrothShuffle(
       statement.shuffledDeck,
       witness.permutation,
       witness.maskingFactors,
-      { G: parameters.elgamalGenerator, H: parameters.pedersenKey.h }
+      { G: parameters.elgamalGenerator, H: parameters.pedersenKey.h },
     )
   }
 
   // Step 1: Create permutation polynomial and its derivatives
-  const permutationPoly = createPermutationPolynomial(witness.permutation.mapping)
-  
+  const permutationPoly = createPermutationPolynomial(
+    witness.permutation.mapping,
+  )
+
   // Generate random challenge points for polynomial evaluation
   const challengePoints = Array.from({ length: 3 }, () => randScalar())
-  
+
   // Step 2: Generate Pedersen commitments to polynomial coefficients
   const polyRandomness = Array.from(
     { length: Math.min(permutationPoly.coefficients.length, needsGenerators) },
@@ -173,7 +165,7 @@ export function proveBayerGrothShuffle(
     if (i >= parameters.pedersenKey.generators.length) {
       break // Skip if we don't have enough generators
     }
-    
+
     // Pedersen commitment: C_i = coeff_i * G_i + r_i * H
     const coeffCommitment = scalarMultiply(
       permutationPoly.coefficients[i]!,
@@ -201,7 +193,7 @@ export function proveBayerGrothShuffle(
       maskingRandomness[i]!,
       parameters.pedersenKey.h,
     )
-    
+
     const commitment = addPoints(factorCommitment, blindingCommitment)
     maskingCommitments.push(commitment)
   }
@@ -214,7 +206,7 @@ export function proveBayerGrothShuffle(
     challengeInputs.push(card.randomness.x ?? 0n, card.randomness.y ?? 0n)
     challengeInputs.push(card.ciphertext.x ?? 0n, card.ciphertext.y ?? 0n)
   }
-  
+
   for (const card of statement.shuffledDeck) {
     challengeInputs.push(card.randomness.x ?? 0n, card.randomness.y ?? 0n)
     challengeInputs.push(card.ciphertext.x ?? 0n, card.ciphertext.y ?? 0n)
@@ -224,7 +216,7 @@ export function proveBayerGrothShuffle(
   for (const commitment of polyCommitments) {
     challengeInputs.push(commitment.x ?? 0n, commitment.y ?? 0n)
   }
-  
+
   for (const commitment of maskingCommitments) {
     challengeInputs.push(commitment.x ?? 0n, commitment.y ?? 0n)
   }
@@ -234,7 +226,9 @@ export function proveBayerGrothShuffle(
   // Step 5: Generate polynomial evaluations at challenge points
   const polynomialEvaluations: Scalar[] = []
   for (const challengePoint of challengePoints) {
-    polynomialEvaluations.push(evaluatePolynomial(permutationPoly, challengePoint))
+    polynomialEvaluations.push(
+      evaluatePolynomial(permutationPoly, challengePoint),
+    )
   }
 
   // Step 6: Generate responses
@@ -244,7 +238,8 @@ export function proveBayerGrothShuffle(
   for (let i = 0; i < polyRandomness.length; i++) {
     const coeffIndex = Math.min(i, permutationPoly.coefficients.length - 1)
     const response = moduloOrder(
-      polyRandomness[i]! + mainChallenge * permutationPoly.coefficients[coeffIndex]!,
+      polyRandomness[i]! +
+        mainChallenge * permutationPoly.coefficients[coeffIndex]!,
     )
     responses.push(response)
   }
@@ -305,7 +300,10 @@ export function verifyBayerGrothShuffle(
     const n = statement.originalDeck.length
 
     // Check if this is a simplified proof (no polynomial evaluations)
-    if (!proof.polynomialEvaluations || proof.polynomialEvaluations.length === 0) {
+    if (
+      !proof.polynomialEvaluations ||
+      proof.polynomialEvaluations.length === 0
+    ) {
       return verifySimplifiedShuffleProof(statement, proof, {
         G: parameters.elgamalGenerator,
         H: parameters.pedersenKey.h,
@@ -438,39 +436,47 @@ function verifyDeckConsistency(
   // Create a proper permutation check
   // We need to verify that each card in the shuffled deck corresponds to exactly one card in the original deck
   // Since cards are masked, we can't directly compare them, but we can verify the structure
-  
+
   // For now, we implement a basic multi-set equality check
   // In a full implementation, this would use the cryptographic shuffle proof
-  const originalSet = new Set(originalDeck.map(card => 
-    `${card.randomness.x?.toString() ?? '0'}-${card.randomness.y?.toString() ?? '0'}-${card.ciphertext.x?.toString() ?? '0'}-${card.ciphertext.y?.toString() ?? '0'}`
-  ))
-  
-  const shuffledSet = new Set(shuffledDeck.map(card => 
-    `${card.randomness.x?.toString() ?? '0'}-${card.randomness.y?.toString() ?? '0'}-${card.ciphertext.x?.toString() ?? '0'}-${card.ciphertext.y?.toString() ?? '0'}`
-  ))
-  
+  const originalSet = new Set(
+    originalDeck.map(
+      (card) =>
+        `${card.randomness.x?.toString() ?? "0"}-${card.randomness.y?.toString() ?? "0"}-${card.ciphertext.x?.toString() ?? "0"}-${card.ciphertext.y?.toString() ?? "0"}`,
+    ),
+  )
+
+  const shuffledSet = new Set(
+    shuffledDeck.map(
+      (card) =>
+        `${card.randomness.x?.toString() ?? "0"}-${card.randomness.y?.toString() ?? "0"}-${card.ciphertext.x?.toString() ?? "0"}-${card.ciphertext.y?.toString() ?? "0"}`,
+    ),
+  )
+
   // Check if the sets are equal (same elements)
   if (originalSet.size !== shuffledSet.size) {
     return false
   }
-  
+
   // For a proper shuffle, the shuffled deck should not contain cards with identical ciphertexts
   // as the original deck (since they should be remasked)
   let identicalCount = 0
   for (const originalCard of originalDeck) {
     for (const shuffledCard of shuffledDeck) {
-      if (originalCard.randomness.equals(shuffledCard.randomness) && 
-          originalCard.ciphertext.equals(shuffledCard.ciphertext)) {
+      if (
+        originalCard.randomness.equals(shuffledCard.randomness) &&
+        originalCard.ciphertext.equals(shuffledCard.ciphertext)
+      ) {
         identicalCount++
       }
     }
   }
-  
+
   // If all cards are identical, this is likely not a proper shuffle with remasking
   if (identicalCount === originalDeck.length) {
     return false
   }
-  
+
   return true
 }
 
@@ -491,168 +497,4 @@ export function createShuffleParameters(
     deckSize: protocolParams.m,
     playerCount: protocolParams.n,
   }
-}
-
-/**
- * Verify the permutation polynomial commitments in the Bayer-Groth proof (compatible version)
- * This provides enhanced security while maintaining compatibility with the current proof format
- */
-function verifyPermutationPolynomialCompatible(
-  _parameters: ShuffleParameters,
-  _statement: ShuffleStatement,
-  proof: ZKProofShuffle,
-  _challenge: Scalar,
-): boolean {
-  if (
-    !proof.permutationCommitments ||
-    !proof.polynomialEvaluations ||
-    !proof.openingProofs
-  ) {
-    return false
-  }
-
-  // Basic structural verification
-  if (proof.polynomialEvaluations.length === 0) {
-    return false
-  }
-
-  // Verify that we have the expected number of commitments
-  if (proof.permutationCommitments.length === 0) {
-    return false
-  }
-
-  // Verify polynomial commitment consistency (compatible with current format)
-  // Check that opening proofs are structurally valid
-  for (
-    let i = 0;
-    i <
-    Math.min(proof.permutationCommitments.length, proof.openingProofs.length);
-    i++
-  ) {
-    const commitment = proof.permutationCommitments[i]!
-    const openingProof = proof.openingProofs[i]!
-
-    // Verify the commitment structure is valid
-    if (
-      !commitment ||
-      !openingProof.commitment ||
-      !openingProof.opening ||
-      !openingProof.randomness
-    ) {
-      return false
-    }
-
-    // Basic range checks for opening values
-    if (openingProof.opening < 0n || openingProof.opening >= CURVE_ORDER) {
-      return false
-    }
-    if (
-      openingProof.randomness < 0n ||
-      openingProof.randomness >= CURVE_ORDER
-    ) {
-      return false
-    }
-  }
-
-  return true
-}
-
-/**
- * Verify the polynomial commitment arithmetic in the Bayer-Groth proof (compatible version)
- * This provides enhanced verification while maintaining compatibility with the current proof format
- */
-function verifyPolynomialCommitmentArithmeticCompatible(
-  _parameters: ShuffleParameters,
-  proof: ZKProofShuffle,
-  _challenge: Scalar,
-): boolean {
-  if (
-    !proof.permutationCommitments ||
-    !proof.polynomialEvaluations ||
-    !proof.responses
-  ) {
-    return false
-  }
-
-  // Verify that the polynomial arithmetic structure is valid
-  // Verify response validity
-  for (let i = 0; i < proof.responses.length; i++) {
-    const response = proof.responses[i]!
-
-    // Basic range check for response
-    if (response < 0n || response >= CURVE_ORDER) {
-      return false
-    }
-  }
-
-  // Verify polynomial evaluations are valid
-  for (let i = 0; i < proof.polynomialEvaluations.length; i++) {
-    const evaluation = proof.polynomialEvaluations[i]!
-
-    // Basic range check for evaluation
-    if (evaluation < 0n || evaluation >= CURVE_ORDER) {
-      return false
-    }
-  }
-
-  // Verify structural consistency
-  if (
-    proof.responses.length === 0 ||
-    proof.polynomialEvaluations.length === 0
-  ) {
-    return false
-  }
-
-  return true
-}
-
-/**
- * Verify the shuffle permutation validity in the Bayer-Groth proof (compatible version)
- * This provides enhanced verification while maintaining compatibility with the current proof format
- */
-function verifyShufflePermutationValidityCompatible(
-  _parameters: ShuffleParameters,
-  statement: ShuffleStatement,
-  proof: ZKProofShuffle,
-): boolean {
-  if (!proof.polynomialEvaluations) {
-    return false
-  }
-
-  const n = statement.originalDeck.length
-
-  // Basic structural verification
-  if (proof.polynomialEvaluations.length === 0) {
-    return false
-  }
-
-  // Verify that the polynomial evaluations are valid scalars
-  for (let i = 0; i < proof.polynomialEvaluations.length; i++) {
-    const evaluation = proof.polynomialEvaluations[i]!
-
-    // Basic range check for evaluation
-    if (evaluation < 0n || evaluation >= CURVE_ORDER) {
-      return false
-    }
-  }
-
-  // Verify that the shuffle maintains the correct structure
-  if (statement.shuffledDeck.length !== statement.originalDeck.length) {
-    return false
-  }
-
-  // Verify that all cards in both decks are properly formed
-  for (let i = 0; i < n; i++) {
-    const originalCard = statement.originalDeck[i]!
-    const shuffledCard = statement.shuffledDeck[i]!
-
-    if (!originalCard.randomness || !originalCard.ciphertext) {
-      return false
-    }
-    if (!shuffledCard.randomness || !shuffledCard.ciphertext) {
-      return false
-    }
-  }
-
-  return true
 }
