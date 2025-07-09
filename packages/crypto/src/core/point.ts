@@ -10,7 +10,7 @@ import {
 export type Point = ProjectivePoint
 export { ProjectivePoint }
 
-export const PRIME = CURVE.p
+export const PRIME = (CURVE as any).p
 export const G: Point = ProjectivePoint.BASE
 export const POINT_AT_INFINITY: Point = ProjectivePoint.ZERO
 

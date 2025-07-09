@@ -89,7 +89,7 @@ export function constantTimeScalarEqual(a: Scalar, b: Scalar): boolean {
   for (let i = 0; i < 256; i++) {
     // 256 bits for STARK curve
     result |= temp & 1n
-    temp >>= 1n
+    temp = temp >> 1n
   }
 
   return result === 0n
