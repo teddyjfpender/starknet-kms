@@ -1,0 +1,179 @@
+{
+  "protocol_info": {
+    "name": "Barnett-Smart Mental Poker - Reveal",
+    "version": "1.0.0",
+    "description": "Test vectors for reveal operations in the Barnett-Smart protocol"
+  },
+  "curve_info": {
+    "name": "Starknet Curve",
+    "field_modulus": "0x800000000000011000000000000000000000000000000000000000000000001",
+    "curve_order": "0x800000000000010ffffffffffffffffb781126dcae7b2321e66a241adc64d2f"
+  },
+  "test_vectors": [
+    {
+      "test_name": "Reveal Test 1",
+      "seed": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73
+      ],
+      "setup": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "player_secret_key": "0x1484746454442a941403f3e3d3c3b3cc5ae915a130eef6f1f947adf11337483",
+        "player_public_key": "0x04018a25bbe23716be3b489a4eae057397c1fea35c1a58b8e8d1cdf3eb3b4ab2250256dd1fd7bfe612112ced1745b76dc6418ca34f66db6f8596c17f15101e4653"
+      },
+      "masked_card": {
+        "c1": "0x0404987b5b9468e708c0ca8a046b03bf688cc954b74018b0075b6390f90649a02402e3fd5c8d6155375ddab67230c62d7117a90f6c3fea837dd9619bc70388aaea",
+        "c2": "0x0404d8e79bcd67a7a6a3d30e3633259a1d8e8df7a107aeb92cb21c1d798de2f0930611b0f1362e5150204315d6ef868f330c36de42ab12fde806e45ec25436385e"
+      },
+      "reveal_token": "0x0407bf2a514b7dae69a6dc1365c381a137a2a64e4ada80c3cfd6fe311d0590962502ed21dba45833c74cf4c4b3d4e782230d99b15f0ef96785ecc2c8f7b1a2a086",
+      "reveal_proof": {
+        "commitment_g": "0x0402894ea9952fcaf245f7f4038f08a0f2108d0671bbccc23b0a4b87876d5baa730007cfb2eb0040a889f8939d332e228c08bd8bfc540664bf415a00b542abd1d8",
+        "commitment_h": "0x04059ff7effcbda4651b248b42b5c6c3c408543738f7a997543b573b82f89d9d64045b142939230e16d1aaa536947e8b7350c1981af44df7347e6e3d6322af467a",
+        "challenge": "0x5430e865664526790700d8acb7c4181be7077281e5a5393c884340188e3206",
+        "response": "0x61a2654df5110976e349b7b27e9c736e1d71a8cc1effc81f329f92ef9c48da8"
+      },
+      "revealed_plaintext": "0x0400ab9c828eccf98adbf74a186e5e7b59e46008f5f6ab93f0af51daaba42c828f03eba823e82445ce1b75a78e2e72836467aed7334fca6aae77dad76036ac20d4",
+      "verification_result": true
+    },
+    {
+      "test_name": "Reveal Test 2",
+      "seed": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "setup": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "player_secret_key": "0x71e1d1c1b1a18e51716151413121110e88ad5c2aa52f271abd21e3ef9af1973",
+        "player_public_key": "0x0405d0f7bbd0558f6cad5bb4aae96b15673bb47ac5220d09bb2e047d7888ea75a601408722c243f22402ce5e0a71afe9072f45754f79c71bb5c24107999fe5467d"
+      },
+      "masked_card": {
+        "c1": "0x04023143d468dac5a7e2564be373f3b9e56b6659857efa6cc7ded69bfad5852e5a06ac880cb6e119e993718e86d95b305fdb508d090920346ef83dff1232f8c545",
+        "c2": "0x0403e53026fa198892047cacf99f20d7f28ac6e49de6c414cd1f51d4a3dbedc5f802bf3f314896238be1dcb1495a522168d41028a3143e6ca91c0ec9026da8d4f4"
+      },
+      "reveal_token": "0x04033bcdfe5d29c1e5b94a5c10ea1e92c400bd477f417a0912c0f0714b6760b0ac07de7c6b143cbdd87f7e0f5b5e24520945f4a961190d1d7abf0acf66948a24bb",
+      "reveal_proof": {
+        "commitment_g": "0x04030df33260052148b7e3ad296e2ac56660225d23ccd69d9d53092df5f87f406a04988cdcf0f26f3cbec2d209fde09921df9345a51a5ac8ea6c640777353dff1a",
+        "commitment_h": "0x0400d4cde606e66ba950ee793247b49486591b142d154f3c15e84df1f3868cb6b104d64831d770394c4ac24cd429cfab3f54cb88cd42c06429ebba71a537ea92d4",
+        "challenge": "0x2f7ae1f169e4eb53adb7ad754e7ee30bd93996a7514b21d3b9e8f4fde7c34ed",
+        "response": "0x5954a706236647509b387b3a1107661f1dde68c095c49d2a64504f199f84c7"
+      },
+      "revealed_plaintext": "0x0404874e314dc71ea6529b76e3dc37b51f12e229cb142cb4625cc97a6ed40ff3460792c5fde8867799c51be27e6c903cd2bcda14a8a7e135eb4b007ae896bcedeb",
+      "verification_result": true
+    },
+    {
+      "test_name": "Reveal Test 3",
+      "seed": [
+        100,
+        102,
+        104,
+        106,
+        108,
+        110,
+        112,
+        114,
+        116,
+        118,
+        120,
+        122,
+        124,
+        126,
+        128,
+        130,
+        132,
+        134,
+        136,
+        138,
+        140,
+        142,
+        144,
+        146,
+        148,
+        150,
+        152,
+        154,
+        156,
+        158,
+        160,
+        162
+      ],
+      "setup": {
+        "generator": "0x0401ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca005668060aa49730b7be4801df46ec62de53ecd11abe43a32873000c36e8dc1f",
+        "player_secret_key": "0x2a09e9c9a98954092908e8c8a88868a2c6b0de8a05e8a8a126bc14ad6ea5eb8",
+        "player_public_key": "0x04021a7b5e69117a8ca773e88e84d47f6c5575bcdad4280a2bcf5d98abcc1c20b2072d8aeee5d9726a4f5ad5008251515e900bc6291bd0e4632b2be475375dc37f"
+      },
+      "masked_card": {
+        "c1": "0x0405dbdf260b9e454df1248ce4ba5f5891b455c354aaa6ea4208de66432d01efb006b9c40ccde377366b7de2a0614bbd0dd7b72ccc8ddfa300a73ff50ec4d07d7e",
+        "c2": "0x04042b40e31a68adf30a9987705f54d65f79c32e2f7f305de20b2af91fab4010990241b37134ec5cddf3476e84e5efda95c13c1b09ef41f0b2075fe1edb8a343d1"
+      },
+      "reveal_token": "0x04010ff3824fc43d0cbe80c0e21474d3c8e75d0549e853cf4dc524cbe85eaa829c01f1a8941a86199874371d4c474ec1536b06707406b241fb3d9c3328e0927654",
+      "reveal_proof": {
+        "commitment_g": "0x0403f1e8614b4080453f57f7b4b83750c85928236c5969c1da49865e73027a6df307107a5e39d9dd4f3bdcf2f66434e5000099adc8e14746a7b1af4bb071643ebb",
+        "commitment_h": "0x04069ef97f98f92c9b4d967f9539026ee820db7097f4dba5723ba1dfd4471891b3017a1d14ff44bcd86c3d47840cd968adfba21333ab68154ee4c8adad8c595004",
+        "challenge": "0x633fbbe0730c769d9fe2bb6f755b4c2521df2f45c08fc0422467b26f28c9001",
+        "response": "0x14fdd51bf61be373ee518e00967826c81f14b17f385358b972718c7983f7581"
+      },
+      "revealed_plaintext": "0x0402aa47e037b88b0a4ad0fe6366084c9b60f0d240c7c87423c8f0039692fff7e1017d806505a21092118338a3d75f2eb18d5aa679c922010cfb6ccba0c975d373",
+      "verification_result": true
+    }
+  ]
+}

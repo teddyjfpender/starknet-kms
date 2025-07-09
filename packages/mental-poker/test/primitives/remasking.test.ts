@@ -1,5 +1,6 @@
 import { describe, expect, test, beforeAll } from 'bun:test'
 import { readFileSync } from 'fs'
+import { join } from 'path'
 import * as Remasking from '../../src/primitives/remasking'
 import * as Masking from '../../src/primitives/masking'
 import { 
@@ -59,7 +60,8 @@ let testVectors: RemaskingTestVectors
 
 beforeAll(() => {
   try {
-    const testVectorData = readFileSync('./test/primitives/test_vector_remasking.json', 'utf-8')
+    const testVectorPath = join(__dirname, 'test_vector_remasking.json')
+    const testVectorData = readFileSync(testVectorPath, 'utf-8')
     testVectors = JSON.parse(testVectorData)
   } catch (error) {
     throw new Error(`Failed to load remasking test vectors: ${error}`)

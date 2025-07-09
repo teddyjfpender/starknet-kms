@@ -18,7 +18,7 @@ import {
   proveBayerGrothShuffle,
   verifyBayerGrothShuffle,
 } from "./bayer-groth-shuffle"
-import { type CardEncoding, getPlayingCard, getPointKey, getCardIndex } from "./card-encoding"
+import { type CardEncoding, getPlayingCard, getCardIndex } from "./card-encoding"
 import { generatePedersenCommitKey } from "./pedersen-commitment"
 import { BaseBarnettSmartProtocol } from "./protocol"
 import type {

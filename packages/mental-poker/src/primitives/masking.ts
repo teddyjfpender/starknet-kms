@@ -1,7 +1,6 @@
 import {
   type Point,
   type Scalar,
-  G,
   addPoints,
   scalarMultiply,
   pointToHex,
@@ -12,7 +11,6 @@ import {
   arePointsEqual,
   ProjectivePoint,
   generateChallenge,
-  CURVE_ORDER,
   moduloOrder
 } from '@starkms/crypto'
 import * as ElGamal from './elgamal'
@@ -258,7 +256,7 @@ export function createRevealToken(
  * Unmask a card using reveal tokens
  */
 export function unmask(
-  elgamalParams: ElGamal.ElGamalParameters,
+  _elgamalParams: ElGamal.ElGamalParameters,
   revealTokens: Point[],
   maskedCard: MaskedCard
 ): Card {

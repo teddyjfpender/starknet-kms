@@ -12,7 +12,6 @@ import {
   arePointsEqual,
   ProjectivePoint,
   generateChallenge,
-  CURVE_ORDER,
   moduloOrder
 } from '@starkms/crypto'
 
@@ -39,7 +38,7 @@ export interface ElGamalCiphertext {
 }
 
 export interface ChaumPedersenProof {
-  commitment: Point
+  commitment: Point  // A = g^k (first commitment)
   challenge: Scalar
   response: Scalar
 }
@@ -102,7 +101,7 @@ export function encrypt(
  * Decrypt an ElGamal ciphertext
  */
 export function decrypt(
-  params: ElGamalParameters,
+  _params: ElGamalParameters,
   secretKey: ElGamalSecretKey,
   ciphertext: ElGamalCiphertext
 ): ElGamalPlaintext {
@@ -166,7 +165,7 @@ export function verifyEncryption(
   proof: ChaumPedersenProof
 ): boolean {
   try {
-    // Verify: g^z = A + c1^c  (where A is the commitment, c1 is first component of ciphertext)
+    // Verify: g^z = A + c1^c  (first verification equation)
     const gz = scalarMultiply(proof.response, params.generator)
     const c1c = scalarMultiply(proof.challenge, ciphertext.c1)
     const left1 = addPoints(proof.commitment, c1c)
@@ -175,13 +174,14 @@ export function verifyEncryption(
       return false
     }
     
-    // Verify: h^z = B + (c2/m)^c  (where B is h^k, c2/m is the second verification component)
+    // Verify: h^z = B + (c2-m)^c  (second verification equation)
+    // We need to derive B from the verification equation: B = h^z - (c2-m)^c
     const hz = scalarMultiply(proof.response, publicKey.point)
-    const c2MinusM = addPoints(ciphertext.c2, plaintext.point.negate()) // c2 - m
+    const c2MinusM = addPoints(ciphertext.c2, plaintext.point.negate()) // c2 - m = h^r
     const c2MinusMc = scalarMultiply(proof.challenge, c2MinusM)
-    const B = scalarMultiply(proof.response, publicKey.point).subtract(c2MinusMc)
+    const B = addPoints(hz, c2MinusMc.negate()) // B = h^z - (c2-m)^c
     
-    // Recompute challenge to verify it matches
+    // Verify challenge was computed correctly (Fiat-Shamir)
     const expectedChallenge = generateChallenge(
       params.generator,
       publicKey.point,

@@ -68,8 +68,10 @@ export * from "./card-encoding"
 export * from "./advanced-security"
 
 // Export new primitives
-export * from "./primitives/elgamal"
-export * from "./primitives/masking"
+export * as ElGamal from "./primitives/elgamal"
+export * as Masking from "./primitives/masking"
+export * as Reveal from "./primitives/reveal"
+export * as Remasking from "./primitives/remasking"
 
 // Re-export the main protocol class for convenience
 export { DLCards as MentalPoker } from "./discrete-log-cards"
