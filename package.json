@@ -16,7 +16,7 @@
     "format": "bun x biome check --write --unsafe .",
     "f": "bun run format",
     "typecheck": "tsc --noEmit",
-    "ci": "bun run typecheck && bun run lint && bun run build && bun run test:unit",
+    "ci": "bun run build && bun run typecheck && bun run lint && bun run test:unit",
     "cleanup": "turbo run cleanup && rimraf node_modules .turbo",
     "prepare": "husky install",
     "preinstall": "bun x only-allow bun"
