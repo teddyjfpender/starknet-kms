@@ -1,1 +1,15 @@
-{"version":1,"contracts":[{"id":"fofufv7b8oh0k","package_name":"account","contract_name":"MyAccount","module_path":"account::MyAccount::MyAccount","artifacts":{"sierra":"account_MyAccount.contract_class.json","casm":"account_MyAccount.compiled_contract_class.json"}}]}
+{
+  "version": 1,
+  "contracts": [
+    {
+      "id": "fofufv7b8oh0k",
+      "package_name": "account",
+      "contract_name": "MyAccount",
+      "module_path": "account::MyAccount::MyAccount",
+      "artifacts": {
+        "sierra": "account_MyAccount.contract_class.json",
+        "casm": "account_MyAccount.compiled_contract_class.json"
+      }
+    }
+  ]
+}
