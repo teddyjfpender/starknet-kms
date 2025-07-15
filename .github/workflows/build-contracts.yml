@@ -1,0 +1,66 @@
+name: Build Contracts
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  SCARB_VERSION: "2.11.4"
+  SNFOUNDRY_VERSION: "0.44.0"
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
+
+      - name: Setup Starknet Foundry
+        uses: foundry-rs/setup-snfoundry@v3
+        with:
+          starknet-foundry-version: ${{ env.SNFOUNDRY_VERSION }}
+
+      - name: Build contracts artifacts
+        run: |
+          echo "🧪 Building contracts..."
+          cd cairo/account
+          scarb build
+
+      - name: Add contract artifacts to ./packages/contracts
+        run: |
+          echo "🏗️ Copying contract artifacts..."
+          
+          # Create artifacts directory
+          mkdir -p packages/contracts/src/artifacts
+          
+          # Copy built contracts
+          if [ -d "target/dev" ]; then
+            cp -r target/dev packages/contracts/src/artifacts
+          fi
+          
+          # Copy source files
+          cp -r src packages/contracts/src/artifacts
+          cp Scarb.toml packages/contracts/src/artifacts
+
+      - name: Commit and push
+        run: |
+          git add .
+          git commit -m "chore: build contracts and add to packages/contracts"
+          git push

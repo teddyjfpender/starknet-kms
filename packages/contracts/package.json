@@ -1,0 +1,23 @@
+{
+  "name": "@starkms/contracts",
+  "description": "Account contracts for starkms.",
+  "version": "1.0.0",
+  "type": "module",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["tsconfig.json", "dist/index.js", "dist/index.d.ts"],
+  "exports": {
+    "./tsconfig.json": {
+      "import": "./tsconfig.json",
+      "require": "./tsconfig.json"
+    },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "bun x --bun tsc --noEmit && bun x --bun tsup src/index.ts --dts --format esm --silent",
+    "cleanup": "bun x --bun rimraf node_modules dist .turbo"
+  }
+}
