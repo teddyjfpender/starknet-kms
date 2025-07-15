@@ -59,8 +59,29 @@ jobs:
           cp -r cairo/account/src packages/contracts/src/artifacts
           cp cairo/account/Scarb.toml packages/contracts/src/artifacts
 
-      - name: Commit and push
+      - name: Configure git
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create PR with contract artifacts
+        run: |
+          # Create a new branch for the PR
+          BRANCH_NAME="update-contracts-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+          
+          # Add and commit changes
           git add .
           git commit -m "chore: build contracts and add to packages/contracts"
-          git push
+          
+          # Push the branch
+          git push origin "$BRANCH_NAME"
+          
+          # Create PR using GitHub CLI
+          gh pr create \
+            --title "Update contract artifacts" \
+            --body "Automated update of contract artifacts from workflow" \
+            --head "$BRANCH_NAME" \
+            --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
