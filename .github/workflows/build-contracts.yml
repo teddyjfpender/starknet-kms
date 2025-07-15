@@ -50,14 +50,14 @@ jobs:
           # Create artifacts directory
           mkdir -p packages/contracts/src/artifacts
           
-          # Copy built contracts
-          if [ -d "target/dev" ]; then
-            cp -r target/dev packages/contracts/src/artifacts
+          # Copy built contracts from cairo/account directory
+          if [ -d "cairo/account/target/dev" ]; then
+            cp -r cairo/account/target/dev packages/contracts/src/artifacts
           fi
           
-          # Copy source files
-          cp -r src packages/contracts/src/artifacts
-          cp Scarb.toml packages/contracts/src/artifacts
+          # Copy source files from cairo/account directory
+          cp -r cairo/account/src packages/contracts/src/artifacts
+          cp cairo/account/Scarb.toml packages/contracts/src/artifacts
 
       - name: Commit and push
         run: |
