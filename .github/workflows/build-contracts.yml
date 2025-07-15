@@ -1,23 +1,15 @@
 name: Build Contracts
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., v1.0.0)'
-        required: true
-        type: string
 
 env:
   SCARB_VERSION: "2.11.4"
   SNFOUNDRY_VERSION: "0.44.0"
 
 jobs:
-  release:
-    name: Create Release
+  build-contracts:
+    name: Build Contract Artifacts
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -53,12 +45,8 @@ jobs:
           
           # Copy built contracts from cairo/account directory
           if [ -d "cairo/account/target/dev" ]; then
-            cp -r cairo/account/target/dev packages/contracts/src/artifacts
+            cp -r cairo/account/target/dev/* packages/contracts/src/artifacts/
           fi
-          
-          # Copy source files from cairo/account directory
-          cp -r cairo/account/src packages/contracts/src/artifacts
-          cp cairo/account/Scarb.toml packages/contracts/src/artifacts
 
       - name: Configure git
         run: |
