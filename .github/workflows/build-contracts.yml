@@ -65,7 +65,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create PR with contract artifacts
+      - name: Create branch with contract artifacts
         run: |
           # Create a new branch for the PR
           BRANCH_NAME="update-contracts-$(date +%Y%m%d-%H%M%S)"
@@ -78,11 +78,6 @@ jobs:
           # Push the branch
           git push origin "$BRANCH_NAME"
           
-          # Create PR using GitHub CLI
-          gh pr create \
-            --title "Update contract artifacts" \
-            --body "Automated update of contract artifacts from workflow" \
-            --head "$BRANCH_NAME" \
-            --base main
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Output PR creation link
+          echo "✅ Branch created successfully: $BRANCH_NAME"
+          echo "🔗 Create PR at: https://github.com/${{ github.repository }}/pull/new/$BRANCH_NAME"
