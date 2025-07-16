@@ -99,6 +99,14 @@ export interface KeyAgent {
     args: ChainOperationArgs,
   ): Promise<ChainSignatureResult>
 
+  /**
+   * generic request method 
+   */
+  request<T>(
+    payload: T,
+    args: ChainOperationArgs,
+  ): Promise<ChainSignatureResult>
+
   deriveKeyPair(
     args: ChainDerivationArgs,
     passphrase: Uint8Array,
@@ -125,18 +133,16 @@ export interface KeyAgent {
 
 export type ChainDerivationArgs = StarknetDerivationArgs
 
+export type SigningOperation = "sign_message" | "sign_transaction" | "sign_deploy_account" | "sign_declare" | "sign_raw"
+export type ProvingOperation = "prove_fund" | "prove_transfer" | "prove_rollover" | "prove_withdraw_all" | "prove_withdraw_partial"
+export type CryptoOperation = SigningOperation | ProvingOperation
 /**
  * Arguments indicating which operation we want to perform, plus any
  * special fields needed. For example, `sign_message` needs an
  * `accountAddress`; `sign_transaction` needs invocation details, etc.
  */
 export type ChainOperationArgs = {
-  operation:
-    | "sign_message"
-    | "sign_transaction"
-    | "sign_deploy_account"
-    | "sign_declare"
-    | "sign_raw"
+  operation: CryptoOperation
   /**
    * The Starknet account address used by `signMessage()`.
    * Not always needed for other operations, so it's optional.
@@ -165,6 +171,14 @@ export interface ChainSpecificPayload {
 export type ChainPublicKey = string
 
 export type ChainSignatureResult = SignatureResult
+
+// Note: this is a demo return type for the result of a cryptographic operation
+// Note: this is not a 1:1 mapping of the existing standard Starknet wallet provider API types found in https://github.com/PhilippeR26/Starknet-WalletAccount/blob/main/doc/walletAPIspec.md
+export type OperationResult = {
+  success: boolean
+  data?: ChainSignatureResult | any
+  error?: string
+}
 
 export type ChainPrivateKey = Uint8Array
 
