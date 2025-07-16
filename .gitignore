@@ -58,3 +58,8 @@ yarn-error.log*
 **/*.tsbuildinfo
 **/tsconfig.tsbuildinfo
 **/tsc-trace.log
+
+# Ignore tongo clone in ./packages/key-management/tongo
+tongo/
+**/tongo/
+./packages/key-management/tongo/
