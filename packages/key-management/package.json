@@ -31,7 +31,7 @@
     "buffer": "6.0.3",
     "ethers": "^6.13.4",
     "micro-starknet": "^0.2.3",
-    "she-js": "./tongo/packages/she",
+    "@fatsolutions/tongo-sdk": "1.2.0",
     "starknet": "^6.11.0",
     "ts-custom-error": "3.3.1"
   },
