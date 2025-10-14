@@ -192,7 +192,7 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
         console.log("Tongo Address:", tongoAddressSecond);
         console.log("Signer Address:", signer.address);
 
-        // Transfer 1 STRK
+        // Rollover
         const rolloverOp = await tongoAccountSecond.rollover();
 
         const rolloverTx = await signer.execute(rolloverOp.toCalldata());
@@ -204,6 +204,35 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
         expect(state2.pending).toBe(0n);
         // Expect account spendable to increase by original pending amount
         expect(state2.balance).toBe(stateSecond.balance + stateSecond.pending)
+      }, 120000)
+
+      it("should 'withdraw' confidential balance from user's second account to signer", async () => {
+        // Convert hex string private key to BigInt for Tongo SDK
+        const tongoPrivateKeySecond = tongoKeyPairsSecond.spendingKeyPair.privateSpendingKey;
+
+        // Pass signer (Account) not provider to TongoAccount constructor
+        const tongoAccountSecond = new TongoAccount(tongoPrivateKeySecond, tongoContractAddress, signer);
+
+        const tongoAddressSecond = TongoAccount.tongoAddress(tongoPrivateKeySecond);
+        const decryptedStateSecond = await tongoAccountSecond.state();
+        const stateSecond = decryptedStateSecond
+        console.log("Tongo Account State:", decryptedStateSecond);
+        console.log("Tongo Address:", tongoAddressSecond);
+        console.log("Signer Address:", signer.address);
+
+        // Withdraw 1n
+        const withdrawOp = await tongoAccountSecond.withdraw({
+            to: signer.address,
+            amount: 1n
+        });
+
+        const withdrawTx = await signer.execute(withdrawOp.toCalldata());
+        console.log("Rollover TX:", withdrawTx.transaction_hash);
+        await provider.waitForTransaction(withdrawTx.transaction_hash);
+
+        const state2 = await tongoAccountSecond.state();
+        // Expect account balance to be 1n less than before
+        expect(state2.balance).toBe(stateSecond.balance - 1n);
       }, 120000)
     })
 })
