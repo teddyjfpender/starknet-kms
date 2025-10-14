@@ -40,9 +40,9 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
   let accountContractDerivationConfig: AccountDerivationConfig
   let derivedAccountContractInfo: DerivedAccountInfo
   let tongoKeyPairs: StarknetKeyPair
+  let tongoKeyPairsSecond: StarknetKeyPair
   let tongoContractAddress: string
   let signer: Account
-  let tongoView: any
 
   beforeAll(async () => {
     tongoContractAddress = TONGO_CONTRACT_ADDRESS
@@ -81,6 +81,7 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
     }
 
     tongoKeyPairs = deriveStarknetKeyPairs(tongoArgs, mnemonicPhrase, false)
+    tongoKeyPairsSecond = deriveStarknetKeyPairs({...tongoArgs, addressIndex: 1}, mnemonicPhrase, false)
 
     // Ensure address is properly padded with leading zeros
     const paddedAddress = derivedAccountContractInfo.address.startsWith('0x')
@@ -116,6 +117,7 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
 
         const tongoAddress = TongoAccount.tongoAddress(tongoPrivateKey);
         const decryptedState = await tongoAccount.state();
+        const balance = decryptedState.balance
         console.log("Tongo Account State:", decryptedState);
         console.log("Tongo Address:", tongoAddress);
         console.log("Signer Address:", signer.address);
@@ -134,8 +136,46 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
         await provider.waitForTransaction(fundTx.transaction_hash);
 
         const state1 = await tongoAccount.state();
-        console.log("Account balance:", state1.balance); // expect >= 1000000000000000000n
-        expect(state1.balance >= 1n).toBe(true);
-        }, 120000)
+        console.log("Account balance:", state1.balance);
+        // Expect new balance to increase by 1
+        expect(state1.balance).toBe(balance + 1n);
+      }, 120000)
+      it("should 'transfer' confidential balance from user's first account to user's second Tongo Account", async () => {
+        // Convert hex string private key to BigInt for Tongo SDK
+        const tongoPrivateKey = tongoKeyPairs.spendingKeyPair.privateSpendingKey;
+        const tongoPrivateKeySecond = tongoKeyPairsSecond.spendingKeyPair.privateSpendingKey;
+
+        // Pass signer (Account) not provider to TongoAccount constructor
+        const tongoAccount = new TongoAccount(tongoPrivateKey, tongoContractAddress, signer);
+        const tongoAccountSecond = new TongoAccount(tongoPrivateKeySecond, tongoContractAddress, signer);
+
+        const tongoAddressSecond = TongoAccount.tongoAddress(tongoPrivateKeySecond);
+        const decryptedState = await tongoAccount.state();
+        const decryptedStateSecond = await tongoAccountSecond.state();
+        const balance = decryptedState.balance
+        const balanceSecond = decryptedStateSecond.pending
+        console.log("Tongo Account State:", decryptedStateSecond);
+        console.log("Tongo Address:", tongoAddressSecond);
+        console.log("Signer Address:", signer.address);
+
+        // Transfer 1 STRK
+        const transferOp = await tongoAccount.transfer({
+            to: tongoAccountSecond.publicKey,
+            amount: 1n  
+        });
+
+        const transferTx = await signer.execute(transferOp.toCalldata());
+        console.log("Transfer TX:", transferTx.transaction_hash);
+        await provider.waitForTransaction(transferTx.transaction_hash);
+
+        const state1 = await tongoAccount.state();
+        const state2 = await tongoAccountSecond.state();
+        console.log("Account balance (1st):", state1.balance);
+        console.log("Account balance (2nd):", state2.pending);
+        // Expect first account to decrease by 1 and second to increase by 1
+        // balance changes for the second account will be pending
+        expect(state1.balance).toBe(balance - 1n);
+        expect(state2.pending).toBe(balanceSecond + 1n);
+      }, 120000)
     })
 })
