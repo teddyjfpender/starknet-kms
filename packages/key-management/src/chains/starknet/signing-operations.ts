@@ -1,6 +1,7 @@
 import {
   type DeclareSignerDetails,
   type DeployAccountSignerDetails,
+  ec,
   Signer,
   type TypedData,
 } from "starknet"
@@ -107,18 +108,16 @@ export async function SigningOperations<T extends SignablePayload>(
 
       /**
        * sign_raw => expects `payload` to be a string (the msgHash to sign)
-       * this is a protected method in starknet-js, so we need to use a different approach
+       * Since signRaw is protected in starknet-js Signer, we use ec.starkCurve.sign directly
        */
-      /*case "sign_raw": {
+      case "sign_raw": {
         if (typeof payload !== "string") {
           throw new Error("For 'sign_raw', payload must be a string msgHash.")
         }
-        signature = await signer.signRaw(payload)
-        // (signRaw is protected in source, but if you've exposed it or
-        //  changed your local Signer to be public, you can call it.
-        //  Otherwise you might replicate signRaw(...) logic manually.)
+        // Use ec.starkCurve.sign directly since Signer.signRaw is protected
+        signature = ec.starkCurve.sign(payload, privateKey)
         break
-      }*/
+      }
 
       default: {
         throw new Error(`Unsupported private key operation: ${args.operation}`)

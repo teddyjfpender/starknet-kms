@@ -226,6 +226,11 @@ export abstract class KeyAgentBase implements KeyAgent {
     )
   }
 
+  abstract request<T>(
+    payload: T,
+    args: ChainOperationArgs,
+  ): Promise<ChainSignatureResult>
+
   async sign<T extends GroupedCredentials>(
     payload: T,
     signable: SignablePayload,

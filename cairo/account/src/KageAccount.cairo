@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^2.0.0
-// Generated from https://docs.openzeppelin.com/contracts-cairo/2.0.0/wizard
 
 #[starknet::contract(account)]
-mod MyAccount {
+mod KageAccount {
     use openzeppelin::account::AccountComponent;
     use openzeppelin::account::extensions::SRC9Component;
     use openzeppelin::introspection::src5::SRC5Component;

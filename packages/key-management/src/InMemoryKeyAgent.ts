@@ -3,6 +3,8 @@ import { wordlist } from "@scure/bip39/wordlists/english"
 import { KeyAgentBase } from "./KeyAgentBase"
 import * as errors from "./errors"
 import {
+  type ChainOperationArgs,
+  type ChainSignatureResult,
   type GetPassphrase,
   type KeyAgent,
   KeyAgentType,
@@ -67,6 +69,16 @@ export class InMemoryKeyAgent extends KeyAgentBase implements KeyAgent {
       { ...serializableData, __typename: KeyAgentType.InMemory },
       getPassphrase,
       mnemonic,
+    )
+  }
+
+  async request<T>(
+    _payload: T,
+    args: ChainOperationArgs,
+  ): Promise<ChainSignatureResult> {
+    // TODO: Implement full request handling for proving operations
+    throw new Error(
+      `Request method not yet fully implemented for operation: ${args.operation}`,
     )
   }
 }

@@ -29,7 +29,14 @@ const getPassphrase = () => utf8ToBytes(params.passphrase)
 //const getWrongPassphrase = () => utf8ToBytes(params.incorrectPassphrase)
 
 describe("KeyAgentBase (Starknet Functionality)", () => {
-  class KeyAgentBaseInstance extends KeyAgentBase {}
+  class KeyAgentBaseInstance extends KeyAgentBase {
+    async request<T>(
+      payload: T,
+      args: ChainOperationArgs,
+    ): Promise<import("../src/types").ChainSignatureResult> {
+      throw new Error("request not implemented in test")
+    }
+  }
 
   let instance: KeyAgentBaseInstance
   let serializableData: SerializableKeyAgentData
@@ -168,11 +175,11 @@ describe("KeyAgentBase (Starknet Functionality)", () => {
       ).toStrictEqual(expectedPublicKeys[1] as string)
     })
 
-    it.skip("should export root key successfully", async () => {
+    it("should export root key successfully", async () => {
       const decryptedRootKey = await instance.exportRootPrivateKey()
       expect(decryptedRootKey).toStrictEqual(rootKeyBytes)
     })
-    it.skip("should use the generic sign<T> function for signing a transaction", async () => {
+    it("should use the generic sign<T> function for signing a transaction", async () => {
       // broken, oof.
       const expectedSpendingKey =
         "0x040426212993d56613e1886a4cbc5b58810570023581c2aab0b423277776b79d2e042168e85622280f636c3a93e92f6d9daff6e49304b1e5676203feba109944d1"
@@ -190,22 +197,23 @@ describe("KeyAgentBase (Starknet Functionality)", () => {
         expectedSpendingKey,
       )
 
-      const rawMessage: string = "gmgm!"
+      // For sign_raw, we need a pre-computed message hash (hex string)
+      // Let's use a simple array of values to hash
+      const messageData: BigNumberish[] = [1, 2, 3, 4, 5]
+      const msgHash = hash.computeHashOnElements(messageData)
 
       const signArgs: ChainOperationArgs = { operation: "sign_raw" }
 
       const signature = await instance.sign(
         groupedCredential,
-        rawMessage as unknown as SignablePayload,
+        msgHash as unknown as SignablePayload,
         signArgs,
       )
 
-      const msgHash1 = hash.computeHashOnElements(
-        rawMessage as unknown as BigNumberish[],
-      )
+      // ec.starkCurve.verify expects the signature object directly, not toString()
       const result1 = ec.starkCurve.verify(
-        signature.toString(),
-        msgHash1,
+        signature as any,
+        msgHash,
         expectedSpendingKey,
       )
       expect(result1).toBe(true)

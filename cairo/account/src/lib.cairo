@@ -1,1 +1,1 @@
-pub mod MyAccount;
+pub mod KageAccount;
