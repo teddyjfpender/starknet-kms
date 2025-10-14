@@ -8,6 +8,7 @@ import type {
 export type StarknetDerivationArgs = {
   accountIndex: number
   addressIndex: number
+  coinType?: number
 }
 
 export type StarknetKeyPair = {

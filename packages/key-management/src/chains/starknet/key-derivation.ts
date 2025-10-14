@@ -48,7 +48,7 @@ export function pathHash(name: string): number {
  * an HD derivation path.  This effectively gives you the primary
  * private key you can use for transactions/ownership (like `x`).
  *
- * @param args - Contains accountIndex, addressIndex, etc.
+ * @param args - Contains accountIndex, addressIndex, and optional coinType
  * @param mnemonic - BIP-39 phrase ("word word word ...")
  * @returns A 0x‐prefixed hex string of the ground (spend) private key.
  */
@@ -56,11 +56,11 @@ export function deriveStarknetPrivateKey(
   args: StarknetDerivationArgs,
   mnemonic: string,
 ): string {
-  const { accountIndex, addressIndex } = args
+  const { accountIndex, addressIndex, coinType = StarknetKeyConst.STARKNET_COIN_TYPE } = args
 
   // Example derivation path: m/44'/9004'/account'/0/address
   // (since Starknet uses coin_type=9004 typically)
-  const path = `m/${StarknetKeyConst.PURPOSE}'/${StarknetKeyConst.STARKNET_COIN_TYPE}'/${accountIndex}'/0/${addressIndex}`
+  const path = `m/${StarknetKeyConst.PURPOSE}'/${coinType}'/${accountIndex}'/0/${addressIndex}`
 
   // Using ethers.HDNodeWallet for the BIP-39 derivation:
   const derivedWallet = ethers.HDNodeWallet.fromPhrase(
