@@ -30,7 +30,7 @@ import * as bip39 from "../../src/util/bip39"
  */
 
 const SEPOLIA_CONFIG = {
-  nodeUrl: process.env.STARKNET_RPC_URL || "https://starknet-sepolia.public.blastapi.io/rpc/v0_9",
+  nodeUrl: process.env.STARKNET_RPC_URL || "https://starknet-sepolia.public.blastapi.io/",
   chainId: constants.StarknetChainId.SN_SEPOLIA,
 }
 
@@ -66,7 +66,7 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
     // Join mnemonic words
     mnemonicPhrase = bip39.joinMnemonicWords(mnemonic)
 
-    // helpers -- derive regular account contract keys
+    // Derive regular Starknet account keys (coin type 9004) - this account should already be deployed
     args = {
         accountIndex: 0,
         addressIndex: 0,
@@ -78,18 +78,20 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
     accountContractDerivationConfig = {
         classHash: OZ_ACCOUNT_CLASS_HASH,
         salt: "0x0",
-        }
+    }
     derivedAccountContractInfo = deriveAccountAddress(publicKey, accountContractDerivationConfig)
     const deployed = await isAccountDeployed(derivedAccountContractInfo.address, provider)
 
-    // helpers -- derive Tongo keys
-    tongoKeyPairs = deriveStarknetKeyPairs(
-        { ...args, coinType: TONGO_COIN_TYPE },
-        mnemonicPhrase,
-        false,
-    )
+    // Derive Tongo keys (coin type 5454) - these are for the Tongo virtual account
+    const tongoArgs = {
+        accountIndex: 0,
+        addressIndex: 0,
+        coinType: TONGO_COIN_TYPE,
+    }
 
-    // Signer account from which the user submits transactions from
+    tongoKeyPairs = deriveStarknetKeyPairs(tongoArgs, mnemonicPhrase, false)
+
+    // Signer account - use the already-deployed OZ account
     signer = new Account({
         provider: provider,
         address: derivedAccountContractInfo.address,
@@ -97,33 +99,37 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
         transactionVersion: "0x3"
     });
 
-    console.log("\n🔧 Devnet Test Configuration:")
+    console.log("\n🔧 Sepolia Test Configuration:")
     console.log("   Node URL:", SEPOLIA_CONFIG.nodeUrl)
-    console.log("   OZ Account Class Hash:", OZ_ACCOUNT_CLASS_HASH)
+    console.log("   OZ Account Address:", derivedAccountContractInfo.address)
+    console.log("   OZ Account Deployed:", deployed)
+    console.log("   Tongo Contract:", tongoContractAddress)
+    console.log("   Tongo Private Key:", tongoKeyPairs.spendingKeyPair.privateSpendingKey.substring(0, 10) + "...")
+    console.log("   Tongo Public Key (x):", tongoKeyPairs.spendingKeyPair.publicSpendingKey.substring(0, 66))
     console.log("   Mnemonic:", mnemonic.slice(0, 3).join(" ") + "...")
   })
 
   describe("Deposit STRK into Tongo", () => {
     it("should 'fund' a Tongo Account", async () => {
-    // WIP
+
     const tongoAccount = new TongoAccount(tongoKeyPairs.spendingKeyPair.privateSpendingKey, tongoContractAddress, provider);
-    
+
     const tongoAddress = TongoAccount.tongoAddress(tongoKeyPairs.spendingKeyPair.privateSpendingKey);
     const rawState = await tongoAccount.state();
-    console.log(rawState);
+    console.log("Tongo Account State:", rawState);
+    console.log("Tongo Address:", tongoAddress);
 
     const fundOp = await tongoAccount.fund({ amount: 5000n });
     await fundOp.populateApprove();
 
     // estimate fee
-    console.log('here')
+    /*console.log('Estimating fee...')
     const feeEstimate = await signer.estimateInvokeFee([
         fundOp.approve!,
         fundOp.toCalldata()
     ])
-    console.log('here2')
 
-    console.log('feeEstimate', feeEstimate)
+    console.log('Fee Estimate:', feeEstimate)
 
     const transactions = [
         fundOp.approve!,
@@ -134,6 +140,12 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
     }
 
     const fundTx = await signer.execute(transactions, transactionsDetail);
+    */
+    const fundTx = await signer.execute([
+        fundOp.approve!,
+        fundOp.toCalldata()
+    ]);
+
 
     console.log("Fund TX:", fundTx.transaction_hash);
     await provider.waitForTransaction(fundTx.transaction_hash);

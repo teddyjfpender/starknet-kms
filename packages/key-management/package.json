@@ -32,7 +32,7 @@
     "buffer": "6.0.3",
     "ethers": "^6.13.4",
     "micro-starknet": "^0.2.3",
-    "starknet": "^8.5.2",
+    "starknet": "^8.5.4",
     "ts-custom-error": "3.3.1"
   },
   "devDependencies": {
