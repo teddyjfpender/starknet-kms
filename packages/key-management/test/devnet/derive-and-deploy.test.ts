@@ -177,7 +177,7 @@ describe.skipIf(!RUN_DEVNET_TESTS)("Account Derivation and Deployment on Devnet"
      * 2. The derived address must be funded with tokens
      * 
      * you can fund the account with STRK to with the following cli command
-     * curl -X POST http://127.0.0.1:5050/mint -d '{"address":"<DERIVED_ADDRESS>","amount":50000000000000000000,"unit":"FRI"}' -H "Content-Type:application/json"
+     * curl -X POST http://127.0.0.1:5050/mint -d '{"address":"0x6df2d05138d501f6aafe03c1d95b9ff824e2d96821934cd3d8148801865fefe","amount":50000000000000000000,"unit":"FRI"}' -H "Content-Type:application/json"
      *
      */
     it("should derive and deploy an account to devnet", async () => {

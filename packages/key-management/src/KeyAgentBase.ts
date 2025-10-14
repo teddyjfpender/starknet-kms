@@ -8,6 +8,7 @@ import {
   type StarknetKeyPair,
   deriveStarknetKeyPairs,
 } from "./chains/starknet"
+import { deriveAccountAddress as deriveAccountAddressUtil } from "./chains/starknet/account-derivation"
 import { deriveCredential } from "./chains/starknet/credential-derivation"
 import { SigningOperations } from "./chains/starknet/signing-operations"
 import {
@@ -253,6 +254,21 @@ export abstract class KeyAgentBase implements KeyAgent {
     }
 
     return result
+  }
+
+  /**
+   * Derive account contract address for a credential.
+   * This is a convenience method that integrates with account derivation utilities.
+   *
+   * @param credential - The grouped credential containing the public spending key
+   * @param accountConfig - Account derivation configuration (class hash, salt)
+   * @returns Account address and derivation information
+   */
+  deriveAccountAddress(
+    credential: GroupedCredentials,
+    accountConfig: { classHash: string; salt?: string },
+  ): { address: string; publicKey: string; classHash: string; salt: string } {
+    return deriveAccountAddressUtil(credential.spendingKey.publicSpendingKey, accountConfig)
   }
 
   #generateKeyPairsFromSeed<T extends ChainDerivationArgs>(

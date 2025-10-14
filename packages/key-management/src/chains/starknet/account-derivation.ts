@@ -10,8 +10,13 @@ import { hash, RpcProvider, Account, CallData, type Abi, encode } from "starknet
  *
  * @param publicKey - Public key (compressed or uncompressed)
  * @returns Compressed public key (x-coordinate only)
+ * @example
+ * ```ts
+ * const uncompressed = "0x04...130chars..."
+ * const compressed = ensureCompressedPublicKey(uncompressed) // "0x...64chars..."
+ * ```
  */
-function ensureCompressedPublicKey(publicKey: string): string {
+export function ensureCompressedPublicKey(publicKey: string): string {
   // Remove 0x prefix for processing
   const keyHex = publicKey.startsWith("0x") ? publicKey.slice(2) : publicKey
 
@@ -42,6 +47,11 @@ export interface AccountDerivationConfig {
    * Salt for address derivation (default: 0)
    */
   salt?: string
+
+  /**
+   * Enable verbose logging (default: true)
+   */
+  verbose?: boolean
 }
 
 export interface DerivedAccountInfo {
@@ -133,6 +143,8 @@ export async function deployAccount(
     throw new Error("ABI is required for account deployment")
   }
 
+  const verbose = config.verbose !== false
+
   // Create an Account instance with the precalculated address
   const account = new Account({
     provider,
@@ -150,12 +162,34 @@ export async function deployAccount(
   const { transaction_hash, contract_address } =
     await account.deployAccount(deployAccountPayload)
 
-  console.log("✅ Account deployed!")
-  console.log("   Transaction hash:", transaction_hash)
-  console.log("   Contract address:", contract_address)
+  if (verbose) {
+    console.log("✅ Account deployed!")
+    console.log("   Transaction hash:", transaction_hash)
+    console.log("   Contract address:", contract_address)
+  }
 
   // Wait for the transaction to be accepted
-  await provider.waitForTransaction(transaction_hash)
+  const receipt = await provider.waitForTransaction(transaction_hash)
+
+  // Verify deployment was successful
+  // Note: In starknet.js v8, receipt types vary. We use type assertions to handle different receipt structures
+  const receiptAny = receipt as any
+
+  const isSuccess =
+    receipt &&
+    (typeof receiptAny.isSuccess === "function"
+      ? receiptAny.isSuccess()
+      : receiptAny.execution_status !== "REVERTED")
+
+  if (!isSuccess) {
+    const reason = receiptAny.revert_reason || "Unknown error"
+    throw new Error(`Account deployment failed: ${reason}`)
+  }
+
+  if (verbose) {
+    const status = receiptAny.execution_status || "SUCCEEDED"
+    console.log(`   Status: ${status}`)
+  }
 
   return account
 }
@@ -261,15 +295,17 @@ export async function deriveAndDeployAccount(
   waitForFund = false,
   tokenAddress = undefined,
 ): Promise<{ account: Account; derivedInfo: DerivedAccountInfo }> {
+  const verbose = config.verbose !== false
+
   // Step 1: Derive the account address
-  console.log("📍 Deriving account address...")
+  if (verbose) console.log("📍 Deriving account address...")
   const derivedInfo = deriveAccountAddress(publicKey, config)
-  console.log("   Derived address:", derivedInfo.address)
+  if (verbose) console.log("   Derived address:", derivedInfo.address)
 
   // Step 2: Check if already deployed
   const deployed = await isAccountDeployed(derivedInfo.address, provider)
   if (deployed) {
-    console.log("ℹ️  Account already deployed")
+    if (verbose) console.log("ℹ️  Account already deployed")
     const account = new Account({
       provider,
       address: derivedInfo.address,
@@ -280,11 +316,11 @@ export async function deriveAndDeployAccount(
 
   // Step 3: Check balance
   const balance = await getAccountBalance(derivedInfo.address, provider, tokenAddress)
-  console.log(`💰 Account balance: ${balance}`)
+  if (verbose) console.log(`💰 Account balance: ${balance}`)
 
   if (balance === 0n && waitForFund) {
-    console.log("⏳ Waiting for account to be funded...")
-    const funded = await waitForFunding(derivedInfo.address, provider, tokenAddress)
+    if (verbose) console.log("⏳ Waiting for account to be funded...")
+    const funded = await waitForFunding(derivedInfo.address, provider, 0n, 60000, tokenAddress)
     if (!funded) {
       throw new Error("Account funding timeout")
     }
@@ -295,7 +331,7 @@ export async function deriveAndDeployAccount(
   }
 
   // Step 4: Deploy
-  console.log("🚀 Deploying account...")
+  if (verbose) console.log("🚀 Deploying account...")
   const account = await deployAccount(derivedInfo, privateKey, provider, config)
 
   return { account, derivedInfo }
