@@ -177,5 +177,33 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
         expect(state1.balance).toBe(balance - 1n);
         expect(state2.pending).toBe(balanceSecond + 1n);
       }, 120000)
+
+    it("should 'rollover' confidential balance from user's second account pending balance into user's second account sepdnable balance", async () => {
+        // Convert hex string private key to BigInt for Tongo SDK
+        const tongoPrivateKeySecond = tongoKeyPairsSecond.spendingKeyPair.privateSpendingKey;
+
+        // Pass signer (Account) not provider to TongoAccount constructor
+        const tongoAccountSecond = new TongoAccount(tongoPrivateKeySecond, tongoContractAddress, signer);
+
+        const tongoAddressSecond = TongoAccount.tongoAddress(tongoPrivateKeySecond);
+        const decryptedStateSecond = await tongoAccountSecond.state();
+        const stateSecond = decryptedStateSecond
+        console.log("Tongo Account State:", decryptedStateSecond);
+        console.log("Tongo Address:", tongoAddressSecond);
+        console.log("Signer Address:", signer.address);
+
+        // Transfer 1 STRK
+        const rolloverOp = await tongoAccountSecond.rollover();
+
+        const rolloverTx = await signer.execute(rolloverOp.toCalldata());
+        console.log("Rollover TX:", rolloverTx.transaction_hash);
+        await provider.waitForTransaction(rolloverTx.transaction_hash);
+
+        const state2 = await tongoAccountSecond.state();
+        // Expect account pending to be 0n
+        expect(state2.pending).toBe(0n);
+        // Expect account spendable to increase by original pending amount
+        expect(state2.balance).toBe(stateSecond.balance + stateSecond.pending)
+      }, 120000)
     })
 })
