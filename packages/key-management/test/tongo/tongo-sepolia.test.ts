@@ -2,8 +2,6 @@ import { describe, it, expect, beforeAll } from "bun:test"
 import { Account, RpcProvider, constants } from "starknet"
 import { mnemonic } from "@starkms/common"
 import { Account as TongoAccount } from "@fatsolutions/tongo-sdk";
-// Note: For testing, we'll use the OpenZeppelin account contract
-// import { KAGE_ACCOUNT_ABI } from "@starkms/contracts"
 import {
   deriveStarknetKeyPairs,
   deriveAccountAddress,
@@ -16,18 +14,6 @@ import {
 } from "../../src/chains/starknet"
 import * as bip39 from "../../src/util/bip39"
 
-/**
- * Devnet Configuration
- *
- * To run these tests:
- * 1. Start a Starknet devnet instance:
- *    ```bash
- *    starknet-devnet --seed 0
- *    ```
- * 2. Declare the KageAccount contract on devnet and note the class hash
- * 3. Update KAGE_ACCOUNT_CLASS_HASH below with your deployed class hash
- * 4. Run tests with: bun test test/devnet/derive-and-deploy.test.ts
- */
 
 const SEPOLIA_CONFIG = {
   nodeUrl: process.env.STARKNET_RPC_URL || "https://starknet-sepolia.public.blastapi.io/",
