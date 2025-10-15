@@ -21,8 +21,7 @@ const SEPOLIA_CONFIG = {
   chainId: constants.StarknetChainId.SN_SEPOLIA,
 }
 
-// This is the class hash for the devnet account contract
-const OZ_ACCOUNT_CLASS_HASH = "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564" // Replace with actual class hash from your devnet
+const OZ_ACCOUNT_CLASS_HASH = "0x05b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564"
 
 /**
  * Set to true to run these tests against devnet
@@ -113,7 +112,7 @@ describe.skipIf(!RUN_SEPOLIA_TESTS)("Account Derivation and Deployment on Devnet
         const tongoPrivateKey = tongoKeyPairs.spendingKeyPair.privateSpendingKey;
 
         // Pass signer (Account) not provider to TongoAccount constructor
-        const tongoAccount = new TongoAccount(tongoPrivateKey, tongoContractAddress, signer);
+        const tongoAccount = new TongoAccount(tongoPrivateKey, tongoContractAddress, signer); // todo change `singer` to `provider`
 
         const tongoAddress = TongoAccount.tongoAddress(tongoPrivateKey);
         const decryptedState = await tongoAccount.state();
